@@ -52,7 +52,7 @@
 
       <div class="side-bottom">
         <button class="nav-item" id="settingsBtn" type="button">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0-.33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0-.33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>设置与连接</span>
         </button>
       </div>
@@ -95,7 +95,7 @@
                 <div class="skel-kv skeleton"></div>
               </div>
             </div>
-            <div class="real-content" id="ovrReal">
+            <div class="real-content hide" id="ovrReal">
               <h2>本月套餐流量</h2>
               <div class="quota">
                 <div class="ring">
@@ -140,7 +140,7 @@
             </div>
           </article>
 
-          <div class="real-content">
+          <div class="real-content hide">
             <div class="grid stats" id="statGrid"></div>
           </div>
         </div>
@@ -154,7 +154,7 @@
                 <div class="skeleton skel-kv" style="height:40px"></div>
               </div>
             </div>
-            <div class="real-content">
+            <div class="real-content hide">
               <h2>节点入站实时</h2>
             <div id="inboundList" class="kv-list"></div>
             </div>
@@ -171,7 +171,7 @@
               <div class="skel-kv skeleton" style="width:88%"></div>
               <div class="skel-kv skeleton" style="width:72%"></div>
             </div>
-            <div class="real-content">
+            <div class="real-content hide">
               <h2>网络实时吞吐与状态</h2>
             <div id="networkLiveStats" class="live-grid">
               <div class="live-box">
@@ -379,8 +379,8 @@
             </label>
             <label>界面主题
               <select id="themeSelect">
-                <option value="dark" selected>深色主题 (Dark)</option>
-                <option value="light">浅色主题 (Light)</option>
+                <option value="dark">深色主题 (Dark)</option>
+                <option value="light" selected>浅色主题 (Light)</option>
               </select>
             </label>
             <label class="check wide"><input id="clearSecrets" type="checkbox" /> 清除所有已保存的密钥（API Key / Token / 密码）</label>

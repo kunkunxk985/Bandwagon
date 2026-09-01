@@ -535,6 +535,33 @@ button:active { transform: translateY(1px) scale(0.99); }
   transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ───────────── 骨架屏 / Skeleton ───────────── */
+
+.skeleton-wrap { position: relative; }
+.skeleton-wrap.hide { display: none; }
+.real-content.hide { display: none; }
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04) 25%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.04) 75%);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: shimmer 1.6s infinite linear;
+}
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 75%);
+  background-size: 200% 100%;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skel-title { height: 14px; width: 38%; margin-bottom: 14px; }
+.skel-ring { width: 158px; height: 158px; border-radius: 50%; }
+.skel-kv { height: 12px; width: 100%; margin-bottom: 8px; }
+.skel-bar { height: 10px; width: 100%; margin-bottom: 10px; border-radius: 6px; }
+.skel-stat { height: 64px; width: 100%; border-radius: var(--radius-sm); }
+
 /* ───────────── 图表 ───────────── */
 
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }

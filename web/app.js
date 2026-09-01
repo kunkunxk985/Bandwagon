@@ -575,6 +575,16 @@ function render(data) {
   const pct = bwh.usedPercent || 0;
   const errors = [bwh.error, xui.error].filter(Boolean);
 
+  // 初次渲染后隐藏骨架屏，显示真实内容
+  hideSkeleton("ovrSkel");
+  hideSkeleton("inboundSkel");
+  hideSkeleton("netSkel");
+  const realIds = ["ovrReal", "statGrid", "inboundList", "networkLiveStats"];
+  realIds.forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove("hide");
+  });
+
   $("modeChip").textContent = data.demo ? "演示数据" : (data.ok ? "实时数据" : "部分失败");
   $("modeChip").className = "chip " + (data.demo ? "demo" : data.ok ? "ok" : "bad");
   $("stamp").textContent = data.fetchedAt ? `更新于 ${formatTime(data.fetchedAt)}` : "";
