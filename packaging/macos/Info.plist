@@ -5,17 +5,17 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>zh_CN</string>
   <key>CFBundleDisplayName</key>
-  <string>瓦工台</string>
+  <string>Bandwagon</string>
   <key>CFBundleExecutable</key>
-  <string>瓦工台</string>
+  <string>Bandwagon</string>
   <key>CFBundleIconFile</key>
   <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
-  <string>com.kun.wagongdeck</string>
+  <string>com.kun.bandwagon</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>瓦工台</string>
+  <string>Bandwagon</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
