@@ -414,6 +414,29 @@ function renderChart() {
 function bindChartEvents() {
   const canvas = $("netChart");
   if (!canvas) return;
+
+  function showTouchTooltip(x, y) {
+    const model = canvas._model;
+    const geom = canvas._geom;
+    if (!model || !geom || !model.rows.length) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = x - rect.left;
+    const { pad, plotW } = geom;
+    if (mx < pad.l || mx > pad.l + plotW) {
+      if (chartHover !== -1) { chartHover = -1; drawChart(); }
+      return;
+    }
+    const ratio = (mx - pad.l) / plotW;
+    const idx = model.mode === "bar"
+      ? Math.floor(ratio * model.rows.length)
+      : Math.round(ratio * (model.rows.length - 1));
+    const clamped = Math.max(0, Math.min(model.rows.length - 1, idx));
+    if (clamped !== chartHover) {
+      chartHover = clamped;
+      drawChart();
+    }
+  }
+
   canvas.addEventListener("mousemove", (event) => {
     const model = canvas._model;
     const geom = canvas._geom;
@@ -441,6 +464,38 @@ function bindChartEvents() {
       drawChart();
     }
   });
+
+  // 移动端：轻触显示 tooltip，再次点击或滑动取消
+  let touchTimer = null;
+  canvas.addEventListener("touchstart", (event) => {
+    if (!event.touches.length) return;
+    const touch = event.touches[0];
+    showTouchTooltip(touch.clientX, touch.clientY);
+    if (touchTimer) clearTimeout(touchTimer);
+    touchTimer = setTimeout(() => {
+      if (chartHover !== -1) {
+        chartHover = -1;
+        drawChart();
+      }
+    }, 3000);
+  }, { passive: true });
+
+  canvas.addEventListener("touchmove", (event) => {
+    if (!event.touches.length) return;
+    const touch = event.touches[0];
+    showTouchTooltip(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  canvas.addEventListener("touchend", () => {
+    if (touchTimer) clearTimeout(touchTimer);
+    touchTimer = setTimeout(() => {
+      if (chartHover !== -1) {
+        chartHover = -1;
+        drawChart();
+      }
+    }, 1500);
+  });
+
   document.querySelectorAll("#chartRangeSeg button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.range === chartRange);
     btn.addEventListener("click", () => {
