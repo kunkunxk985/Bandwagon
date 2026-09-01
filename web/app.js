@@ -134,10 +134,7 @@ let chartHover = -1;
 function chartDataFor(range) {
   const pts = (snapshot && snapshot.bwhHistory) || [];
   const now = Date.now() / 1000;
-  if (range === "24h") {
-    return { mode: "line", rows: pts.filter((p) => p.t >= now - 86400) };
-  }
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 400;
+  const days = range === "7d" ? 7 : range === "30d" ? 30 : range === "24h" ? 1 : 400;
   const filtered = pts.filter((p) => p.t >= now - days * 86400);
   const byDay = new Map();
   for (const p of filtered) {
@@ -150,7 +147,11 @@ function chartDataFor(range) {
     b.in += p.in;
     b.out += p.out;
   }
-  return { mode: "bar", rows: [...byDay.values()].sort((a, b) => a.t - b.t) };
+  const rows = [...byDay.values()].sort((a, b) => a.t - b.t);
+  if (rows.length < 2) {
+    return { mode: "bar", rows };
+  }
+  return { mode: "line", rows };
 }
 
 function updateChartMeta(model) {

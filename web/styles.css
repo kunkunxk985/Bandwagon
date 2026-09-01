@@ -300,10 +300,24 @@ button:active { transform: translateY(1px) scale(0.99); }
 /* ───────────── 卡片与布局 ───────────── */
 
 .grid { display: grid; gap: 14px; }
-.grid.hero { grid-template-columns: minmax(380px, 1fr) 1.35fr; margin-bottom: 14px; align-items: stretch; }
-.grid.stats { grid-template-columns: 1fr 1fr; gap: 14px; align-content: center; }
+.grid.hero { 
+  grid-template-columns: minmax(380px, 1fr) 1.35fr; 
+  margin-bottom: 14px; 
+  align-items: stretch; 
+}
+.grid.stats { 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 14px; 
+  align-content: center; 
+}
+@media (max-width: 1400px) {
+  .grid.stats { grid-template-columns: repeat(2, 1fr); }
+}
 .card.stat { max-height: 320px; min-height: 150px; }
-.grid.main { grid-template-columns: 1.1fr 1fr; margin-bottom: 14px; }
+.grid.main { 
+  grid-template-columns: 1.1fr 1fr; 
+  margin-bottom: 14px; 
+}
 
 .card {
   position: relative;
