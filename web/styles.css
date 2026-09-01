@@ -58,6 +58,7 @@ body {
   background:
     radial-gradient(1200px 600px at 90% -10%, rgba(0, 122, 255, 0.08), transparent 55%),
     radial-gradient(900px 500px at -10% 100%, rgba(52, 199, 89, 0.06), transparent 50%),
+    radial-gradient(600px 400px at 50% 50%, rgba(0, 0, 0, 0.015), transparent 60%),
     var(--bg);
   color: var(--text);
   font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
@@ -1237,4 +1238,62 @@ td.num, .num { font-variant-numeric: tabular-nums; }
   .track-row { font-size: 10.5px; }
   .track-row .lbl { width: 60px; }
   .track-row .val { width: 70px; font-size: 10px; }
+}
+
+/* ───────────── 主页补充区域 ───────────── */
+
+.grid.extras {
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 860px) {
+  .grid.extras { grid-template-columns: 1fr; }
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 12.5px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.18s ease;
+}
+.quick-btn:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+  background: var(--card-hover);
+  transform: translateY(-1px);
+}
+.quick-ic {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tip-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.5;
 }

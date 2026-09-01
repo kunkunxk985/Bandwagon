@@ -879,7 +879,7 @@ async function testBwh() {
   const payload = {
     target: "bwh",
     bwhVeid: $("bwhVeid").value.trim(),
-    bwhApiKey: $("bwhApiKey").value,
+    bwhApiKey: $("bwhApiKey").value.trim(),
     bwhApiBase: $("bwhApiBase").value.trim(),
   };
 
@@ -1013,6 +1013,16 @@ function initEvents() {
 
   // 刷新按钮
   $("refreshBtn")?.addEventListener("click", () => load(true));
+
+  // 快捷操作按钮
+  $("quickRefresh")?.addEventListener("click", () => load(true));
+  $("quickSettings")?.addEventListener("click", openSettings);
+  $("quickCopy")?.addEventListener("click", () => {
+    const stamp = $("stamp")?.textContent || "";
+    const mode = $("modeChip")?.textContent || "";
+    const summary = `瓦工台状态：${mode}，${stamp}`;
+    copyText(summary, "状态摘要");
+  });
 
   // 客户端搜索与筛选
   $("q")?.addEventListener("input", renderClients);
