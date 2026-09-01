@@ -686,11 +686,24 @@ let refreshIntervalSec = 20;
 let countdown = refreshIntervalSec;
 let isFetching = false;
 
+function showSkeleton(id) {
+  const wrap = $(id);
+  if (wrap) wrap.classList.remove("hide");
+}
+function hideSkeleton(id) {
+  const wrap = $(id);
+  if (wrap) wrap.classList.add("hide");
+}
+
 async function load(force = false) {
   if (isFetching) return;
   isFetching = true;
   const btn = $("refreshBtn");
   if (btn) btn.classList.add("spinning");
+
+  showSkeleton("ovrSkel");
+  showSkeleton("inboundSkel");
+  showSkeleton("netSkel");
 
   try {
     const url = force ? "/api/refresh" : "/api/overview";
@@ -707,6 +720,9 @@ async function load(force = false) {
   } finally {
     isFetching = false;
     if (btn) btn.classList.remove("spinning");
+    hideSkeleton("ovrSkel");
+    hideSkeleton("inboundSkel");
+    hideSkeleton("netSkel");
   }
 }
 

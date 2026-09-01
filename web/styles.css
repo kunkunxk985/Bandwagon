@@ -1008,6 +1008,90 @@ td.num, .num { font-variant-numeric: tabular-nums; }
 .login-card input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12); }
 .login-card .primary { width: 100%; height: 40px; }
 
+/* ───────────── 骨架屏 / 加载态 ───────────── */
+
+.skeleton-wrap { position: relative; }
+.real-content { display: none; }
+.skeleton-wrap.hide { display: none; }
+.skeleton-wrap.hide ~ .real-content { display: block; }
+.skeleton-wrap:not(.hide) + .real-content { display: none; }
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: shimmer 1.4s ease infinite;
+}
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background-size: 200% 100%;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skel-text { height: 12px; margin: 6px 0; border-radius: 6px; }
+.skel-title { height: 14px; width: 45%; margin-bottom: 14px; border-radius: 7px; }
+.skel-ring { width: 140px; height: 140px; border-radius: 50%; flex: none; }
+.skel-stat { height: 96px; border-radius: var(--radius); }
+.skel-kv { height: 11px; margin: 8px 0; border-radius: 6px; }
+.skel-bar { height: 6px; margin-top: 10px; border-radius: 3px; }
+.loading-mask {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(238, 241, 246, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 5;
+  border-radius: var(--radius);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+[data-theme="dark"] .loading-mask {
+  background: rgba(10, 10, 12, 0.55);
+}
+.loading-mask.show { opacity: 1; pointer-events: auto; }
+.spinner {
+  width: 22px; height: 22px;
+  border: 2.5px solid var(--line-strong);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ───────────── 图表峰值标记 ───────────── */
+
+.peak-badge {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0,122,255,0.18), rgba(52,199,89,0.16));
+  border: 1px solid rgba(0,122,255,0.35);
+  color: var(--text);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 4;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.peak-badge::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0,122,255,0.35);
+}
+
 /* ───────────── 大屏 / 全屏适配 ───────────── */
 
 @media (min-width: 1750px) {
@@ -1038,4 +1122,18 @@ td.num, .num { font-variant-numeric: tabular-nums; }
   .content { padding: 18px 16px 30px; }
   .grid.stats, .grid.main { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
+  .pagebar-actions { gap: 8px; }
+  .chip { height: 24px; font-size: 11px; }
+}
+@media (max-width: 640px) {
+  .content { padding: 14px 12px 26px; }
+  .card { padding: 16px 14px; border-radius: var(--radius-sm); }
+  .pagebar h1 { font-size: 19px; }
+  .card.stat .num { font-size: 18px; }
+  .chart-wrap { height: clamp(220px, 28vh, 360px); }
+  .table-wrap { max-height: 60vh; }
+  .seg button { padding: 0 9px; height: 24px; font-size: 11px; }
+  .filter-pills { gap: 4px; }
+  .pill { height: 26px; padding: 0 9px; font-size: 11px; }
+  .filters input { height: 34px; font-size: 12px; }
 }

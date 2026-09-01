@@ -52,7 +52,7 @@
 
       <div class="side-bottom">
         <button class="nav-item" id="settingsBtn" type="button">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0-.33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>设置与连接</span>
         </button>
       </div>
@@ -78,59 +78,101 @@
       <section class="tab active" id="tab-overview">
         <div class="grid hero">
           <article class="card ring-card">
-            <h2>本月套餐流量</h2>
-            <div class="quota">
-              <div class="ring">
-                <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
-                  <circle id="ovrArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
-                </svg>
-                <div class="ring-label">
-                  <div>
-                    <b id="ovrPct">—</b>
-                    <span>已用占比</span>
+            <div class="skeleton-wrap" id="ovrSkel">
+              <div class="skel-title skeleton"></div>
+              <div class="quota">
+                <div class="skel-ring skeleton"></div>
+                <div class="ovr-kv">
+                  <div class="skel-kv skeleton"></div>
+                  <div class="skel-kv skeleton"></div>
+                  <div class="skel-kv skeleton"></div>
+                </div>
+              </div>
+              <div class="budget-panel" style="margin-top:14px">
+                <div class="skel-title skeleton" style="width:38%"></div>
+                <div class="skel-bar skeleton"></div>
+                <div class="skel-bar skeleton"></div>
+                <div class="skel-kv skeleton"></div>
+              </div>
+            </div>
+            <div class="real-content" id="ovrReal">
+              <h2>本月套餐流量</h2>
+              <div class="quota">
+                <div class="ring">
+                  <svg viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
+                    <circle id="ovrArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
+                  </svg>
+                  <div class="ring-label">
+                    <div>
+                      <b id="ovrPct">—</b>
+                      <span>已用占比</span>
+                    </div>
                   </div>
                 </div>
+                <div class="ovr-kv">
+                  <div class="ovr-line"><span>本月已用</span><b id="ovrUsed">—</b></div>
+                  <div class="ovr-line"><span>剩余额度</span><b id="ovrLeft">—</b></div>
+                  <div class="ovr-line"><span>流量重置</span><b id="ovrReset">—</b></div>
+                </div>
               </div>
-              <div class="ovr-kv">
-                <div class="ovr-line"><span>本月已用</span><b id="ovrUsed">—</b></div>
-                <div class="ovr-line"><span>剩余额度</span><b id="ovrLeft">—</b></div>
-                <div class="ovr-line"><span>流量重置</span><b id="ovrReset">—</b></div>
-              </div>
-            </div>
 
-            <!-- 流量预算分析与进度条 -->
-            <div class="budget-panel" id="budgetPanel">
-              <div class="budget-head">
-                <span class="budget-title">流量节奏分析</span>
-                <span class="badge" id="budgetStatusBadge">正常</span>
-              </div>
-              <div class="budget-tracks">
-                <div class="track-row">
-                  <span class="lbl">周期时间进度</span>
-                  <div class="progress-bar"><i id="timeProgressBar" style="width:0%"></i></div>
-                  <span class="val" id="timeProgressVal">0%</span>
+              <!-- 流量预算分析与进度条 -->
+              <div class="budget-panel" id="budgetPanel">
+                <div class="budget-head">
+                  <span class="budget-title">流量节奏分析</span>
+                  <span class="badge" id="budgetStatusBadge">正常</span>
                 </div>
-                <div class="track-row">
-                  <span class="lbl">流量使用进度</span>
-                  <div class="progress-bar"><i id="trafficProgressBar" style="width:0%"></i></div>
-                  <span class="val" id="trafficProgressVal">0%</span>
+                <div class="budget-tracks">
+                  <div class="track-row">
+                    <span class="lbl">周期时间进度</span>
+                    <div class="progress-bar"><i id="timeProgressBar" style="width:0%"></i></div>
+                    <span class="val" id="timeProgressVal">0%</span>
+                  </div>
+                  <div class="track-row">
+                    <span class="lbl">流量使用进度</span>
+                    <div class="progress-bar"><i id="trafficProgressBar" style="width:0%"></i></div>
+                    <span class="val" id="trafficProgressVal">0%</span>
+                  </div>
                 </div>
+                <div class="budget-tips" id="budgetTips">建议日均额度计算中…</div>
               </div>
-              <div class="budget-tips" id="budgetTips">建议日均额度计算中…</div>
             </div>
           </article>
 
-          <div class="grid stats" id="statGrid"></div>
+          <div class="real-content">
+            <div class="grid stats" id="statGrid"></div>
+          </div>
         </div>
-
         <div class="grid main">
           <article class="card">
-            <h2>节点入站实时</h2>
+            <div class="skeleton-wrap" id="inboundSkel">
+              <div class="skel-title skeleton"></div>
+              <div class="kv-list">
+                <div class="skeleton skel-kv" style="height:40px"></div>
+                <div class="skeleton skel-kv" style="height:40px"></div>
+                <div class="skeleton skel-kv" style="height:40px"></div>
+              </div>
+            </div>
+            <div class="real-content">
+              <h2>节点入站实时</h2>
             <div id="inboundList" class="kv-list"></div>
+            </div>
           </article>
           <article class="card">
-            <h2>网络实时吞吐与状态</h2>
+            <div class="skeleton-wrap" id="netSkel">
+              <div class="skel-title skeleton"></div>
+              <div class="live-grid">
+                <div class="skeleton skel-stat"></div>
+                <div class="skeleton skel-stat"></div>
+                <div class="skeleton skel-stat"></div>
+                <div class="skeleton skel-stat"></div>
+              </div>
+              <div class="skel-kv skeleton" style="width:88%"></div>
+              <div class="skel-kv skeleton" style="width:72%"></div>
+            </div>
+            <div class="real-content">
+              <h2>网络实时吞吐与状态</h2>
             <div id="networkLiveStats" class="live-grid">
               <div class="live-box">
                 <span class="lbl">实时上行 (IO)</span>
@@ -152,6 +194,7 @@
             <div class="note">
               <p>搬瓦工统计的是 <b>整机流量</b>（含倍率），3X-UI 仅统计<b>代理客户端</b>，两者正常会有差异。</p>
               <p>搬瓦工流量用满将停机，请关注剩余额度与每日建议预算。</p>
+            </div>
             </div>
           </article>
         </div>
