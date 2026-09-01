@@ -7,6 +7,8 @@
 #include <libgen.h>
 #include <mach-o/dyld.h>
 
+static void show_alert(const char *msg);
+
 static int try_launch(const char *root) {
     if (!root || !*root) return 1;
     char python[1024];
@@ -19,58 +21,30 @@ static int try_launch(const char *root) {
     return 1;
 }
 
+static void show_alert(const char *msg) {
+    char cmd[4096];
+    snprintf(cmd, sizeof(cmd),
+             "osascript -e 'display alert \"瓦工台\" message \"%s\"'", msg);
+    system(cmd);
+}
+
 int main(int argc, char **argv) {
     (void)argc;
     (void)argv;
-    char exe[1024] = "";
-    uint32_t size = sizeof(exe);
-    _NSGetExecutablePath(exe, &size);
 
-    // 启动器位于 <项目>.app/Contents/MacOS/，向上三级取 .app 所在目录
-    char tmp[1024];
-    strncpy(tmp, exe, sizeof(tmp) - 1);
-    tmp[sizeof(tmp) - 1] = '\0';
-    char *dir = dirname(tmp); // Contents/MacOS
-    strncpy(tmp, dir, sizeof(tmp) - 1);
-    tmp[sizeof(tmp) - 1] = '\0';
-    dir = dirname(tmp); // Contents
-    strncpy(tmp, dir, sizeof(tmp) - 1);
-    tmp[sizeof(tmp) - 1] = '\0';
-    dir = dirname(tmp); // 瓦工台.app
-    strncpy(tmp, dir, sizeof(tmp) - 1);
-    tmp[sizeof(tmp) - 1] = '\0';
-    dir = dirname(tmp); // .app 所在目录
+    const char *home = getenv("HOME");
+    if (!home || !*home) {
+        show_alert("未找到 HOME 目录，无法启动。");
+        return 1;
+    }
 
-    // 1. 如果 .app 位于 dist/ 目录，向上一级探测项目根目录
-    char parent[1024];
-    snprintf(parent, sizeof(parent), "%s/..", dir);
-    if (try_launch(parent) == 0) return 0;
-
-    // 2. 探测 .app 同级目录
-    if (try_launch(dir) == 0) return 0;
-
-    // 3. 探测 .app 同级子目录
-    char root[1024];
-    const char *names[] = { "Banwagon", "瓦工台", "WagongDeck", "banwagon" };
+    char root[2048];
+    const char *names[] = { "Bandwagon", "瓦工台", "WagongDeck", "bandwagon" };
     for (size_t i = 0; i < sizeof(names)/sizeof(names[0]); i++) {
-        snprintf(root, sizeof(root), "%s/%s", dir, names[i]);
+        snprintf(root, sizeof(root), "%s/Desktop/%s", home, names[i]);
         if (try_launch(root) == 0) return 0;
     }
 
-    // 4. 探测 ~/Desktop / ~/
-    const char *home = getenv("HOME");
-    if (home && *home) {
-        for (size_t i = 0; i < sizeof(names)/sizeof(names[0]); i++) {
-            snprintf(root, sizeof(root), "%s/Desktop/%s", home, names[i]);
-            if (try_launch(root) == 0) return 0;
-            snprintf(root, sizeof(root), "%s/%s", home, names[i]);
-            if (try_launch(root) == 0) return 0;
-        }
-    }
-
-    char cmd[2048];
-    snprintf(cmd, sizeof(cmd),
-             "osascript -e 'display alert \"瓦工台\" message \"未找到运行环境，请先在终端执行：\\ncd ~/Desktop/Banwagon && ./start.sh\"'");
-    system(cmd);
+    show_alert("未找到运行环境，请确认项目在 ~/Desktop/Bandwagon，并已执行 ./start.sh 安装依赖。");
     return 1;
 }
