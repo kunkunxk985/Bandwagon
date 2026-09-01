@@ -58,12 +58,12 @@ body {
   background:
     radial-gradient(1200px 600px at 90% -10%, rgba(0, 122, 255, 0.08), transparent 55%),
     radial-gradient(900px 500px at -10% 100%, rgba(52, 199, 89, 0.06), transparent 50%),
-    radial-gradient(600px 400px at 50% 50%, rgba(0, 0, 0, 0.015), transparent 60%),
     var(--bg);
   color: var(--text);
-  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+  font: 14px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "tnum" 1;
+  letter-spacing: -0.2px;
   overflow-x: hidden;
 }
 
@@ -1149,12 +1149,21 @@ td.num, .num { font-variant-numeric: tabular-nums; }
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-.skel-text { height: 12px; margin: 6px 0; border-radius: 6px; }
-.skel-title { height: 14px; width: 45%; margin-bottom: 14px; border-radius: 7px; }
+.skel-text { height: 12px; margin: 5px 0; border-radius: 6px; }
+.skel-title { height: 14px; width: 40%; margin-bottom: 16px; border-radius: 7px; }
 .skel-ring { width: 140px; height: 140px; border-radius: 50%; flex: none; }
 .skel-stat { height: 96px; border-radius: var(--radius); }
-.skel-kv { height: 11px; margin: 8px 0; border-radius: 6px; }
+.skel-kv { height: 11px; margin: 7px 0; border-radius: 6px; }
 .skel-bar { height: 6px; margin-top: 10px; border-radius: 3px; }
+.skel-circle { width: 96px; height: 96px; border-radius: 50%; flex: none; }
+.skel-block { height: 80px; border-radius: var(--radius-sm); }
+
+/* 骨架屏内容轮廓 */
+.skel-outline-title { height: 16px; width: 38%; border-radius: 8px; }
+.skel-outline-line { height: 11px; margin: 8px 0; border-radius: 6px; }
+.skel-outline-line.short { width: 65%; }
+.skel-outline-block { height: 72px; border-radius: var(--radius-sm); }
+.skel-outline-circle { width: 88px; height: 88px; border-radius: 50%; flex: none; }
 .loading-mask {
   position: absolute;
   inset: 0;
@@ -1180,6 +1189,28 @@ td.num, .num { font-variant-numeric: tabular-nums; }
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 空状态 */
+.empty-state {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 36px 16px;
+  color: var(--text-3);
+  text-align: center;
+}
+.empty-state .empty-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.empty-state p { margin: 0; font-size: 13px; line-height: 1.6; }
+.empty-state b { color: var(--text-2); font-weight: 600; }
 
 /* ───────────── 图表峰值标记 ───────────── */
 
