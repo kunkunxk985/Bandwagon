@@ -168,12 +168,12 @@ body {
   width: 3px;
   border-radius: 0 3px 3px 0;
   background: var(--accent-grad);
-  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
-  animation: breathe 2.2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+  animation: breathe 2.5s ease-in-out infinite;
 }
 @keyframes breathe {
-  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(0, 122, 255, 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 14px rgba(0, 122, 255, 0.7); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(0, 122, 255, 0.5); }
+  50% { opacity: 0.8; box-shadow: 0 0 16px rgba(0, 122, 255, 0.8); }
 }
 
 .nav-item {
@@ -463,11 +463,12 @@ button:active::after, .pill:active::after {
   height: 13px;
   border-radius: 2px;
   background: var(--accent-grad);
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.35);
 }
 
 /* ───────────── 流量环 ───────────── */
 
-.quota { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+.quota { display: flex; align-items: center; gap: 26px; justify-content: space-between; flex-wrap: wrap; }
 
 .ring-card { 
   display: flex; 
@@ -938,16 +939,14 @@ tbody td {
   vertical-align: middle;
 }
 tbody tr { 
-  transition: background 0.14s ease, transform 0.2s ease; 
+  transition: background 0.14s ease; 
   position: relative;
 }
 tbody tr:hover { 
   background: rgba(0, 122, 255, 0.04);
-  transform: translateX(2px);
 }
 [data-theme="dark"] tbody tr:hover { 
   background: rgba(255, 255, 255, 0.04); 
-  transform: translateX(2px);
 }
 tbody tr:last-child td { border-bottom: none; }
 
