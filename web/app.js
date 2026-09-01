@@ -390,7 +390,7 @@ function drawChart() {
     tip.style.opacity = 1;
     const tw = tip.offsetWidth;
     const left = hx + 14 + tw > w ? hx - tw - 14 : hx + 14;
-    tip.style.left = `${Math.max(4, left)}px`;
+    tip.style.left = `${Math.max(4, Math.min(w - tw - 4, left))}px`;
     tip.style.top = `${Math.max(4, y(Math.min(max, (p.in || 0) + (p.out || 0))) - 8)}px`;
   } else if (tip) {
     tip.style.opacity = 0;
