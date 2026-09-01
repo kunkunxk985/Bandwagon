@@ -1153,14 +1153,23 @@ td.num, .num { font-variant-numeric: tabular-nums; }
   .chip { height: 24px; font-size: 11px; }
 }
 @media (max-width: 640px) {
-  .content { padding: 14px 12px 26px; }
-  .card { padding: 16px 14px; border-radius: var(--radius-sm); }
-  .pagebar h1 { font-size: 19px; }
-  .card.stat .num { font-size: 18px; }
-  .chart-wrap { height: clamp(220px, 28vh, 360px); }
-  .table-wrap { max-height: 60vh; }
-  .seg button { padding: 0 9px; height: 24px; font-size: 11px; }
+  :root { --side-w: 56px; }
+  .content { padding: 14px 10px 24px; }
+  .card { padding: 14px 12px; border-radius: var(--radius-sm); }
+  .pagebar h1 { font-size: 18px; }
+  .card.stat .num { font-size: 17px; }
+  .chart-wrap { height: clamp(200px, 24vh, 320px); }
+  .table-wrap { max-height: 55vh; }
+  .seg button { padding: 0 8px; height: 22px; font-size: 11px; }
   .filter-pills { gap: 4px; }
-  .pill { height: 26px; padding: 0 9px; font-size: 11px; }
-  .filters input { height: 34px; font-size: 12px; }
+  .pill { height: 24px; padding: 0 8px; font-size: 11px; }
+  .filters input { height: 32px; font-size: 12px; }
+  .kv-list > div { padding: 10px 12px; font-size: 12px; }
+  .live-grid { gap: 8px; }
+  .live-box { padding: 8px 10px; }
+  .live-box .val { font-size: 13px; }
+  .budget-tracks { gap: 4px; }
+  .track-row { font-size: 10.5px; }
+  .track-row .lbl { width: 60px; }
+  .track-row .val { width: 70px; font-size: 10px; }
 }
