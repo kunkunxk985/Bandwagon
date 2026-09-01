@@ -248,7 +248,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 .content > * { width: 100%; max-width: 1760px; }
 
@@ -295,7 +295,7 @@ button {
   position: relative;
   overflow: hidden;
 }
-button:active { transform: translateY(1px) scale(0.97); }
+button:active { transform: translateY(1px); }
 
 /* 涟漪 */
 button::after, .pill::after {
@@ -443,7 +443,6 @@ button:active::after, .pill:active::after {
   box-shadow: var(--shadow), 0 12px 32px rgba(0, 122, 255, 0.10), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 .card:active {
-  transform: translateY(0) scale(0.995);
   transition: transform 0.1s ease;
 }
 
