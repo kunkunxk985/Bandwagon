@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录瓦工台</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body class="login-body">
+  <form class="card login-card" id="form">
+    <h1>瓦工台</h1>
+    <p>输入面板密码后查看流量。</p>
+    <div class="err" id="err"></div>
+    <input type="password" id="password" placeholder="面板密码" autofocus />
+    <button class="primary" type="submit">进入</button>
+  </form>
+  <script>
+    document.getElementById("form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const err = document.getElementById("err");
+      err.textContent = "";
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: document.getElementById("password").value }),
+      });
+      if (!res.ok) {
+        err.textContent = "密码不对";
+        return;
+      }
+      location.href = "/";
+    });
+  </script>
+</body>
+</html>

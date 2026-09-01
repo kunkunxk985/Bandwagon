@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>瓦工台 · 流量监控</title>
+  <meta name="color-scheme" content="dark light" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gradOk" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#5b9dff" />
+        <stop offset="100%" stop-color="#2dd4a7" />
+      </linearGradient>
+      <linearGradient id="gradWarn" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f2b04c" />
+        <stop offset="100%" stop-color="#f2924c" />
+      </linearGradient>
+      <linearGradient id="gradBad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f4626c" />
+        <stop offset="100%" stop-color="#f4455c" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">瓦</div>
+        <div class="brand-text">
+          <h1>瓦工台</h1>
+          <div class="sub">搬瓦工 · 3X-UI 监控</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-tab="overview" type="button">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>总览</span>
+        </button>
+        <button class="nav-item" data-tab="bwh" type="button">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>搬瓦工 VPS</span>
+        </button>
+        <button class="nav-item" data-tab="clients" type="button">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>节点客户端</span>
+        </button>
+      </nav>
+
+      <div class="side-bottom">
+        <button class="nav-item" id="settingsBtn" type="button">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>设置与连接</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="pagebar">
+        <h1 id="pageTitle">总览</h1>
+        <div class="pagebar-actions">
+          <span id="modeChip" class="chip">加载中</span>
+          <span id="countdownChip" class="chiplet hintc" title="自动刷新倒计时">20s</span>
+          <span id="stamp" class="stamp">—</span>
+          <button class="ghost refresh-btn" id="refreshBtn" type="button" title="刷新 (Cmd+R)">
+            <svg class="spin-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>刷新</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="banner" class="banner"></div>
+
+      <!-- ───────── 总览 Tab ───────── -->
+      <section class="tab active" id="tab-overview">
+        <div class="grid hero">
+          <article class="card ring-card">
+            <h2>本月套餐流量</h2>
+            <div class="quota">
+              <div class="ring">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
+                  <circle id="ovrArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
+                </svg>
+                <div class="ring-label">
+                  <div>
+                    <b id="ovrPct">—</b>
+                    <span>已用占比</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ovr-kv">
+                <div class="ovr-line"><span>本月已用</span><b id="ovrUsed">—</b></div>
+                <div class="ovr-line"><span>剩余额度</span><b id="ovrLeft">—</b></div>
+                <div class="ovr-line"><span>流量重置</span><b id="ovrReset">—</b></div>
+              </div>
+            </div>
+
+            <!-- 流量预算分析与进度条 -->
+            <div class="budget-panel" id="budgetPanel">
+              <div class="budget-head">
+                <span class="budget-title">流量节奏分析</span>
+                <span class="badge" id="budgetStatusBadge">正常</span>
+              </div>
+              <div class="budget-tracks">
+                <div class="track-row">
+                  <span class="lbl">周期时间进度</span>
+                  <div class="progress-bar"><i id="timeProgressBar" style="width:0%"></i></div>
+                  <span class="val" id="timeProgressVal">0%</span>
+                </div>
+                <div class="track-row">
+                  <span class="lbl">流量使用进度</span>
+                  <div class="progress-bar"><i id="trafficProgressBar" style="width:0%"></i></div>
+                  <span class="val" id="trafficProgressVal">0%</span>
+                </div>
+              </div>
+              <div class="budget-tips" id="budgetTips">建议日均额度计算中…</div>
+            </div>
+          </article>
+
+          <div class="grid stats" id="statGrid"></div>
+        </div>
+
+        <div class="grid main">
+          <article class="card">
+            <h2>节点入站实时</h2>
+            <div id="inboundList" class="kv-list"></div>
+          </article>
+          <article class="card">
+            <h2>网络实时吞吐与状态</h2>
+            <div id="networkLiveStats" class="live-grid">
+              <div class="live-box">
+                <span class="lbl">实时上行 (IO)</span>
+                <b class="val up" id="liveIoUp">—</b>
+              </div>
+              <div class="live-box">
+                <span class="lbl">实时下行 (IO)</span>
+                <b class="val down" id="liveIoDown">—</b>
+              </div>
+              <div class="live-box">
+                <span class="lbl">TCP 连接</span>
+                <b class="val" id="liveTcp">—</b>
+              </div>
+              <div class="live-box">
+                <span class="lbl">UDP 连接</span>
+                <b class="val" id="liveUdp">—</b>
+              </div>
+            </div>
+            <div class="note">
+              <p>搬瓦工统计的是 <b>整机流量</b>（含倍率），3X-UI 仅统计<b>代理客户端</b>，两者正常会有差异。</p>
+              <p>搬瓦工流量用满将停机，请关注剩余额度与每日建议预算。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ───────── 搬瓦工 VPS Tab ───────── -->
+      <section class="tab" id="tab-bwh">
+        <div class="grid hero">
+          <article class="card ring-card">
+            <h2>本月套餐流量</h2>
+            <div class="quota">
+              <div class="ring">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
+                  <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
+                </svg>
+                <div class="ring-label">
+                  <div>
+                    <b id="bwhPct">—</b>
+                    <span>已用占比</span>
+                  </div>
+                </div>
+              </div>
+              <div class="kv">
+                <div><span>已用</span><b id="bwhUsed">—</b></div>
+                <div><span>套餐额度</span><b id="bwhQuota">—</b></div>
+                <div><span>剩余</span><b id="bwhLeft">—</b></div>
+                <div><span>重置时间</span><b id="bwhReset">—</b></div>
+                <div><span>计费倍率</span><b id="bwhMultiplier">—</b></div>
+                <div><span>状态 / 机房</span><b id="bwhWhere">—</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h2>服务器规格与面板</h2>
+            <div class="meta-grid" id="metaGrid"></div>
+          </article>
+        </div>
+
+        <article class="card chart-card">
+          <div class="card-head">
+            <h2>网络历史明细</h2>
+            <div class="seg" id="chartRangeSeg">
+              <button data-range="24h" type="button">24小时</button>
+              <button data-range="7d" type="button" class="active">7天</button>
+              <button data-range="30d" type="button">30天</button>
+              <button data-range="all" type="button">全部</button>
+            </div>
+          </div>
+          <div class="chart-meta" id="chartMeta"></div>
+          <div class="legend">
+            <span><i class="in"></i>入站流量</span>
+            <span><i class="out"></i>出站流量</span>
+          </div>
+          <div class="chart-wrap"><canvas id="netChart"></canvas></div>
+        </article>
+      </section>
+
+      <!-- ───────── 节点客户端 Tab ───────── -->
+      <section class="tab" id="tab-clients">
+        <div class="meta-grid wide-meta" id="xuiMetaGrid"></div>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>客户端用量管理</h2>
+            <div class="filter-pills" id="statePills">
+              <button class="pill active" data-filter="all" type="button">全部 <b id="countAll">0</b></button>
+              <button class="pill" data-filter="online" type="button">在线 <b id="countOnline">0</b></button>
+              <button class="pill" data-filter="warn" type="button">用量预警 <b id="countWarn">0</b></button>
+              <button class="pill" data-filter="off" type="button">已停用/到期 <b id="countOff">0</b></button>
+              <button class="pill" data-filter="unlimited" type="button">不限额 <b id="countUnlimited">0</b></button>
+            </div>
+          </div>
+
+          <div class="filters">
+            <input id="q" placeholder="搜索邮箱 / 备注 / 入站 / 协议 / 端口…" autocomplete="off" />
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-sort="comment">客户端 / 备注 <span class="sort-ic"></span></th>
+                  <th data-sort="inbound">入站协议 <span class="sort-ic"></span></th>
+                  <th data-sort="used">当期已用 <span class="sort-ic"></span></th>
+                  <th data-sort="up">上传 <span class="sort-ic"></span></th>
+                  <th data-sort="down">下载 <span class="sort-ic"></span></th>
+                  <th data-sort="percent">配额占比 <span class="sort-ic"></span></th>
+                  <th data-sort="expiryTime">到期时间 <span class="sort-ic"></span></th>
+                  <th data-sort="lastOnline">最近活跃 <span class="sort-ic"></span></th>
+                  <th style="width:70px;text-align:center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <p class="foot">密钥保存在本机设置中，不会发送至第三方服务器。</p>
+    </main>
+  </div>
+
+  <!-- ───────── 设置弹窗 ───────── -->
+  <div id="settingsMask" class="mask" hidden>
+    <form class="card settings" id="settingsForm">
+      <div class="settings-head">
+        <h2>连接与偏好设置</h2>
+        <button class="icon-btn" id="settingsCloseBtn" type="button" aria-label="关闭">✕</button>
+      </div>
+      <p class="hint">凭证保存在本地 Application Support 目录，仅本机当前用户可读。</p>
+
+      <div class="settings-sections">
+        <!-- 搬瓦工设置区 -->
+        <fieldset class="settings-group">
+          <legend>搬瓦工 (KiwiVM)</legend>
+          <div class="form-grid">
+            <label>VEID
+              <input id="bwhVeid" placeholder="例如: 1234567" autocomplete="off" />
+            </label>
+            <label>API Key
+              <div class="input-wrap">
+                <input id="bwhApiKey" type="password" placeholder="已保存则留空" autocomplete="off" />
+                <button class="eye-btn" type="button" data-for="bwhApiKey" title="显示/隐藏密码">👁</button>
+              </div>
+            </label>
+            <label class="wide">API Base URL
+              <input id="bwhApiBase" placeholder="https://api.64clouds.com/v1" autocomplete="off" />
+            </label>
+          </div>
+          <div class="test-row">
+            <button class="ghost test-btn" id="testBwhBtn" type="button">测试 KiwiVM 连接</button>
+            <span class="test-res" id="testBwhRes"></span>
+          </div>
+        </fieldset>
+
+        <!-- 3X-UI 设置区 -->
+        <fieldset class="settings-group">
+          <legend>3X-UI 面板</legend>
+          <div class="form-grid">
+            <label class="wide">面板地址
+              <input id="xuiBaseUrl" placeholder="http://127.0.0.1:2053 或 https://域名:2053/secret" autocomplete="off" />
+            </label>
+            <label>API Token (推荐)
+              <div class="input-wrap">
+                <input id="xuiApiToken" type="password" placeholder="推荐；已保存则留空" autocomplete="off" />
+                <button class="eye-btn" type="button" data-for="xuiApiToken" title="显示/隐藏密码">👁</button>
+              </div>
+            </label>
+            <label>用户名 (无 Token 时使用)
+              <input id="xuiUsername" autocomplete="off" />
+            </label>
+            <label>面板密码
+              <div class="input-wrap">
+                <input id="xuiPassword" type="password" placeholder="已保存则留空" autocomplete="off" />
+                <button class="eye-btn" type="button" data-for="xuiPassword" title="显示/隐藏密码">👁</button>
+              </div>
+            </label>
+            <label>两步验证码 (2FA，若开启)
+              <input id="xuiTwoFactor" placeholder="两步验证 Code" autocomplete="off" />
+            </label>
+            <label class="check wide"><input id="xuiVerifySsl" type="checkbox" checked /> 校验 HTTPS 证书（自签证书请关闭）</label>
+          </div>
+          <div class="test-row">
+            <button class="ghost test-btn" id="testXuiBtn" type="button">测试 3X-UI 连接</button>
+            <span class="test-res" id="testXuiRes"></span>
+          </div>
+        </fieldset>
+
+        <!-- 常规偏好区 -->
+        <fieldset class="settings-group">
+          <legend>偏好设置</legend>
+          <div class="form-grid">
+            <label>自动刷新间隔
+              <select id="refreshInterval">
+                <option value="10">10 秒</option>
+                <option value="20" selected>20 秒 (推荐)</option>
+                <option value="30">30 秒</option>
+                <option value="60">60 秒</option>
+              </select>
+            </label>
+            <label>界面主题
+              <select id="themeSelect">
+                <option value="dark" selected>深色主题 (Dark)</option>
+                <option value="light">浅色主题 (Light)</option>
+              </select>
+            </label>
+            <label class="check wide"><input id="clearSecrets" type="checkbox" /> 清除所有已保存的密钥（API Key / Token / 密码）</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <p class="err" id="settingsErr"></p>
+      <div class="settings-actions">
+        <button class="ghost" id="settingsCancel" type="button">取消</button>
+        <button class="primary" type="submit">保存并刷新</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 轻量全局 Toast 提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
