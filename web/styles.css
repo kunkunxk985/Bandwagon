@@ -219,9 +219,28 @@ button {
   font: inherit;
   cursor: pointer;
   border: none;
-  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  position: relative;
+  overflow: hidden;
 }
-button:active { transform: translateY(1px) scale(0.99); }
+button:active { transform: translateY(1px) scale(0.97); }
+
+/* 涟漪 */
+button::after, .pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 122, 255, 0.25) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+button:active::after, .pill:active::after {
+  opacity: 1;
+  transform: scale(2);
+  transition: opacity 0s, transform 0s;
+}
 
 .ghost {
   height: 34px;
@@ -329,8 +348,9 @@ button:active { transform: translateY(1px) scale(0.99); }
   border-radius: var(--radius);
   padding: 20px 22px;
   box-shadow: var(--shadow);
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
   overflow: hidden;
+  will-change: transform, box-shadow;
 }
 .card::before {
   content: "";
@@ -345,10 +365,14 @@ button:active { transform: translateY(1px) scale(0.99); }
 [data-theme="dark"] .card::before {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
 }
-.card:hover { 
-  border-color: var(--line-strong); 
-  transform: translateY(-1px); 
-  box-shadow: var(--shadow), 0 8px 24px rgba(0, 122, 255, 0.06);
+.card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow), 0 12px 32px rgba(0, 122, 255, 0.10), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.card:active {
+  transform: translateY(0) scale(0.995);
+  transition: transform 0.1s ease;
 }
 
 .card h2 {

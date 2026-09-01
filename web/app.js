@@ -369,13 +369,15 @@ function drawChart() {
         ctx.stroke();
       }
     }
-    ctx.strokeStyle = "rgba(232,236,244,0.22)";
-    ctx.setLineDash([4, 4]);
+    ctx.save();
+    ctx.strokeStyle = "rgba(232,236,244,0.35)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
     ctx.beginPath();
     ctx.moveTo(hx, pad.t);
     ctx.lineTo(hx, h - pad.b);
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
 
     if (!tip) {
       tip = document.createElement("div");
@@ -389,12 +391,15 @@ function drawChart() {
       + `<span class="t-down">↓ 出站 ${formatBytes(p.out || 0)}</span><br>`
       + `<span class="t-tot">∑ 合计 ${formatBytes((p.in || 0) + (p.out || 0))}</span>`;
     tip.style.opacity = 1;
+    tip.style.transition = "opacity 0.12s ease, transform 0.12s cubic-bezier(0.22, 1, 0.36, 1)";
+    tip.style.transform = "translateY(0)";
     const tw = tip.offsetWidth;
     const left = hx + 14 + tw > w ? hx - tw - 14 : hx + 14;
     tip.style.left = `${Math.max(4, Math.min(w - tw - 4, left))}px`;
     tip.style.top = `${Math.max(4, y(Math.min(max, (p.in || 0) + (p.out || 0))) - 8)}px`;
   } else if (tip) {
     tip.style.opacity = 0;
+    tip.style.transform = "translateY(4px)";
   }
 
   canvas._model = chartModel;
