@@ -390,13 +390,14 @@ function drawChart() {
       + `<span class="t-up">↑ 入站 ${formatBytes(p.in || 0)}</span><br>`
       + `<span class="t-down">↓ 出站 ${formatBytes(p.out || 0)}</span><br>`
       + `<span class="t-tot">∑ 合计 ${formatBytes((p.in || 0) + (p.out || 0))}</span>`;
-    tip.style.opacity = 1;
-    tip.style.transition = "opacity 0.12s ease, transform 0.12s cubic-bezier(0.22, 1, 0.36, 1)";
+    tip.style.opacity = "1";
+    tip.style.transition = "opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1), transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)";
     tip.style.transform = "translateY(0)";
+    tip.classList.add("show");
     const tw = tip.offsetWidth;
-    const left = hx + 14 + tw > w ? hx - tw - 14 : hx + 14;
-    tip.style.left = `${Math.max(4, Math.min(w - tw - 4, left))}px`;
-    tip.style.top = `${Math.max(4, y(Math.min(max, (p.in || 0) + (p.out || 0))) - 8)}px`;
+    const left = hx + 18 + tw > w ? hx - tw - 18 : hx + 18;
+    tip.style.left = `${Math.max(6, Math.min(w - tw - 6, left))}px`;
+    tip.style.top = `${Math.max(6, y(Math.min(max, (p.in || 0) + (p.out || 0))) - 10)}px`;
   } else if (tip) {
     tip.style.opacity = 0;
     tip.style.transform = "translateY(4px)";
@@ -621,10 +622,11 @@ function renderClients() {
     const tag = st === "off" ? `<span class="tag bad">停用/到期</span>`
       : st === "warn" ? `<span class="tag warn">预警</span>`
       : row.online ? `<span class="tag ok">在线</span>` : "";
+    const rowClass = st === "off" ? "row-off" : st === "warn" ? "row-warn" : row.online ? "row-online" : "";
 
     const copyPayload = esc(row.comment ? `${row.comment} (${row.email})` : row.email);
 
-    return `<tr>
+    return `<tr class="${rowClass}">
       <td>
         <span class="dot ${row.online ? "on" : ""}" title="${row.online ? "在线" : "离线"}"></span>
         <span class="name">${esc(row.comment || row.email)}</span>
