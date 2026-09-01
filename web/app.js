@@ -326,6 +326,30 @@ function drawChart() {
     }
   }
 
+  // 峰值标注
+  let peakRow = null;
+  if (rows.length) {
+    peakRow = rows.reduce((a, b) => ((b.in + b.out) > (a.in + a.out) ? b : a), rows[0]);
+  }
+  if (peakRow && chartModel.mode === "bar") {
+    const peakIdx = rows.indexOf(peakRow);
+    if (peakIdx >= 0) {
+      const px = pad.l + (plotW / rows.length) * (peakIdx + 0.5);
+      const py = y((peakRow.in || 0) + (peakRow.out || 0));
+      ctx.beginPath();
+      ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+      ctx.strokeStyle = "var(--blue)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "600 11px -apple-system, PingFang SC, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("峰值", px, py - 12);
+    }
+  }
+
   // 悬浮高亮与 Tooltip
   if (chartHover >= 0 && chartHover < rows.length) {
     const p = rows[chartHover];
