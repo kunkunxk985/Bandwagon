@@ -647,7 +647,7 @@ function renderClients() {
         <button class="mini-btn" type="button" onclick="copyText('${copyPayload}', '客户端信息')" title="复制客户端信息">复制</button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="9" class="empty-hint">没有匹配的节点客户端</td></tr>`;
+  }).join("") || `<tr><td colspan="9" class="empty-state"><div class="empty-icon">📋</div><p>没有匹配的节点客户端</p></td></tr>`;
 }
 
 // ── 渲染总览与各 Tab ──
@@ -770,7 +770,7 @@ function render(data) {
           </span>
           <b>${formatBytes((item.up || 0) + (item.down || 0))} · ${item.clientCount} 客户端</b>
         </div>`).join("")
-    : "<div><span>暂无入站记录</span><b>—</b></div>";
+    : "<div class='empty-state'><div class='empty-icon'>📥</div><p>暂无入站记录</p></div>";
 
   renderChart();
   renderClients();
