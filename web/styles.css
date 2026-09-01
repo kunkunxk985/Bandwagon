@@ -250,7 +250,7 @@ body {
   flex-direction: column;
   align-items: center;
 }
-.content > * { width: 100%; max-width: 1560px; }
+.content > * { width: 100%; max-width: 1760px; }
 
 .pagebar {
   display: flex;
