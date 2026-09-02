@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
+const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
