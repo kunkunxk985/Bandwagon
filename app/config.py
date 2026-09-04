@@ -45,7 +45,7 @@ FORCE_DEMO = False
 HOST = "127.0.0.1"
 PORT = 8787
 REFRESH_INTERVAL = 20
-THEME = "dark"
+THEME = "light"
 BWH_CONFIGURED = False
 XUI_CONFIGURED = False
 DEMO = True
@@ -83,7 +83,7 @@ def _merged() -> Dict[str, Any]:
         "HOST": "127.0.0.1",
         "PORT": "8787",
         "REFRESH_INTERVAL": "20",
-        "THEME": "dark",
+        "THEME": "light",
         "XUI_VERIFY_SSL": True,
         "DEMO": False,
     }

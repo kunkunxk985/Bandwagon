@@ -1,4 +1,4 @@
-// 瓦工台 App 启动器：找到项目目录里的 .venv 并 exec python。
+// Bandwagon App 启动器：找到项目目录里的 .venv 并 exec python。
 // 用编译二进制而不是脚本，因为 LaunchServices 要求主执行文件是 Mach-O。
 #include <unistd.h>
 #include <stdio.h>
@@ -24,7 +24,7 @@ static int try_launch(const char *root) {
 static void show_alert(const char *msg) {
     char cmd[4096];
     snprintf(cmd, sizeof(cmd),
-             "osascript -e 'display alert \"瓦工台\" message \"%s\"'", msg);
+             "osascript -e 'display alert \"Bandwagon\" message \"%s\"'", msg);
     system(cmd);
 }
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     }
 
     char root[2048];
-    const char *names[] = { "Bandwagon", "瓦工台", "WagongDeck", "bandwagon" };
+    const char *names[] = { "Bandwagon", "WagongDeck", "bandwagon" };
     for (size_t i = 0; i < sizeof(names)/sizeof(names[0]); i++) {
         snprintf(root, sizeof(root), "%s/Desktop/%s", home, names[i]);
         if (try_launch(root) == 0) return 0;

@@ -1,8 +1,8 @@
-# 瓦工台
+# Bandwagon
 
 macOS 本地客户端：看搬瓦工 **本月套餐流量**，以及 3X-UI 里 **每个客户端** 的已用/配额/在线。
 
-双击 **桌面上的「瓦工台」** 即可。密钥写在应用内「设置」，存在本机：
+双击 **桌面上的「Bandwagon」** 即可。密钥写在应用内「设置」，存在本机：
 
 `~/Library/Application Support/WagongDeck/settings.json`
 
@@ -10,10 +10,10 @@ macOS 本地客户端：看搬瓦工 **本月套餐流量**，以及 3X-UI 里 *
 
 ## 启动
 
-双击 `~/Desktop/瓦工台.app`，或：
+双击 `~/Desktop/Bandwagon.app`，或：
 
 ```bash
-cd ~/Desktop/瓦工台
+cd ~/Desktop/Bandwagon
 ./start.sh
 ```
 

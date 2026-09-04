@@ -1,34 +1,54 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>登录瓦工台</title>
-  <link rel="stylesheet" href="/assets/styles.css" />
+<html lang="zh-CN" data-theme="light" data-page-node-id="u0TSa9p7io10CGKKJUaHLV">
+<head data-page-node-id="vk0XIagKWjKMSRtSJeNwGc">
+  <meta charset="UTF-8" data-page-node-id="mX94Ju13SAQAntWYCt1OS6" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="HL2IXrW7YDGeXbJtn49zLW" />
+  <title>登录 Bandwagon</title>
+  <meta name="color-scheme" content="light dark" data-page-node-id="iiG7v9oKFuPCVQsPLFqnuY" />
+  <link rel="stylesheet" href="/assets/styles.css" data-page-node-id="O4C6Ty5LhdBDrMlMThjfXX" />
+  <script>
+    (() => {
+      const saved = localStorage.getItem("wagongTheme");
+      document.documentElement.dataset.theme = saved === "dark" ? "dark" : "light";
+    })();
+  </script>
 </head>
-<body class="login-body">
-  <form class="card login-card" id="form">
-    <h1>瓦工台</h1>
-    <p>输入面板密码后查看流量。</p>
-    <div class="err" id="err"></div>
-    <input type="password" id="password" placeholder="面板密码" autofocus />
-    <button class="primary" type="submit">进入</button>
-  </form>
+<body class="login-body" data-page-node-id="DhEm4ZCMl6MYEp8gjFkcIH">
+  <main class="login-card section" data-page-node-id="kFHag1sMeHFQP4EVQMxXW0">
+    <div class="brand login-brand" data-page-node-id="2aGFr54AV5ifDk5vdL0V1u"><div class="brand-mark" aria-hidden="true" data-page-node-id="yBvO27GiNQkxz2oCcYziBX">B</div><div class="brand-copy" data-page-node-id="TiTqGh2W8KkG4hSoStASCI"><strong data-page-node-id="U3ghTd7GeTDok9GyK8TLrF">Bandwagon</strong><span data-page-node-id="mlRlheFNgLpmWvGmAdDj9d">VPS · 节点监控</span></div></div>
+    <h1 data-page-node-id="SltT14ul2RhzHzV6CJWYCf">欢迎回来</h1>
+    <p data-page-node-id="voTgGGgJUVvzXDsEEOZiXm">输入面板密码，查看你的流量和节点状态。</p>
+    <form id="form" data-page-node-id="CX7zO3hh6Bgn3oucKaBkFB">
+      <label class="login-label" for="password" data-page-node-id="2J2QXNEkEHpyYaCdZ8jCNo">面板密码</label>
+      <input type="password" id="password" placeholder="输入密码" autocomplete="current-password" autofocus data-page-node-id="Wtdsg5Hiwi4mz8vgFRnguI" />
+      <div class="err" id="err" role="alert" aria-live="polite" data-page-node-id="D3aZsmpFANHZGRwSZS5PLz"></div>
+      <button class="primary login-submit" type="submit" data-page-node-id="Q5MIPP5jBYStZkNQK11QGR">进入 Bandwagon</button>
+    </form>
+  </main>
   <script>
     document.getElementById("form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const err = document.getElementById("err");
+      const button = event.currentTarget.querySelector("button");
       err.textContent = "";
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: document.getElementById("password").value }),
-      });
-      if (!res.ok) {
-        err.textContent = "密码不对";
-        return;
+      button.disabled = true;
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: document.getElementById("password").value }),
+        });
+        if (!res.ok) {
+          err.textContent = "密码不正确，请重试。";
+          document.getElementById("password").focus();
+          return;
+        }
+        location.href = "/";
+      } catch (error) {
+        err.textContent = "无法连接本地服务，请确认 Bandwagon 正在运行。";
+      } finally {
+        button.disabled = false;
       }
-      location.href = "/";
     });
   </script>
 </body>

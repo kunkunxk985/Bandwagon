@@ -234,7 +234,7 @@ async def lifespan(_app: FastAPI):
         task.cancel()
 
 
-app = FastAPI(title="瓦工台", lifespan=lifespan)
+app = FastAPI(title="Bandwagon", lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory=str(WEB)), name="assets")
 
 

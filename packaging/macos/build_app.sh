@@ -5,7 +5,11 @@ APP="$PWD/dist/Bandwagon.app"
 CONTENTS="$APP/Contents"
 rm -rf "$APP"
 mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"
-python3 packaging/macos/make_icon.py
+PYTHON="$PWD/.venv/bin/python"
+if [ ! -x "$PYTHON" ]; then
+  PYTHON=python3
+fi
+"$PYTHON" packaging/macos/make_icon.py
 iconutil -c icns packaging/macos/icon.iconset -o "$CONTENTS/Resources/AppIcon.icns"
 cp packaging/macos/Info.plist "$CONTENTS/Info.plist"
 cc -O2 -o "$CONTENTS/MacOS/Bandwagon" packaging/macos/launcher.c

@@ -32,7 +32,7 @@ def draw_icon(size: int = 1024) -> Image.Image:
     draw.ellipse([cx - inner, cy - inner, cx + inner, cy + inner], fill=(255, 255, 255, 130))
     font_path = "/System/Library/Fonts/Hiragino Sans GB.ttc"
     font = ImageFont.truetype(font_path, size=int(size * 0.34), index=0)
-    text = "瓦"
+    text = "B"
     box = draw.textbbox((0, 0), text, font=font)
     tw, th = box[2] - box[0], box[3] - box[1]
     draw.text((cx - tw / 2 - box[0], cy - th / 2 - box[1] - size * 0.02), text, font=font, fill=(29, 29, 31, 255))

@@ -1,424 +1,126 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>瓦工台 · 流量监控</title>
-  <meta name="color-scheme" content="dark light" />
-  <link rel="stylesheet" href="/assets/styles.css" />
+<html lang="zh-CN" data-theme="light" data-page-node-id="Z7W7UgSo9r2NJvDYu4hr3K">
+<head data-page-node-id="bxb1jZRAPWJhTTQYS2g5xu">
+  <meta charset="UTF-8" data-page-node-id="CnXFCqU2BVB2LG0l6Moth9" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="QU9ZNqG3yDw4t8kHkfMHY3" />
+  <title>Bandwagon · 流量监控</title>
+  <meta name="color-scheme" content="light dark" data-page-node-id="qc1WAi9nY1DFiqlCCt116Y" />
+  <link rel="stylesheet" href="/assets/styles.css" data-page-node-id="NXQAQmMDuPHUlHtMIashMM" />
+  <script>
+    (() => {
+      const saved = localStorage.getItem("wagongTheme");
+      document.documentElement.dataset.theme = saved === "dark" ? "dark" : "light";
+    })();
+  </script>
 </head>
-<body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <linearGradient id="gradOk" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#5b9dff" />
-        <stop offset="100%" stop-color="#2dd4a7" />
-      </linearGradient>
-      <linearGradient id="gradWarn" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#f2b04c" />
-        <stop offset="100%" stop-color="#f2924c" />
-      </linearGradient>
-      <linearGradient id="gradBad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#f4626c" />
-        <stop offset="100%" stop-color="#f4455c" />
-      </linearGradient>
-    </defs>
-  </svg>
-
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="mark">瓦</div>
-        <div class="brand-text">
-          <h1>瓦工台</h1>
-          <div class="sub">搬瓦工 · 3X-UI 监控</div>
-        </div>
+<body data-page-node-id="aLQuDNywjxb9MOXITpGHAa">
+  <div class="app-shell" data-page-node-id="d2BHOHEJPeAwPhhs9PyZnB">
+    <aside class="sidebar" aria-label="主导航" data-page-node-id="wLnOL40FlHNd7XBTHDQv6l">
+      <div class="brand" data-page-node-id="FPL9Ur9oskAEbksy6okBiF">
+        <div class="brand-mark" aria-hidden="true" data-page-node-id="XpdVAjDVguogYWu3sPFXTJ">B</div>
+        <div class="brand-copy" data-page-node-id="zOCu1lDox7UAcxBIAHQh8G"><strong data-page-node-id="Sb8janhY5mTndvOAKk4IpH">Bandwagon</strong><span data-page-node-id="p8dRIQAlbamJWL1rWkEuGF">VPS · 节点监控</span></div>
       </div>
-
-      <nav class="nav">
-        <button class="nav-item active" data-tab="overview" type="button">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
-          <span>总览</span>
-          <span class="nav-tip">总览</span>
+      <nav class="nav" aria-label="页面导航" data-page-node-id="P7s4TuziBQyiQXQZ5bz2Wv">
+        <button class="nav-item active" data-tab="overview" type="button" aria-current="page" data-page-node-id="zxtDGD2M6FfvVUat2BCE1H">
+          <svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="pkrtwKcpqrMaN8IrioJfAu"><rect x="3" y="3" width="7" height="7" rx="1.5" data-page-node-id="TzYwcpTikUjXvSNOLmVsFJ"/><rect x="14" y="3" width="7" height="7" rx="1.5" data-page-node-id="rzBCsehAzOYG9DmWTR3D4i"/><rect x="14" y="14" width="7" height="7" rx="1.5" data-page-node-id="AwISSssZWgc4EKRJ9f7iFk"/><rect x="3" y="14" width="7" height="7" rx="1.5" data-page-node-id="6nf0auDzy81OdP7UCK9i4v"/></svg><span data-page-node-id="Js38XTUKOBYNEiElMVhNSf">总览</span><span class="nav-tip" data-page-node-id="oVRLCAGgRWYKCNse2oB7zv">总览</span>
         </button>
-        <button class="nav-item" data-tab="bwh" type="button">
-          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-          <span>搬瓦工 VPS</span>
-          <span class="nav-tip">搬瓦工 VPS</span>
+        <button class="nav-item" data-tab="bwh" type="button" data-page-node-id="2Coya6LcVrTxhM1Ay7d4ut">
+          <svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="n5PsFl3WVzaEQqHjIdhWFd"><rect x="2" y="2" width="20" height="8" rx="2" data-page-node-id="v9i8GIncpHMNlI7usdRRSl"/><rect x="2" y="14" width="20" height="8" rx="2" data-page-node-id="VeE32sbmMuDHXGbwdEj6cr"/><line x1="6" y1="6" x2="6.01" y2="6" data-page-node-id="gKvsJAqAYAQ5T7DcAm36qG"/><line x1="6" y1="18" x2="6.01" y2="18" data-page-node-id="APn7GAngZrsJMZT2DuiPaI"/></svg><span data-page-node-id="qyBD52KR8RAWI4Azsgcwn4">VPS 资源</span><span class="nav-tip" data-page-node-id="3mhqmrue6vSDBW01b02bS7">VPS 资源</span>
         </button>
-        <button class="nav-item" data-tab="clients" type="button">
-          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>节点客户端</span>
-          <span class="nav-tip">节点客户端</span>
+        <button class="nav-item" data-tab="clients" type="button" data-page-node-id="4afY6eJTikZhwdCyTAZsmi">
+          <svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="QE6da8Nms2lJppD3k9DpGR"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" data-page-node-id="dJdMIk9WD19DrBAwTmtjcQ"/><circle cx="9" cy="7" r="4" data-page-node-id="fHNC2e8yaD4EqllJosOzYu"/><path d="M22 21v-2a4 4 0 0 0-3-3.87" data-page-node-id="nFAeXGECDpCJRJkAgXbyOQ"/><path d="M16 3.13a4 4 0 0 1 0 7.75" data-page-node-id="N24ce7ceTZMEzTdvmxVcM1"/></svg><span data-page-node-id="8emBaXa90QBPITS4m1YEBx">客户端</span><span class="nav-tip" data-page-node-id="ICCWoR9JKFHnib7DvJaGoP">客户端</span>
         </button>
       </nav>
-
-      <div class="side-bottom">
-        <button class="nav-item" id="settingsBtn" type="button">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0-.33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>设置与连接</span>
+      <div class="side-bottom" data-page-node-id="d0NIGzUZUQXFPCGcEa1nmM">
+        <button class="nav-item" id="settingsBtn" type="button" data-page-node-id="zna6GWLjFp5ZHwKmOGS7Su">
+          <svg viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="6mfi7B2ET5OUAteivdnVmb"><circle cx="12" cy="12" r="3" data-page-node-id="LLiNNqlDrbcxFqkb1H0p2s"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" data-page-node-id="fuEY8oT9ggdVQZgnJ2NBz4"/></svg><span data-page-node-id="05BxEimCdKTK2uHdTVHzR1">设置</span>
         </button>
+        <div class="side-note" data-page-node-id="i9M4vImrFZI0BfE2GCMREF">数据直连本机保存</div>
       </div>
     </aside>
 
-    <main class="content">
-      <header class="pagebar">
-        <h1 id="pageTitle">总览</h1>
-        <div class="pagebar-actions">
-          <span id="modeChip" class="chip">加载中</span>
-          <span id="countdownChip" class="chiplet hintc" title="自动刷新倒计时">20s</span>
-          <span id="stamp" class="stamp">—</span>
-          <button class="ghost refresh-btn" id="refreshBtn" type="button" title="刷新 (Cmd+R)">
-            <svg class="spin-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>刷新</span>
-          </button>
+    <main class="content" data-page-node-id="QyNL0s2fCww3bGDl1DN7Wc">
+      <header class="pagebar" data-page-node-id="veazjt6lclFGuomkwAw8RM">
+        <div data-page-node-id="CfkUGusvtvAM7k5MkcjGyF"><h1 id="pageTitle" data-page-node-id="B4xf4BFm3TPQirDXOxs2RS">总览</h1><p id="pageSubtitle" class="page-subtitle" data-page-node-id="SsRZyt6kzLvhGas2Efi0m0">先看结论，再进入详情。保持清晰，减少打扰。</p></div>
+        <div class="pagebar-actions" data-page-node-id="ZHNEpT5C3tfnaDr1NErpEZ">
+          <span id="modeChip" class="status-chip" data-page-node-id="Y2impd5C6YLL2U2xDlodlQ">加载中</span>
+          <span id="countdownChip" class="countdown" title="自动刷新倒计时" data-page-node-id="8bfjFwn69i2m47BMjAa6KY">20s</span>
+          <span id="stamp" class="stamp" data-page-node-id="7NsVWcpbet2CW4qEC8W1ri">—</span>
+          <button class="ghost refresh-btn" id="refreshBtn" type="button" title="刷新 (Cmd+R)" data-page-node-id="i8vKSHYDPvdqhfqH3UCyQp"><svg class="spin-icon" viewBox="0 0 24 24" aria-hidden="true" data-page-node-id="vycciMOuTVAA2VnsPO9FGl"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" data-page-node-id="YypLLyCqFLhpQ9fmxs5aCm"/></svg><span data-page-node-id="dm2PRBiH9uFkqJYbIDBuKs">刷新数据</span></button>
         </div>
       </header>
+      <div id="banner" class="banner" role="status" aria-live="polite" data-page-node-id="m8ODzyanNXumTGdoTZFlbm"></div>
 
-      <div id="banner" class="banner"></div>
+      <section class="tab active" id="tab-overview" aria-labelledby="pageTitle" data-page-node-id="CjEui3JZ6BYCdir3rgNhJ5">
+        <div class="overview-stack" data-page-node-id="rEnZEXYekP058AuLL5vlox">
+          <section class="status-banner" id="healthSummary" aria-live="polite" data-page-node-id="kW5GzEK24W6fRJ0BAmBUWX">
+            <div class="status-symbol" id="healthSymbol" aria-hidden="true" data-page-node-id="vKZ1WggzgBBOCjLjhycGFZ">·</div>
+            <div class="status-copy" data-page-node-id="2uoMJ70u3D1631skjogIL8"><strong id="healthTitle" data-page-node-id="IqcsvhFGE3hvg196lyFk9Z">正在检查连接</strong><span id="healthDetail" data-page-node-id="iL5sDeHMGstpI7AKMghFgD">正在读取 Bandwagon、VPS 和客户端状态</span></div>
+            <div class="health-facts" data-page-node-id="whXuTzWYJArXus7EwomiAs"><div data-page-node-id="vKlFzXAiUEoKfSBMFIyRw6"><span data-page-node-id="TYy5cw9bxGLjqHZHhG0K8w">剩余流量</span><b id="healthLeft" data-page-node-id="tSjkum22iXmSa34ILb5Sfp">—</b></div><div data-page-node-id="dTk7oyuch0EXTqqJtdkcqh"><span data-page-node-id="secA3i66wtfrTMl8FWxStZ">距重置</span><b id="healthReset" data-page-node-id="0SdAl7yWYqDEAuWcWmbEXt">—</b></div><div data-page-node-id="4JX7rAUwy7a9bHpTMjReMa"><span data-page-node-id="LeEn0xRokbsRTAPo5gZqm1">在线客户端</span><b id="healthOnline" data-page-node-id="qGefAEMN2tOAKIu3wdkE09">—</b></div></div>
+            <button class="ghost status-action" id="attentionAction" type="button" data-page-node-id="hA8Tp9DQlbIBuMwspmp8G0">查看待处理项</button>
+          </section>
 
-      <!-- ───────── 总览 Tab ───────── -->
-      <section class="tab active" id="tab-overview">
-        <div class="grid hero">
-          <article class="card ring-card">
-            <div class="skeleton-wrap" id="ovrSkel">
-              <div class="skel-outline-title skeleton"></div>
-              <div class="grid hero">
-                <div class="skel-outline-block skeleton"></div>
-                <div class="skel-outline-block skeleton"></div>
+          <div class="overview-grid" data-page-node-id="8zLqWtkdq6H2FVKmpUWQ7b">
+            <article class="section budget-section" data-page-node-id="nXJw8jz86F4YCmB7QLfjgO">
+              <div class="section-head" data-page-node-id="y2jmlOYJ9ILrQbjHC180Wv"><div data-page-node-id="OA4jfj1iPkY51xEGtGA78z"><h2 data-page-node-id="qaSlfgrsP4ojyeOYtiri1q">本月流量预算</h2><p data-page-node-id="KfBjhkSu7yEKYOLo7ZbCEw">按当前速度估算本周期剩余空间</p></div><span class="section-note" id="budgetStatusBadge" data-page-node-id="hSw0Y8wPFUGF1zgOetE7Dk">检查中</span></div>
+              <div class="budget-layout" data-page-node-id="wQbtm5je5O5mbEznsXWZC0">
+                <div class="quota-ring" aria-label="本月流量使用比例" data-page-node-id="GYtUY10erEub188enrBvux"><svg viewBox="0 0 120 120" aria-hidden="true" data-page-node-id="hJwLeU1Y6U5LY1OhP6DHoR"><circle cx="60" cy="60" r="52" class="ring-track" data-page-node-id="7yK1pZMppYoUz5ikD87eUT"/><circle id="ovrArc" cx="60" cy="60" r="52" class="ring-progress" stroke-dasharray="0 327" data-page-node-id="Tr4HuZULm9q8WsY4mcMdZt"/></svg><div class="ring-label" data-page-node-id="wvC6DOOttqNeNpUQ6gULme"><b id="ovrPct" data-page-node-id="Gai87XcNtLLERR5tLvDuiL">—</b><span data-page-node-id="aQLPLHFVZAZnRKX9znrH4q">已使用</span></div></div>
+                <div class="budget-content" data-page-node-id="xYnVgDOFY4GCrqKBQMi9e4"><div class="budget-lead" id="budgetHeadline" data-page-node-id="9GCs3bpZ0UTd6c81w2KwAg">配置搬瓦工凭证后显示预算判断</div><div class="progress-row" data-page-node-id="zjubIIncId2WTphjupPVd5"><span data-page-node-id="FnnPcBOtRfsJ8Al7NeZPqJ">流量进度</span><div class="progress-bar" data-page-node-id="lYS2YfFHYobE7042EF63VP"><i id="trafficProgressBar" data-page-node-id="QNuTD7vUMp6R0D2xLqA84l"></i></div><b id="trafficProgressVal" data-page-node-id="jgyCoYWFq7o59cQYO8BOXo">—</b></div><div class="progress-row" data-page-node-id="hM1WIZQWz7CnZEkw7II7z1"><span data-page-node-id="hOnUWTJTiro7ar0aS6KOJr">周期进度</span><div class="progress-bar" data-page-node-id="dfrYNyasdHDrrHuyEgKZsX"><i id="timeProgressBar" data-page-node-id="CYNrN0uyshXiRgJdCFGHjD"></i></div><b id="timeProgressVal" data-page-node-id="cC3nE1aYloyl2aX3AloX3V">—</b></div><div class="budget-tips" id="budgetTips" data-page-node-id="xkozBdMBcdrs4ur1yswzD6">—</div></div>
               </div>
-              <div class="skel-outline-line skeleton short"></div>
-              <div class="skel-outline-line skeleton"></div>
-              <div class="skel-outline-line skeleton"></div>
-            </div>
-            <div class="real-content hide" id="ovrReal">
-              <h2>本月套餐流量</h2>
-              <div class="quota">
-                <div class="ring">
-                  <svg viewBox="0 0 120 120" aria-hidden="true">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
-                    <circle id="ovrArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
-                  </svg>
-                  <div class="ring-label">
-                    <div>
-                      <b id="ovrPct">—</b>
-                      <span>已用占比</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="ovr-kv">
-                  <div class="ovr-line"><span>本月已用</span><b id="ovrUsed">—</b></div>
-                  <div class="ovr-line"><span>剩余额度</span><b id="ovrLeft">—</b></div>
-                  <div class="ovr-line"><span>流量重置</span><b id="ovrReset">—</b></div>
-                </div>
-              </div>
-
-              <!-- 流量预算分析与进度条 -->
-              <div class="budget-panel" id="budgetPanel">
-                <div class="budget-head">
-                  <span class="budget-title">流量节奏分析</span>
-                  <span class="badge" id="budgetStatusBadge">正常</span>
-                </div>
-                <div class="budget-tracks">
-                  <div class="track-row">
-                    <span class="lbl">周期时间进度</span>
-                    <div class="progress-bar"><i id="timeProgressBar" style="width:0%"></i></div>
-                    <span class="val" id="timeProgressVal">0%</span>
-                  </div>
-                  <div class="track-row">
-                    <span class="lbl">流量使用进度</span>
-                    <div class="progress-bar"><i id="trafficProgressBar" style="width:0%"></i></div>
-                    <span class="val" id="trafficProgressVal">0%</span>
-                  </div>
-                </div>
-                <div class="budget-tips" id="budgetTips">建议日均额度计算中…</div>
-              </div>
-            </div>
-          </article>
-
-          <div class="real-content hide">
-            <div class="grid stats" id="statGrid"></div>
+              <div class="legacy-surface" aria-hidden="true" data-page-node-id="7PscVTl4GudxAEzkijDXaY"><div id="budgetPanel" data-page-node-id="03NB0AIIe0cFDVxUu3F7hN"></div><span id="ovrUsed" data-page-node-id="27XM9rRYn5B9z06JfnJ4u3">—</span><span id="ovrLeft" data-page-node-id="swzjqPxpoGXJKC5WYD6eXn">—</span><span id="ovrReset" data-page-node-id="D0FM12dxsos48N87BtI6HH">—</span></div>
+            </article>
+            <article class="section attention-section" id="attentionPanel" data-page-node-id="TODNGyttzRquJHqFRUO7hv">
+              <div class="section-head" data-page-node-id="My6mLpRHanhxeiNLEFkI84"><div data-page-node-id="OTaULDYjpyhiWCFVDgvVRs"><h2 data-page-node-id="qHuDMc2YXBRXkkH6wyJiJf">待处理事项</h2><p data-page-node-id="rqtL74BXP4J3Lw5bYMnO88">只显示需要行动的状态</p></div><span class="section-note" id="attentionCount" data-page-node-id="uW20gdPkh420Z69MzfGdpy">—</span></div>
+              <div id="attentionList" class="attention-list" data-page-node-id="JZUyUTC2XADoDHBWqVfWxg"><div class="empty-state compact" data-page-node-id="ihHP5MraSBSWDCDU6JDlN3">正在读取状态…</div></div>
+            </article>
           </div>
-        </div>
-        <div class="grid main">
-          <article class="card">
-            <div class="skeleton-wrap" id="inboundSkel">
-              <div class="skel-outline-title skeleton"></div>
-              <div class="skel-outline-line skeleton"></div>
-              <div class="skel-outline-line skeleton short"></div>
-              <div class="skel-outline-line skeleton"></div>
-            </div>
-            <div class="real-content hide">
-              <h2>节点入站实时</h2>
-            <div id="inboundList" class="kv-list"></div>
-            </div>
-          </article>
-          <article class="card">
-            <div class="skeleton-wrap" id="netSkel">
-              <div class="skel-outline-title skeleton"></div>
-              <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                <div class="skel-outline-block skeleton"></div>
-                <div class="skel-outline-block skeleton"></div>
-              </div>
-              <div class="skel-outline-line skeleton short"></div>
-              <div class="skel-outline-line skeleton"></div>
-            </div>
-            <div class="real-content hide">
-              <h2>网络实时吞吐与状态</h2>
-            <div id="networkLiveStats" class="live-grid">
-              <div class="live-box">
-                <span class="lbl">实时上行 (IO)</span>
-                <b class="val up" id="liveIoUp">—</b>
-              </div>
-              <div class="live-box">
-                <span class="lbl">实时下行 (IO)</span>
-                <b class="val down" id="liveIoDown">—</b>
-              </div>
-              <div class="live-box">
-                <span class="lbl">TCP 连接</span>
-                <b class="val" id="liveTcp">—</b>
-              </div>
-              <div class="live-box">
-                <span class="lbl">UDP 连接</span>
-                <b class="val" id="liveUdp">—</b>
-              </div>
-            </div>
-            <div class="note">
-              <p>搬瓦工统计的是 <b>整机流量</b>（含倍率），3X-UI 仅统计<b>代理客户端</b>，两者正常会有差异。</p>
-              <p>搬瓦工流量用满将停机，请关注剩余额度与每日建议预算。</p>
-            </div>
-            </div>
-          </article>
-        </div>
 
-        <div class="grid extras">
-          <article class="card quick-actions">
-            <h2>快捷操作</h2>
-            <div class="quick-grid">
-              <button class="quick-btn" id="quickRefresh" type="button">
-                <span class="quick-ic">↻</span>
-                <span>立即刷新</span>
-              </button>
-              <button class="quick-btn" id="quickSettings" type="button">
-                <span class="quick-ic">⚙</span>
-                <span>连接设置</span>
-              </button>
-              <button class="quick-btn" id="quickCopy" type="button">
-                <span class="quick-ic">⎘</span>
-                <span>复制状态</span>
-              </button>
-            </div>
-          </article>
-          <article class="card tip-card">
-            <h2>使用建议</h2>
-            <div class="tip-list">
-              <div class="tip-item">流量低于 20% 时建议暂停大文件下载</div>
-              <div class="tip-item">高峰期关注入站带宽使用率</div>
-              <div class="tip-item">到期前 5 天会自动提醒续费</div>
-            </div>
-          </article>
+          <div class="overview-grid summary-grid" data-page-node-id="QVrF3MZKQRpy56PB3fTX5V">
+            <article class="section" data-page-node-id="82gbT2g8ipaNXBLSqawSYp"><div class="section-head" data-page-node-id="Is1ItMtpxJMN2hy6eJE9xu"><div data-page-node-id="ByCtBIZh2dSFuDGExOGiXG"><h2 data-page-node-id="sBmTeJKFvMIq9v7Ay9OZxJ">VPS 资源</h2><p data-page-node-id="rzFJgmfz1a70jNpzGLAnys">系统和 Xray 运行概况</p></div><button class="text-btn" type="button" data-go-tab="bwh" data-page-node-id="02nmzF1JPhyqVGvRYMwbi9">查看详情</button></div><div id="resourceSummary" class="resource-list" data-page-node-id="xbHvdzKWVJERIVyDjRQeK2"><div class="empty-state compact" data-page-node-id="2wFTIjDw956JmBOzhs4adX">加载中…</div></div><div class="legacy-surface" aria-hidden="true" id="statGrid" data-page-node-id="z0vqSMCmTKZ7p6uxrJIDQ8"></div></article>
+            <article class="section" data-page-node-id="HuJkXNgzBBOGB7kChy6Je0"><div class="section-head" data-page-node-id="F9Icm6V8KnHyQDnSfzFyzt"><div data-page-node-id="486RrE8Dv1zxZqmZijTOcz"><h2 data-page-node-id="0xTqOtSJk76fCABaPeWZ1d">客户端活动</h2><p data-page-node-id="1bJRrCrtQoYQv6mcrNfFRt">在线和用量最高的客户端</p></div><button class="text-btn" type="button" data-go-tab="clients" data-page-node-id="WuB6GYNBsQyAna5KgeFDuH">管理客户端</button></div><div class="client-lead" data-page-node-id="8R8wEYJfhOIztIQCkDF13g"><div data-page-node-id="6Smw2hOD0v4k9X3tYyhVtT"><b id="clientOnlineSummary" data-page-node-id="XsyBYLfeXlcBPbwb57fURh">—</b><span data-page-node-id="DckNHPsHWmrPGJQC1jVLZl">当前在线客户端</span></div><span id="clientTotalSummary" data-page-node-id="r5PXlcqfFIIRQpEtHCMKwW">—</span></div><div id="clientSummary" class="client-summary" data-page-node-id="9nk2p1WjbhwvN1NPXaFpYC"><div class="empty-state compact" data-page-node-id="tfkR39Lyo8BP4CExvBtp5o">加载中…</div></div></article>
+          </div>
+
+          <div class="overview-grid detail-grid" data-page-node-id="y6ZpB5wf5RocFmI2jiJDwY">
+            <article class="section" data-page-node-id="lIrsEVX2fql8QYWMZEo14c"><div class="section-head" data-page-node-id="Fx72nkkD5fo3CvwUeOEUfj"><div data-page-node-id="PjFmScsrJDhGYNyylt8OQi"><h2 data-page-node-id="EVPGPbPvvzFbf7TXdYYr6E">节点入站</h2><p data-page-node-id="GKwA4WjefD5pm2I57EKDnn">实时汇总</p></div><span class="section-note" id="inboundCountSummary" data-page-node-id="TRxKB2RpG1LhLeJeOlQ2X0">—</span></div><div id="inboundList" class="kv-list" data-page-node-id="0YKVGnUwKLatvslAUH12IT"></div><div class="legacy-surface" aria-hidden="true" id="inboundSkel" data-page-node-id="9bz86ZFJvQn1tfDxBL8xcD"></div></article>
+            <article class="section" data-page-node-id="hMbgd3XEyK9NlsojtDZo1h"><div class="section-head" data-page-node-id="ba26SKh5U5OR3B4GnjD5pE"><div data-page-node-id="svtjvZSKqaHaUud4El90Tr"><h2 data-page-node-id="e3BOBhBC5n8OnvCagkTO75">网络状态</h2><p data-page-node-id="9Dy5C9H7BZKM5d6RMQ6Nv0">最近一次采样</p></div><span class="section-note" data-page-node-id="73l0EsPmaMssjpBpQPE1Pj">实时</span></div><div id="networkLiveStats" class="live-grid" data-page-node-id="tnxwOFSJbhEMy5LkWFAp4M"><div class="live-box" data-page-node-id="AyLHNV82qSkuIY00GWF5T1"><span data-page-node-id="3PB8jQBj6fav7nFQCO0dnc">实时上行</span><b class="up" id="liveIoUp" data-page-node-id="mMoZaVIXbqw5GGeXHHL2u0">—</b></div><div class="live-box" data-page-node-id="x8y7x3Vv2ZWwFYTEPyo7hr"><span data-page-node-id="4dFDM5N8XVY25g5U63ipC5">实时下行</span><b class="down" id="liveIoDown" data-page-node-id="eQImH36XZOMEiXZB16zA2k">—</b></div><div class="live-box" data-page-node-id="FucoCngZGJFMsA8ZyMuQ5k"><span data-page-node-id="BAMmpsfJWeVRGTcWcDYHun">TCP 连接</span><b id="liveTcp" data-page-node-id="0VEec3CLr78aoRcbwUpUpP">—</b></div><div class="live-box" data-page-node-id="tBNjaVoosNs9OsjK7jlBgr"><span data-page-node-id="FIlrCp8ofZTHJVEbyAAxaz">UDP 连接</span><b id="liveUdp" data-page-node-id="mfcTGwAs4SwX1QsTFKXr6D">—</b></div></div><div class="note" data-page-node-id="45jGEdZv5oVI7j22pXf8cK">搬瓦工统计整机流量，3X-UI 统计代理客户端，两者有差异是正常的。</div><div class="legacy-surface" aria-hidden="true" id="netSkel" data-page-node-id="ySQXDNHOhRxvBhb2VqNp8u"></div></article>
+          </div>
+          <div class="quick-actions" data-page-node-id="E99EqiG5bs54jA2GCGTZiC"><button class="quick-btn" id="quickRefresh" type="button" data-page-node-id="gdSIGncgfQcVBOPOWkdbF8">立即刷新</button><button class="quick-btn" id="quickSettings" type="button" data-page-node-id="GC8DS3UPuWYFNe9LoCCG8w">连接设置</button><button class="quick-btn" id="quickCopy" type="button" data-page-node-id="GxJWxRY3hJnMjwMXIv7GNg">复制状态摘要</button></div>
         </div>
       </section>
 
-      <!-- ───────── 搬瓦工 VPS Tab ───────── -->
-      <section class="tab" id="tab-bwh">
-        <div class="grid hero">
-          <article class="card ring-card">
-            <h2>本月套餐流量</h2>
-            <div class="quota">
-              <div class="ring">
-                <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="9" />
-                  <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="url(#gradOk)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 327" />
-                </svg>
-                <div class="ring-label">
-                  <div>
-                    <b id="bwhPct">—</b>
-                    <span>已用占比</span>
-                  </div>
-                </div>
-              </div>
-              <div class="kv">
-                <div><span>已用</span><b id="bwhUsed">—</b></div>
-                <div><span>套餐额度</span><b id="bwhQuota">—</b></div>
-                <div><span>剩余</span><b id="bwhLeft">—</b></div>
-                <div><span>重置时间</span><b id="bwhReset">—</b></div>
-                <div><span>计费倍率</span><b id="bwhMultiplier">—</b></div>
-                <div><span>状态 / 机房</span><b id="bwhWhere">—</b></div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card">
-            <h2>服务器规格与面板</h2>
-            <div class="meta-grid" id="metaGrid"></div>
-          </article>
+      <section class="tab" id="tab-bwh" aria-labelledby="pageTitle" data-page-node-id="SJCbrlexrbG2X7Kht3XIvT">
+        <div class="section page-intro" data-page-node-id="oZqsyC85AYECHHWQBDPbVN"><div data-page-node-id="6qBlwK35Y7VE2m28UcaoYX"><span class="eyebrow" data-page-node-id="W22rcNZ9HULl7cY2sNe0PN">资源与连接</span><h2 data-page-node-id="5Z4jHvBpu4PoEiYxaFfbyc">VPS 资源</h2><p data-page-node-id="g1WGqOkPvApjCE5PJEZ4wO">查看套餐、服务器资源和网络历史。</p></div><button class="ghost" type="button" data-go-tab="overview" data-page-node-id="4Cz3p2oilWIspL2QxtmAu4">返回总览</button></div>
+        <div class="detail-grid vps-grid" data-page-node-id="ECJrlvK2d7dD9T7carmCgi">
+          <article class="section" data-page-node-id="peYnQf4VvW7jgupTrHWnQ8"><div class="section-head" data-page-node-id="oOy0XlZqrw5in4kk4r4bnc"><div data-page-node-id="KtSzwdnecrTterLAzT05k6"><h2 data-page-node-id="5vnLLZ88XlaNUo3HFy3wqz">本月套餐流量</h2><p data-page-node-id="sm4gxkKAVDYKGAJxebxMMA">整机计费流量</p></div><span class="section-note" id="bwhWhere" data-page-node-id="YuZt8pPcn0KaJFVvSjEKME">—</span></div><div class="quota-layout" data-page-node-id="sb54jmrBHrsghkiTfY229S"><div class="quota-ring small" data-page-node-id="BnXbFPBnEL6D8kT2rb5NM4"><svg viewBox="0 0 120 120" aria-hidden="true" data-page-node-id="WybA7Oyts2Fv1t6HP2G3qo"><circle cx="60" cy="60" r="52" class="ring-track" data-page-node-id="zSouaMrBvDS4yhj3ti8p8J"/><circle id="ringArc" cx="60" cy="60" r="52" class="ring-progress" stroke-dasharray="0 327" data-page-node-id="1MP3CqW2dPZoOI1RKDhKMa"/></svg><div class="ring-label" data-page-node-id="TBWVTNCCOko0XnC9Tq3hie"><b id="bwhPct" data-page-node-id="6AKIdCNICgQvd3bluODzTa">—</b><span data-page-node-id="NGMjKS1EaTDi9l6qE1X9Mz">已使用</span></div></div><div class="kv" data-page-node-id="wZD2CKSa8BVMF6WYOGqYFs"><div data-page-node-id="s0xgH9D4Swp17Gidb7Hsy4"><span data-page-node-id="CYoG4pHNJ4I1oZkwdecsnf">已用</span><b id="bwhUsed" data-page-node-id="jk3tnEZuzIYsg6nlpe4K98">—</b></div><div data-page-node-id="Y7lVvtXggGPbNl7Pe2S0Sh"><span data-page-node-id="23984HrZx9FlvHylnnGRJ4">套餐额度</span><b id="bwhQuota" data-page-node-id="l5T8dxsJiPIrQpYx9DVptQ">—</b></div><div data-page-node-id="qwCvAT7lobPyU5LbVEJUpD"><span data-page-node-id="4sinmF5c430V7UoDRPnRDC">剩余</span><b id="bwhLeft" data-page-node-id="ZgTKGQJf77Jfpe87ReqgU7">—</b></div><div data-page-node-id="eGmbiJhDLlT3bupLbcSvmg"><span data-page-node-id="oyB7CRIoueBD8tqe72ZoBj">重置时间</span><b id="bwhReset" data-page-node-id="pscoKDSJRXwiYFc0KLEeyr">—</b></div><div data-page-node-id="fNWeWtVWFkRrfpBaQK4gyt"><span data-page-node-id="6itgh4SUAWlRujTRW5bm2d">计费倍率</span><b id="bwhMultiplier" data-page-node-id="MVCcUCowqW7UqtwDQBtG5P">—</b></div></div></div></article>
+          <article class="section" data-page-node-id="y2H5hm7CT708mqihTN5xvv"><div class="section-head" data-page-node-id="Dc5d6u8mPNiNpODU8yrHzD"><div data-page-node-id="8JWmwXwgVG4V2OvSdFF0BB"><h2 data-page-node-id="JKfYuBdpiUPDIyw1yQ28kh">服务器规格</h2><p data-page-node-id="jwNBovHSqpcnoRAzBRiUYa">主机与面板信息</p></div></div><div class="meta-grid" id="metaGrid" data-page-node-id="WGtBoNahC19ySoeQvoLhBh"></div></article>
         </div>
-
-        <article class="card chart-card">
-          <div class="card-head">
-            <h2>网络历史明细</h2>
-            <div class="seg" id="chartRangeSeg">
-              <button data-range="24h" type="button">24小时</button>
-              <button data-range="7d" type="button" class="active">7天</button>
-              <button data-range="30d" type="button">30天</button>
-              <button data-range="all" type="button">全部</button>
-            </div>
-          </div>
-          <div class="chart-meta" id="chartMeta"></div>
-          <div class="legend">
-            <span><i class="in"></i>入站流量</span>
-            <span><i class="out"></i>出站流量</span>
-          </div>
-          <div class="chart-wrap"><canvas id="netChart"></canvas></div>
-        </article>
+        <article class="section chart-card" data-page-node-id="6iRO88zUkLSXaI711XLu2V"><div class="section-head" data-page-node-id="GKupikiIdaSURIvsC6gFnH"><div data-page-node-id="gU728nmMNwsz61VRSB2EvC"><h2 data-page-node-id="cc1vsP7U4qTtZwP4ur2R2T">网络历史</h2><p data-page-node-id="0uMxDULfaxLDejuNkEESPC">按时间范围查看入站和出站流量</p></div><div class="seg" id="chartRangeSeg" data-page-node-id="ruhoKtFrqg0cPsA7ybkFKw"><button data-range="24h" type="button" data-page-node-id="eKVNoNsQF4kZluAFQrULn8">24 小时</button><button data-range="7d" type="button" data-page-node-id="BPDteybE6t6fB6dmtbnOYE">7 天</button><button data-range="30d" type="button" data-page-node-id="i6sorTEOUx05GbT9a7JpJX">30 天</button><button data-range="all" type="button" data-page-node-id="CiVLcLxYDsC6gfVOi8fjuS">全部</button></div></div><div class="chart-meta" id="chartMeta" data-page-node-id="SvIZbz0zrU20asE1CKlw4Q"></div><div class="legend" data-page-node-id="1pMePKVj64VHxcs7BMlbBs"><span data-page-node-id="EVRXekyEMnTy1lQOG7vBxF"><i class="in" data-page-node-id="SoYi7YKr8yZxkDG7iFrQUG"></i>入站流量</span><span data-page-node-id="RtdsBZDkn6UYCCPGd13QCd"><i class="out" data-page-node-id="XMYtmAor6HD56uowhetoDN"></i>出站流量</span></div><div class="chart-wrap" data-page-node-id="mbRCatyGJc0b2REOyZiFEE"><canvas id="netChart" aria-label="网络历史流量图表" data-page-node-id="jZAYrRQc3kpQZEB1rv9y7O"></canvas></div></article>
+        <div class="legacy-surface" aria-hidden="true" data-page-node-id="EbRn0VudGVzkmY35WYiH3Z"><span id="bwhResetLegacy" data-page-node-id="4KwoBqCZoITGvgNVxO0Zxy">—</span></div>
       </section>
 
-      <!-- ───────── 节点客户端 Tab ───────── -->
-      <section class="tab" id="tab-clients">
-        <div class="meta-grid wide-meta" id="xuiMetaGrid"></div>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>客户端用量管理</h2>
-            <div class="filter-pills" id="statePills">
-              <button class="pill active" data-filter="all" type="button">全部 <b id="countAll">0</b></button>
-              <button class="pill" data-filter="online" type="button">在线 <b id="countOnline">0</b></button>
-              <button class="pill" data-filter="warn" type="button">用量预警 <b id="countWarn">0</b></button>
-              <button class="pill" data-filter="off" type="button">已停用/到期 <b id="countOff">0</b></button>
-              <button class="pill" data-filter="unlimited" type="button">不限额 <b id="countUnlimited">0</b></button>
-            </div>
-          </div>
-
-          <div class="filters">
-            <input id="q" placeholder="搜索邮箱 / 备注 / 入站 / 协议 / 端口…" autocomplete="off" />
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th data-sort="comment">客户端 / 备注 <span class="sort-ic"></span></th>
-                  <th data-sort="inbound">入站协议 <span class="sort-ic"></span></th>
-                  <th data-sort="used">当期已用 <span class="sort-ic"></span></th>
-                  <th data-sort="up">上传 <span class="sort-ic"></span></th>
-                  <th data-sort="down">下载 <span class="sort-ic"></span></th>
-                  <th data-sort="percent">配额占比 <span class="sort-ic"></span></th>
-                  <th data-sort="expiryTime">到期时间 <span class="sort-ic"></span></th>
-                  <th data-sort="lastOnline">最近活跃 <span class="sort-ic"></span></th>
-                  <th style="width:70px;text-align:center">操作</th>
-                </tr>
-              </thead>
-              <tbody id="tbody"></tbody>
-            </table>
-          </div>
-        </article>
+      <section class="tab" id="tab-clients" aria-labelledby="pageTitle" data-page-node-id="yVKftKXy6RH2xx9Pt6gLH4">
+        <div class="section page-intro" data-page-node-id="hKqMnAvCXM2HuJcfbMhDxH"><div data-page-node-id="FfqPaBRhQac3moGwmmZ1yQ"><span class="eyebrow" data-page-node-id="cj6cvYOKykxFz8B2B0TBI4">节点管理</span><h2 data-page-node-id="hABrlmGP3wmDMr0rR6Gt3s">客户端</h2><p data-page-node-id="r09goI4QVJsZzFgIAaBa1u">搜索、筛选和查看每个代理客户端的用量。</p></div><button class="ghost" type="button" data-go-tab="overview" data-page-node-id="H3fZ2e9OpXodd84GvV4x9t">返回总览</button></div>
+        <div class="meta-grid wide-meta" id="xuiMetaGrid" data-page-node-id="kT7SNjrOCYQhXOt8Wi9bVi"></div>
+        <article class="section clients-section" data-page-node-id="axljT6rYkVURz0bMmhTDlr"><div class="section-head clients-head" data-page-node-id="TaLJH1GxDGIeHQRhJcUUVm"><div data-page-node-id="YDVxXW7T3P1jEAKiCXF3S5"><h2 data-page-node-id="ooHlLGLGgplAO4iCy9Gxs2">客户端用量</h2><p id="clientTableHint" data-page-node-id="o8hqfz5sZOkj7mAS2EnxUJ">按已用流量排序</p></div><div class="filter-pills" id="statePills" data-page-node-id="iE5OSlj9YqjfYueDNKnyV1"><button class="pill active" data-filter="all" type="button" data-page-node-id="5bijviCBeU6Yz9MrczL3a8">全部 <b id="countAll" data-page-node-id="v1lzzKEzb5d4Vzv78uq7Ba">0</b></button><button class="pill" data-filter="online" type="button" data-page-node-id="PmIoXY66EkpFsGxuC0M8oy">在线 <b id="countOnline" data-page-node-id="6GWw2znhnGPJ5O8HlTOwor">0</b></button><button class="pill" data-filter="warn" type="button" data-page-node-id="T5lfb9WvYeGhAGmCMZeSsd">预警 <b id="countWarn" data-page-node-id="AwVDwSODq6VBdqfIVQqfhZ">0</b></button><button class="pill" data-filter="off" type="button" data-page-node-id="uD35clNTxUbCI8X2iBLMP9">停用/到期 <b id="countOff" data-page-node-id="Mfo1cM8oDL6Jo8hPkHbMtD">0</b></button><button class="pill" data-filter="unlimited" type="button" data-page-node-id="qcuIR2GiAUeapxznqmhLJW">不限额 <b id="countUnlimited" data-page-node-id="nXfC9UvNucRELXqj1ovA2a">0</b></button></div></div><div class="filters" data-page-node-id="62zBsJbuqDfFI9At775agE"><label class="search-box" data-page-node-id="GfbHteHn3QEiQp1L97r0Fx"><span aria-hidden="true" data-page-node-id="vCG8wFNg0H9ngf0LM0cxG0">⌕</span><input id="q" placeholder="搜索邮箱、备注、入站、协议或端口" autocomplete="off" aria-label="搜索客户端" data-page-node-id="gPhURTz7xGwR4nPhBZsiFA" /></label></div><div class="table-wrap" data-page-node-id="vlFmHWEHIZ4Ge4ggvnJw15"><table data-page-node-id="24cWzSZBRDupwaEQQson0R"><caption class="sr-only" data-page-node-id="Y7tIUhACj1TW2kSmbRZhdh">节点客户端用量表</caption><thead data-page-node-id="guhVfaBZ4257BYYu8NilEi"><tr data-page-node-id="za9io9B8GrwXqa7oxZruhe"><th scope="col" data-sort="comment" tabindex="0" aria-label="按客户端或备注排序" data-page-node-id="FAOaEN93OItLc8Se3SOvlI">客户端 / 备注 <span class="sort-ic" data-page-node-id="1pUPjDcL9CS4NFZ8LPIonb"></span></th><th scope="col" data-sort="inbound" tabindex="0" data-page-node-id="6UNJfAtSpHWcUJI4H9rwlV">入站协议 <span class="sort-ic" data-page-node-id="5Ru68vUSrALxa3W9qIRRKZ"></span></th><th scope="col" data-sort="used" tabindex="0" data-page-node-id="g56sEDc65k55dN9bIBts5R">当期已用 <span class="sort-ic" data-page-node-id="ukQsAnNok7IclsGCbCigzx"></span></th><th scope="col" data-sort="up" tabindex="0" data-page-node-id="7KD6QSplcsfCqKq6FhWPvB">上传 <span class="sort-ic" data-page-node-id="FSKFjQcP3KJ9KPPQJwznHb"></span></th><th scope="col" data-sort="down" tabindex="0" data-page-node-id="moNB8f7O4rIkexiZ7c44Bz">下载 <span class="sort-ic" data-page-node-id="2EciHfl9azJpnvP8Z2kxun"></span></th><th scope="col" data-sort="percent" tabindex="0" data-page-node-id="JFgxKKVWwBNgwuoPp37PmN">配额占比 <span class="sort-ic" data-page-node-id="fTEflq0qSPnYnYB3WvdxJc"></span></th><th scope="col" data-sort="expiryTime" tabindex="0" data-page-node-id="VYsvdPaxZ0h13JqPHZpEhR">到期时间 <span class="sort-ic" data-page-node-id="hCeyzPj7hMDZhipdEAWQcQ"></span></th><th scope="col" data-sort="lastOnline" tabindex="0" data-page-node-id="quN5O0BRr3yVcLskdXcmSp">最近活跃 <span class="sort-ic" data-page-node-id="omysHB5eEKKRrOhVCRf1m5"></span></th><th scope="col" data-page-node-id="ALP9sBgrLbZQLVSXP3BbGm">操作</th></tr></thead><tbody id="tbody" data-page-node-id="LqCFcKYJ9Q9qnXfO5okjfG"></tbody></table></div></article>
       </section>
 
-      <p class="foot">密钥保存在本机设置中，不会发送至第三方服务器。</p>
+      <p class="foot" data-page-node-id="xWDqVwwyjWP5ksqn5T6MrA">密钥仅保存在本机设置中，不会发送至第三方服务器。</p>
     </main>
   </div>
 
-  <!-- ───────── 设置弹窗 ───────── -->
-  <div id="settingsMask" class="mask" hidden>
-    <form class="card settings" id="settingsForm">
-      <div class="settings-head">
-        <h2>连接与偏好设置</h2>
-        <button class="icon-btn" id="settingsCloseBtn" type="button" aria-label="关闭">✕</button>
+  <div id="settingsMask" class="mask" hidden data-page-node-id="NJSntd8yVcTqQHKhIqriLU">
+    <form class="section settings" id="settingsForm" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" data-page-node-id="QrXld314DJEym3HHsRHyoN">
+      <div class="settings-head" data-page-node-id="LPKCly9t6ytFRmdh0RuqOH"><div data-page-node-id="jp2El3OC0f95QjXWEJ9klK"><span class="eyebrow" data-page-node-id="yT4pxjznAto7LzZJA098oO">Bandwagon</span><h2 id="settingsTitle" data-page-node-id="3gAwHvgVPBhtdz1aKgRZ03">设置与连接</h2></div><button class="icon-btn" id="settingsCloseBtn" type="button" aria-label="关闭设置" data-page-node-id="lFyvs8LGND1uwkGHMv1Jo6">×</button></div>
+      <p class="hint" data-page-node-id="SFpl5oBi98jh1lVLPYNE29">凭证保存在本机 Application Support 目录，仅当前用户可读。</p>
+      <div class="settings-sections" data-page-node-id="0A2VOIw0BviNCja1v89xvP">
+        <fieldset class="settings-group" data-page-node-id="NBHzqNK9CIvyVbBZBBBqud"><legend data-page-node-id="rX2HFFcOumaBijy5EHUeDh">搬瓦工连接</legend><div class="form-grid" data-page-node-id="q7UA5NdfyVvdlxuNXQC25K"><label data-page-node-id="cqvLSUyQRTTjG15fnhAXTx">VEID<input id="bwhVeid" placeholder="例如：1234567" autocomplete="off" data-page-node-id="VMymd4CUMgjyuyrPJskXFy" /></label><label data-page-node-id="EsbDJgLmpudGvrocsas8jG">API Key<div class="input-wrap" data-page-node-id="TUzH2ne2uK819swOpjurY6"><input id="bwhApiKey" type="password" placeholder="已保存则留空" autocomplete="off" data-page-node-id="G4LDeWUiaYbVQPwwhitAeH" /><button class="eye-btn" type="button" data-for="bwhApiKey" aria-label="显示或隐藏 API Key" data-page-node-id="GOl31J0sKTEiXcfz5VJu2O">显示</button></div></label><label class="wide" data-page-node-id="FA0mP30xSLkZ5ZwrzYX8ua">API Base URL<input id="bwhApiBase" placeholder="https://api.64clouds.com/v1" autocomplete="off" data-page-node-id="GA6du5dA8svkQZ4GxSn72H" /></label></div><div class="test-row" data-page-node-id="agYWxUnpRRCmI09AIyLw6p"><button class="ghost test-btn" id="testBwhBtn" type="button" data-page-node-id="OkVTaeGA9moMRA04lqS0VG">测试 KiwiVM 连接</button><span class="test-res" id="testBwhRes" role="status" aria-live="polite" data-page-node-id="jbfi0fwvcrugAbUl1GtA2t"></span></div></fieldset>
+        <fieldset class="settings-group" data-page-node-id="BlUlJYPlwtbnhkMVR5h9HP"><legend data-page-node-id="P1HZ5k0K4DKzTH6z2EJRKA">3X-UI 连接</legend><div class="form-grid" data-page-node-id="YBtYEAqWeuDMUMlXhWG6SV"><label class="wide" data-page-node-id="otX31mEaZSeGsLCozYVHqU">面板地址<input id="xuiBaseUrl" placeholder="http://127.0.0.1:2053 或 https://域名:2053/secret" autocomplete="off" data-page-node-id="N1cgP2dymaGlj9uyvwBLGm" /></label><label data-page-node-id="OealLWUnoSySzqe5WZq50j">API Token<div class="input-wrap" data-page-node-id="LjRRFHfQPqlZJ3CuyyvfAo"><input id="xuiApiToken" type="password" placeholder="推荐；已保存则留空" autocomplete="off" data-page-node-id="OFWnuEh0YUVH2FU69R9Sjl" /><button class="eye-btn" type="button" data-for="xuiApiToken" aria-label="显示或隐藏 API Token" data-page-node-id="ZWO66gEBrV24HcSZpra8cf">显示</button></div></label><label data-page-node-id="pMUY8zt6agLHlHJHyilaGX">用户名<input id="xuiUsername" autocomplete="off" data-page-node-id="jceh0icPPdP8dwkGh9Deuc" /></label><label data-page-node-id="TG0j8L03WvQKqy9HOYp0n8">面板密码<div class="input-wrap" data-page-node-id="ItAiS8uivGIviF9TotYXJI"><input id="xuiPassword" type="password" placeholder="已保存则留空" autocomplete="off" data-page-node-id="xdUV3TRq6M3hcn2B7EBuwO" /><button class="eye-btn" type="button" data-for="xuiPassword" aria-label="显示或隐藏面板密码" data-page-node-id="dgzEGKhruy8tgHrbhKzjBc">显示</button></div></label><label data-page-node-id="3DbpaWGFFQV3NoeNYCLnkK">两步验证码<input id="xuiTwoFactor" placeholder="可选" autocomplete="off" data-page-node-id="o8IePCqggcBIPXL6mxKy7Y" /></label><label class="check wide" data-page-node-id="a2S3zHbeMLRDc3ku1oFSsx"><input id="xuiVerifySsl" type="checkbox" checked data-page-node-id="dqAqYpd66lriCABbnUfiCI" /> 校验 HTTPS 证书（自签证书请关闭）</label></div><div class="test-row" data-page-node-id="MLfbsPTavU49ITHMbGtGj3"><button class="ghost test-btn" id="testXuiBtn" type="button" data-page-node-id="lwdvpZBTf7pCB9cnty0lnC">测试 3X-UI 连接</button><span class="test-res" id="testXuiRes" role="status" aria-live="polite" data-page-node-id="KnXITCiMuW1e3Epq7vDNCv"></span></div></fieldset>
+        <fieldset class="settings-group" data-page-node-id="0poJAa1k3TsDvRYnY7xcIr"><legend data-page-node-id="0Z49gBZMHRXkvvAnhhTovQ">偏好与安全</legend><div class="form-grid" data-page-node-id="YQiT2El6TFXxHvUKA1RGV4"><label data-page-node-id="GNtLO2YO8eBiF6yqSRNPeV">自动刷新间隔<select id="refreshInterval" data-page-node-id="8HAfXiNZnFDvRjYkor60Fj"><option value="10" data-page-node-id="PseXflKv9NeB44nZT5wX4n">10 秒</option><option value="20" selected data-page-node-id="2IVVTZR5WokKJmiBF2pT33">20 秒（推荐）</option><option value="30" data-page-node-id="cSvwsyBIiUgexyFh7w2STE">30 秒</option><option value="60" data-page-node-id="1Ys5VGiCGq2KrM0utRe8I4">60 秒</option></select></label><label data-page-node-id="vvsL4TavPk0DjHKLrGQ003">界面主题<select id="themeSelect" data-page-node-id="SELvBA9XBQhGE1ARASGnHq"><option value="light" selected data-page-node-id="uoxG26YHFonXKjDXkHeOze">浅色主题</option><option value="dark" data-page-node-id="bGUBXh0j35V4iD7MBbHay8">深色主题</option></select></label><label class="check wide" data-page-node-id="9yISLEv1aQnMA6OdGwrlqP"><input id="clearSecrets" type="checkbox" data-page-node-id="TCb0TWhr7ZDHIYtlWvHQhq" /> 清除已保存的 API Key、Token 和密码</label></div></fieldset>
       </div>
-      <p class="hint">凭证保存在本地 Application Support 目录，仅本机当前用户可读。</p>
-
-      <div class="settings-sections">
-        <!-- 搬瓦工设置区 -->
-        <fieldset class="settings-group">
-          <legend>搬瓦工 (KiwiVM)</legend>
-          <div class="form-grid">
-            <label>VEID
-              <input id="bwhVeid" placeholder="例如: 1234567" autocomplete="off" />
-            </label>
-            <label>API Key
-              <div class="input-wrap">
-                <input id="bwhApiKey" type="password" placeholder="已保存则留空" autocomplete="off" />
-                <button class="eye-btn" type="button" data-for="bwhApiKey" title="显示/隐藏密码">👁</button>
-              </div>
-            </label>
-            <label class="wide">API Base URL
-              <input id="bwhApiBase" placeholder="https://api.64clouds.com/v1" autocomplete="off" />
-            </label>
-          </div>
-          <div class="test-row">
-            <button class="ghost test-btn" id="testBwhBtn" type="button">测试 KiwiVM 连接</button>
-            <span class="test-res" id="testBwhRes"></span>
-          </div>
-        </fieldset>
-
-        <!-- 3X-UI 设置区 -->
-        <fieldset class="settings-group">
-          <legend>3X-UI 面板</legend>
-          <div class="form-grid">
-            <label class="wide">面板地址
-              <input id="xuiBaseUrl" placeholder="http://127.0.0.1:2053 或 https://域名:2053/secret" autocomplete="off" />
-            </label>
-            <label>API Token (推荐)
-              <div class="input-wrap">
-                <input id="xuiApiToken" type="password" placeholder="推荐；已保存则留空" autocomplete="off" />
-                <button class="eye-btn" type="button" data-for="xuiApiToken" title="显示/隐藏密码">👁</button>
-              </div>
-            </label>
-            <label>用户名 (无 Token 时使用)
-              <input id="xuiUsername" autocomplete="off" />
-            </label>
-            <label>面板密码
-              <div class="input-wrap">
-                <input id="xuiPassword" type="password" placeholder="已保存则留空" autocomplete="off" />
-                <button class="eye-btn" type="button" data-for="xuiPassword" title="显示/隐藏密码">👁</button>
-              </div>
-            </label>
-            <label>两步验证码 (2FA，若开启)
-              <input id="xuiTwoFactor" placeholder="两步验证 Code" autocomplete="off" />
-            </label>
-            <label class="check wide"><input id="xuiVerifySsl" type="checkbox" checked /> 校验 HTTPS 证书（自签证书请关闭）</label>
-          </div>
-          <div class="test-row">
-            <button class="ghost test-btn" id="testXuiBtn" type="button">测试 3X-UI 连接</button>
-            <span class="test-res" id="testXuiRes"></span>
-          </div>
-        </fieldset>
-
-        <!-- 常规偏好区 -->
-        <fieldset class="settings-group">
-          <legend>偏好设置</legend>
-          <div class="form-grid">
-            <label>自动刷新间隔
-              <select id="refreshInterval">
-                <option value="10">10 秒</option>
-                <option value="20" selected>20 秒 (推荐)</option>
-                <option value="30">30 秒</option>
-                <option value="60">60 秒</option>
-              </select>
-            </label>
-            <label>界面主题
-              <select id="themeSelect">
-                <option value="dark">深色主题 (Dark)</option>
-                <option value="light" selected>浅色主题 (Light)</option>
-              </select>
-            </label>
-            <label class="check wide"><input id="clearSecrets" type="checkbox" /> 清除所有已保存的密钥（API Key / Token / 密码）</label>
-          </div>
-        </fieldset>
-      </div>
-
-      <p class="err" id="settingsErr"></p>
-      <div class="settings-actions">
-        <button class="ghost" id="settingsCancel" type="button">取消</button>
-        <button class="primary" type="submit">保存并刷新</button>
-      </div>
+      <p class="err" id="settingsErr" role="alert" data-page-node-id="l2bZOJY4ymtcYzRv0ZAk8x"></p><div class="settings-actions" data-page-node-id="xSMmBX9s54gk1nQxeyrJvl"><button class="ghost" id="settingsCancel" type="button" data-page-node-id="yGu3mJj6Xx2GwZaaTPeQRU">取消</button><button class="primary" type="submit" data-page-node-id="htN2ZdaAC5HnS1PSjG8Jpi">保存并刷新</button></div>
     </form>
   </div>
-
-  <!-- 轻量全局 Toast 提示 -->
-  <div id="toast" class="toast"></div>
-
+  <div id="toast" class="toast" role="status" aria-live="polite" data-page-node-id="je4JNcUhesTf6f4xXVCDDm"></div>
   <script src="/assets/app.js"></script>
 </body>
 </html>

@@ -55,12 +55,12 @@ def main() -> None:
         time.sleep(0.05)
 
     window = webview.create_window(
-        "瓦工台",
+        "Bandwagon",
         f"http://127.0.0.1:{port}/",
         width=1440,
         height=880,
         min_size=(960, 600),
-        background_color="#090c11",
+        background_color="#f5f6f8",
         text_select=True,
     )
 
@@ -76,7 +76,7 @@ def main() -> None:
 
         menu = [
             Menu(
-                "瓦工台",
+                "Bandwagon",
                 [
                     MenuAction("刷新 (Cmd+R)", refresh),
                     MenuAction("偏好设置… (Cmd+,)", settings),
