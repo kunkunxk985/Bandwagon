@@ -61,7 +61,7 @@
 
           <div class="overview-grid">
             <article class="section budget-section">
-              <div class="section-head"><div><h2>本月流量预算</h2><p>按当前速度估算本周期剩余空间</p></div><span class="section-note" id="budgetStatusBadge">检查中</span></div>
+              <div class="section-head"><div><h2>本月流量预算</h2></div><span class="section-note" id="budgetStatusBadge">检查中</span></div>
               <div class="budget-layout">
                 <div class="quota-ring" aria-label="本月流量使用比例"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="ring-track"/><circle id="ovrArc" cx="60" cy="60" r="52" class="ring-progress" stroke-dasharray="0 327"/></svg><div class="ring-label"><b id="ovrPct">—</b><span>已使用</span></div></div>
                 <div class="budget-content"><div class="budget-lead" id="budgetHeadline">配置搬瓦工凭证后显示预算判断</div><div class="progress-row"><span>流量进度</span><div class="progress-bar"><i id="trafficProgressBar"></i></div><b id="trafficProgressVal">—</b></div><div class="progress-row"><span>周期进度</span><div class="progress-bar"><i id="timeProgressBar"></i></div><b id="timeProgressVal">—</b></div><div class="budget-tips" id="budgetTips">—</div></div>
@@ -69,28 +69,28 @@
               <div class="legacy-surface" aria-hidden="true"><div id="budgetPanel"></div><span id="ovrUsed">—</span><span id="ovrLeft">—</span><span id="ovrReset">—</span></div>
             </article>
             <article class="section attention-section" id="attentionPanel">
-              <div class="section-head"><div><h2>待处理事项</h2><p>只显示需要行动的状态</p></div><span class="section-note" id="attentionCount">—</span></div>
+              <div class="section-head"><div><h2>待处理事项</h2></div><span class="section-note" id="attentionCount">—</span></div>
               <div id="attentionList" class="attention-list"><div class="empty-state compact">正在读取状态…</div></div>
             </article>
           </div>
 
           <div class="overview-grid summary-grid">
-            <article class="section"><div class="section-head"><div><h2>VPS 资源</h2><p>系统和 Xray 运行概况</p></div><button class="text-btn" type="button" data-go-tab="bwh">查看详情</button></div><div id="resourceSummary" class="resource-list"><div class="empty-state compact">加载中…</div></div><div class="legacy-surface" aria-hidden="true" id="statGrid"></div></article>
-            <article class="section"><div class="section-head"><div><h2>客户端活动</h2><p>在线和用量最高的客户端</p></div><button class="text-btn" type="button" data-go-tab="clients">管理客户端</button></div><div class="client-lead"><div><b id="clientOnlineSummary">—</b><span>当前在线客户端</span></div><span id="clientTotalSummary">—</span></div><div id="clientSummary" class="client-summary"><div class="empty-state compact">加载中…</div></div></article>
+            <article class="section"><div class="section-head"><div><h2>VPS 资源</h2></div><button class="text-btn" type="button" data-go-tab="bwh">查看详情</button></div><div id="resourceSummary" class="resource-list"><div class="empty-state compact">加载中…</div></div><div class="legacy-surface" aria-hidden="true" id="statGrid"></div></article>
+            <article class="section"><div class="section-head"><div><h2>客户端活动</h2></div><button class="text-btn" type="button" data-go-tab="clients">管理客户端</button></div><div class="client-lead"><div><b id="clientOnlineSummary">—</b><span>当前在线客户端</span></div><span id="clientTotalSummary">—</span></div><div id="clientSummary" class="client-summary"><div class="empty-state compact">加载中…</div></div></article>
           </div>
 
           <div class="overview-grid detail-grid">
-            <article class="section"><div class="section-head"><div><h2>节点入站</h2><p>实时汇总</p></div><span class="section-note" id="inboundCountSummary">—</span></div><div id="inboundList" class="kv-list"></div><div class="legacy-surface" aria-hidden="true" id="inboundSkel"></div></article>
-            <article class="section"><div class="section-head"><div><h2>网络状态</h2><p>最近一次采样</p></div><span class="section-note">实时</span></div><div id="networkLiveStats" class="live-grid"><div class="live-box"><span>实时上行</span><b class="up" id="liveIoUp">—</b></div><div class="live-box"><span>实时下行</span><b class="down" id="liveIoDown">—</b></div><div class="live-box"><span>TCP 连接</span><b id="liveTcp">—</b></div><div class="live-box"><span>UDP 连接</span><b id="liveUdp">—</b></div></div><div class="note">搬瓦工统计整机流量，3X-UI 统计代理客户端，两者有差异是正常的。</div><div class="legacy-surface" aria-hidden="true" id="netSkel"></div></article>
+            <article class="section"><div class="section-head"><div><h2>节点入站</h2></div><span class="section-note" id="inboundCountSummary">—</span></div><div id="inboundList" class="kv-list"></div><div class="legacy-surface" aria-hidden="true" id="inboundSkel"></div></article>
+            <article class="section"><div class="section-head"><div><h2>网络状态</h2></div><span class="section-note">实时</span></div><div id="networkLiveStats" class="live-grid"><div class="live-box"><span>实时上行</span><b class="up" id="liveIoUp">—</b></div><div class="live-box"><span>实时下行</span><b class="down" id="liveIoDown">—</b></div><div class="live-box"><span>TCP 连接</span><b id="liveTcp">—</b></div><div class="live-box"><span>UDP 连接</span><b id="liveUdp">—</b></div></div><div class="legacy-surface" aria-hidden="true" id="netSkel"></div></article>
           </div>
           <div class="quick-actions"><button class="quick-btn" id="quickRefresh" type="button">立即刷新</button><button class="quick-btn" id="quickSettings" type="button">连接设置</button><button class="quick-btn" id="quickCopy" type="button">复制状态摘要</button></div>
         </div>
       </section>
 
       <section class="tab" id="tab-bwh" aria-labelledby="pageTitle">
-        <div class="section page-intro"><div><span class="eyebrow">资源与连接</span><h2>VPS 资源</h2><p>查看套餐、服务器资源和网络历史。</p></div><button class="ghost" type="button" data-go-tab="overview">返回总览</button></div>
+        <div class="section page-intro"><div><span class="eyebrow">资源与连接</span><h2>VPS 资源</h2></div><button class="ghost" type="button" data-go-tab="overview">返回总览</button></div>
         <div class="detail-grid vps-grid">
-          <article class="section"><div class="section-head"><div><h2>本月套餐流量</h2><p>整机计费流量</p></div><span class="section-note" id="bwhWhere">—</span></div><div class="quota-layout"><div class="quota-ring small"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="ring-track"/><circle id="ringArc" cx="60" cy="60" r="52" class="ring-progress" stroke-dasharray="0 327"/></svg><div class="ring-label"><b id="bwhPct">—</b><span>已使用</span></div></div><div class="kv"><div><span>已用</span><b id="bwhUsed">—</b></div><div><span>套餐额度</span><b id="bwhQuota">—</b></div><div><span>剩余</span><b id="bwhLeft">—</b></div><div><span>重置时间</span><b id="bwhReset">—</b></div><div><span>计费倍率</span><b id="bwhMultiplier">—</b></div></div></div></article>
+          <article class="section"><div class="section-head"><div><h2>本月套餐流量</h2></div><span class="section-note" id="bwhWhere">—</span></div><div class="quota-layout"><div class="quota-ring small"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="ring-track"/><circle id="ringArc" cx="60" cy="60" r="52" class="ring-progress" stroke-dasharray="0 327"/></svg><div class="ring-label"><b id="bwhPct">—</b><span>已使用</span></div></div><div class="kv"><div><span>已用</span><b id="bwhUsed">—</b></div><div><span>套餐额度</span><b id="bwhQuota">—</b></div><div><span>剩余</span><b id="bwhLeft">—</b></div><div><span>重置时间</span><b id="bwhReset">—</b></div><div><span>计费倍率</span><b id="bwhMultiplier">—</b></div></div></div></article>
           <article class="section"><div class="section-head"><div><h2>服务器规格</h2><p>主机与面板信息</p></div></div><div class="meta-grid" id="metaGrid"></div></article>
         </div>
         <article class="section chart-card"><div class="section-head"><div><h2>网络历史</h2><p>按时间范围查看入站和出站流量</p></div><div class="seg" id="chartRangeSeg"><button data-range="24h" type="button">24 小时</button><button data-range="7d" type="button">7 天</button><button data-range="30d" type="button">30 天</button><button data-range="all" type="button">全部</button></div></div><div class="chart-meta" id="chartMeta"></div><div class="legend"><span><i class="in"></i>入站流量</span><span><i class="out"></i>出站流量</span></div><div class="chart-wrap"><canvas id="netChart" aria-label="网络历史流量图表"></canvas></div></article>
@@ -98,9 +98,9 @@
       </section>
 
       <section class="tab" id="tab-clients" aria-labelledby="pageTitle">
-        <div class="section page-intro"><div><span class="eyebrow">节点管理</span><h2>客户端</h2><p>搜索、筛选和查看每个代理客户端的用量。</p></div><button class="ghost" type="button" data-go-tab="overview">返回总览</button></div>
+        <div class="section page-intro"><div><span class="eyebrow">节点管理</span><h2>客户端</h2></div><button class="ghost" type="button" data-go-tab="overview">返回总览</button></div>
         <div class="meta-grid wide-meta" id="xuiMetaGrid"></div>
-        <article class="section clients-section"><div class="section-head clients-head"><div><h2>客户端用量</h2><p id="clientTableHint">按已用流量排序</p></div><div class="filter-pills" id="statePills"><button class="pill active" data-filter="all" type="button">全部 <b id="countAll">0</b></button><button class="pill" data-filter="online" type="button">在线 <b id="countOnline">0</b></button><button class="pill" data-filter="warn" type="button">预警 <b id="countWarn">0</b></button><button class="pill" data-filter="off" type="button">停用/到期 <b id="countOff">0</b></button><button class="pill" data-filter="unlimited" type="button">不限额 <b id="countUnlimited">0</b></button></div></div><div class="filters"><label class="search-box"><span aria-hidden="true">⌕</span><input id="q" placeholder="搜索邮箱、备注、入站、协议或端口" autocomplete="off" aria-label="搜索客户端" /></label></div><div class="table-wrap"><table><caption class="sr-only">节点客户端用量表</caption><thead><tr><th scope="col" data-sort="comment" tabindex="0" aria-label="按客户端或备注排序">客户端 / 备注 <span class="sort-ic"></span></th><th scope="col" data-sort="inbound" tabindex="0">入站协议 <span class="sort-ic"></span></th><th scope="col" data-sort="used" tabindex="0">当期已用 <span class="sort-ic"></span></th><th scope="col" data-sort="up" tabindex="0">上传 <span class="sort-ic"></span></th><th scope="col" data-sort="down" tabindex="0">下载 <span class="sort-ic"></span></th><th scope="col" data-sort="percent" tabindex="0">配额占比 <span class="sort-ic"></span></th><th scope="col" data-sort="expiryTime" tabindex="0">到期时间 <span class="sort-ic"></span></th><th scope="col" data-sort="lastOnline" tabindex="0">最近活跃 <span class="sort-ic"></span></th><th scope="col">操作</th></tr></thead><tbody id="tbody"></tbody></table></div></article>
+        <article class="section clients-section"><div class="section-head clients-head"><div><h2>客户端用量</h2></div><div class="filter-pills" id="statePills"><button class="pill active" data-filter="all" type="button">全部 <b id="countAll">0</b></button><button class="pill" data-filter="online" type="button">在线 <b id="countOnline">0</b></button><button class="pill" data-filter="warn" type="button">预警 <b id="countWarn">0</b></button><button class="pill" data-filter="off" type="button">停用/到期 <b id="countOff">0</b></button><button class="pill" data-filter="unlimited" type="button">不限额 <b id="countUnlimited">0</b></button></div></div><div class="filters"><label class="search-box"><span aria-hidden="true">⌕</span><input id="q" placeholder="搜索邮箱、备注、入站、协议或端口" autocomplete="off" aria-label="搜索客户端" /></label></div><div class="table-wrap"><table><caption class="sr-only">节点客户端用量表</caption><thead><tr><th scope="col" data-sort="comment" tabindex="0" aria-label="按客户端或备注排序">客户端 / 备注 <span class="sort-ic"></span></th><th scope="col" data-sort="inbound" tabindex="0">入站协议 <span class="sort-ic"></span></th><th scope="col" data-sort="used" tabindex="0">当期已用 <span class="sort-ic"></span></th><th scope="col" data-sort="up" tabindex="0">上传 <span class="sort-ic"></span></th><th scope="col" data-sort="down" tabindex="0">下载 <span class="sort-ic"></span></th><th scope="col" data-sort="percent" tabindex="0">配额占比 <span class="sort-ic"></span></th><th scope="col" data-sort="expiryTime" tabindex="0">到期时间 <span class="sort-ic"></span></th><th scope="col" data-sort="lastOnline" tabindex="0">最近活跃 <span class="sort-ic"></span></th><th scope="col">操作</th></tr></thead><tbody id="tbody"></tbody></table></div></article>
       </section>
 
     </main>
@@ -109,7 +109,7 @@
   <div id="settingsMask" class="mask" hidden>
     <form class="section settings" id="settingsForm" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="settings-head"><div><span class="eyebrow">Bandwagon</span><h2 id="settingsTitle">设置与连接</h2></div><button class="icon-btn" id="settingsCloseBtn" type="button" aria-label="关闭设置">×</button></div>
-      <p class="hint">凭证保存在本机 Application Support 目录，仅当前用户可读。</p>
+      
             <div class="settings-sections">
         <section class="settings-section" data-section="bwh">
           <h3 class="settings-section-title">搬瓦工连接</h3>
