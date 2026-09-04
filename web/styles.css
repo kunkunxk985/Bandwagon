@@ -94,7 +94,7 @@ button:disabled { opacity: .6; cursor: not-allowed; }
 .nav-item { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 8px 11px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-3); text-align: left; transition: background .16s ease, color .16s ease, border-color .16s ease; }
 .nav-item svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .nav-item:hover { color: var(--text); background: var(--surface-2); }
-.nav-item.active { color: var(--blue); background: var(--blue-soft); border-color: color-mix(in srgb, var(--blue) 18%, var(--line)); font-weight: 650; }
+.nav-item.active { color: var(--blue); background: var(--surface-2); border-color: var(--line); font-weight: 650; }
 .nav-item.active::before { content: ""; position: absolute; left: -14px; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--blue); }
 .nav-tip { display: none; }
 .side-bottom { display: grid; gap: 12px; margin-top: auto; }

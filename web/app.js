@@ -140,7 +140,7 @@ function updateChartMeta(model) {
   const el = $("chartMeta");
   if (!el) return;
   if (!model.rows.length) {
-    el.innerHTML = '<span class="chiplet hintc">暂无历史流量记录</span>';
+    el.innerHTML = '<span class="chiplet hintc">暂无历史记录</span>';
     return;
   }
   const sumIn = model.rows.reduce((sum, row) => sum + row.in, 0);
@@ -182,7 +182,7 @@ function drawChart() {
     ctx.fillStyle = colors.text;
     ctx.font = "12px -apple-system, PingFang SC, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(rows.length ? "历史点不足，继续采集后显示趋势" : "暂无历史数据", 14, height / 2);
+    ctx.fillText(rows.length ? "数据采集中" : "暂无数据", 14, height / 2);
     canvas._model = chartModel;
     canvas._geom = null;
     return;
