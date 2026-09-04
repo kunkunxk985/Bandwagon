@@ -40,7 +40,7 @@
 
     <main class="content">
       <header class="pagebar">
-        <div><h1 id="pageTitle">总览</h1><p id="pageSubtitle" class="page-subtitle">先看结论，再进入详情。保持清晰，减少打扰。</p></div>
+        <div><h1 id="pageTitle">总览</h1></div>
         <div class="pagebar-actions">
           <span id="modeChip" class="status-chip">加载中</span>
           <span id="countdownChip" class="countdown" title="自动刷新倒计时">20s</span>
@@ -103,7 +103,6 @@
         <article class="section clients-section"><div class="section-head clients-head"><div><h2>客户端用量</h2><p id="clientTableHint">按已用流量排序</p></div><div class="filter-pills" id="statePills"><button class="pill active" data-filter="all" type="button">全部 <b id="countAll">0</b></button><button class="pill" data-filter="online" type="button">在线 <b id="countOnline">0</b></button><button class="pill" data-filter="warn" type="button">预警 <b id="countWarn">0</b></button><button class="pill" data-filter="off" type="button">停用/到期 <b id="countOff">0</b></button><button class="pill" data-filter="unlimited" type="button">不限额 <b id="countUnlimited">0</b></button></div></div><div class="filters"><label class="search-box"><span aria-hidden="true">⌕</span><input id="q" placeholder="搜索邮箱、备注、入站、协议或端口" autocomplete="off" aria-label="搜索客户端" /></label></div><div class="table-wrap"><table><caption class="sr-only">节点客户端用量表</caption><thead><tr><th scope="col" data-sort="comment" tabindex="0" aria-label="按客户端或备注排序">客户端 / 备注 <span class="sort-ic"></span></th><th scope="col" data-sort="inbound" tabindex="0">入站协议 <span class="sort-ic"></span></th><th scope="col" data-sort="used" tabindex="0">当期已用 <span class="sort-ic"></span></th><th scope="col" data-sort="up" tabindex="0">上传 <span class="sort-ic"></span></th><th scope="col" data-sort="down" tabindex="0">下载 <span class="sort-ic"></span></th><th scope="col" data-sort="percent" tabindex="0">配额占比 <span class="sort-ic"></span></th><th scope="col" data-sort="expiryTime" tabindex="0">到期时间 <span class="sort-ic"></span></th><th scope="col" data-sort="lastOnline" tabindex="0">最近活跃 <span class="sort-ic"></span></th><th scope="col">操作</th></tr></thead><tbody id="tbody"></tbody></table></div></article>
       </section>
 
-      <p class="foot">密钥仅保存在本机设置中，不会发送至第三方服务器。</p>
     </main>
   </div>
 
