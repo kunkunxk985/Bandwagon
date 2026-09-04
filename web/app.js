@@ -445,28 +445,27 @@ function renderClients() {
   if (!tbody) return;
   let online = 0, warn = 0, off = 0, unlimited = 0;
   allClients.forEach((row) => { const state = clientState(row); if (row.online) online += 1; if (state === "warn") warn += 1; if (state === "off") off += 1; if (!row.total) unlimited += 1; });
-  [["countAll", allClients.length], ["countOnline", online], ["countWarn", warn], ["countOff", off], ["countUnlimited", unlimited]].forEach(([id, value]) => { if ($(id)) $(id).textContent = value; });
+  [["countAll", allClients.length], ["countOnline", online], ["countWarn", warn], ["countOff", off]].forEach(([id, value]) => { if ($(id)) $(id).textContent = value; });
   const query = ($("q")?.value || "").trim().toLowerCase();
   const rows = allClients.filter((row) => {
-    const haystack = `${row.email} ${row.comment} ${row.inbound} ${row.protocol} ${row.inboundId || ""}`.toLowerCase();
+    const haystack = `${row.comment} ${row.email}`.toLowerCase();
     if (query && !haystack.includes(query)) return false;
     const state = clientState(row);
     if (clientFilter === "online") return row.online;
     if (clientFilter === "warn") return state === "warn";
     if (clientFilter === "off") return state === "off";
-    if (clientFilter === "unlimited") return !row.total;
     return true;
   }).sort((a, b) => { const av = a[sortKey]; const bv = b[sortKey]; if (av == null && bv == null) return 0; if (av == null) return 1; if (bv == null) return -1; return (typeof av === "string" ? av.localeCompare(bv) : av - bv) * sortDir; });
   document.querySelectorAll("th[data-sort]").forEach((th) => { const icon = th.querySelector(".sort-ic"); if (!icon) return; const active = th.dataset.sort === sortKey; th.classList.toggle("sorted", active); th.setAttribute("aria-sort", active ? (sortDir === 1 ? "ascending" : "descending") : "none"); icon.textContent = active ? (sortDir === 1 ? "▲" : "▼") : ""; });
   tbody.innerHTML = rows.length ? rows.map((row) => {
     const state = clientState(row);
-    const tag = state === "off" ? '<span class="tag bad">停用/到期</span>' : state === "warn" ? '<span class="tag warn">预警</span>' : row.online ? '<span class="tag ok">在线</span>' : "";
+    const statusTag = state === "off" ? '<span class="tag bad">停用/到期</span>' : state === "warn" ? '<span class="tag warn">预警</span>' : row.online ? '<span class="tag ok">在线</span>' : '<span class="tag">离线</span>';
     const upShare = row.used ? row.up / row.used * 100 : 0;
     const downShare = row.used ? row.down / row.used * 100 : 0;
     const copyValue = esc(row.comment ? `${row.comment} (${row.email})` : row.email);
     const rowClass = state === "off" ? "row-off" : state === "warn" ? "row-warn" : row.online ? "row-online" : "";
-    return `<tr class="${rowClass}"><td><span class="dot ${row.online ? "on" : ""}" title="${row.online ? "在线" : "离线"}"></span><span class="name">${esc(row.comment || row.email)}</span><div class="tiny">${esc(row.email)} ${tag}</div></td><td><span class="badge proto">${esc(row.protocol || "proxy")}</span><span class="inbound-name">${esc(row.inbound || "—")}</span></td><td class="num font-bold">${formatBytes(row.used)}</td><td class="num t-up">↑ ${formatBytes(row.up)}</td><td class="num t-down">↓ ${formatBytes(row.down)}</td><td class="usage"><div class="track"><i class="up" style="width:${upShare}%"></i><i class="down" style="width:${downShare}%"></i></div><div class="tiny">${row.percent == null ? "不限额" : `${Number(row.percent).toFixed(1)}%`} · ${row.total ? formatBytes(row.total) : "不限"}</div></td><td>${row.expiryTime ? formatTime(row.expiryTime) : '<span class="t-mute">长期</span>'}</td><td>${relative(row.lastOnline)}</td><td style="text-align:center"><button class="mini-btn" type="button" data-copy="${copyValue}" title="复制客户端信息">复制</button></td></tr>`;
-  }).join("") : '<tr><td colspan="9"><div class="empty-state"><p>没有匹配的节点客户端</p><span>调整搜索词或筛选条件后重试。</span></div></td></tr>';
+    return `<tr class="${rowClass}"><td><span class="dot ${row.online ? "on" : ""}" title="${row.online ? "在线" : "离线"}"></span><span class="name">${esc(row.comment || row.email)}</span></td><td class="num">${formatBytes(row.used)}</td><td>${statusTag}</td><td class="usage"><div class="track"><i class="up" style="width:${upShare}%"></i><i class="down" style="width:${downShare}%"></i></div><div class="tiny">${row.percent == null ? "不限额" : `${Number(row.percent).toFixed(1)}%`} · ${row.total ? formatBytes(row.total) : "不限"}</div></td><td>${row.expiryTime ? formatTime(row.expiryTime) : '<span class="t-mute">长期</span>'}</td><td>${relative(row.lastOnline)}</td><td style="text-align:center"><button class="mini-btn" type="button" data-copy="${copyValue}" title="复制客户端信息">复制</button></td></tr>`;
+  }).join("") : '<tr><td colspan="7"><div class="empty-state"><p>没有匹配的节点客户端</p><span>调整搜索词或筛选条件后重试。</span></div></td></tr>';
 }
 
 function render(data) {
