@@ -156,7 +156,19 @@ button { border: 0; }
 .health-facts b { font-size: 15px; font-variant-numeric: tabular-nums; }
 .status-action { flex: none; }
 .overview-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 18px; }
-.summary-grid { grid-template-columns: 1fr 1fr; }
+.summary-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+.summary-grid .section { padding: 20px; }
+.summary-grid .section-head { margin-bottom: 14px; }
+.summary-grid .section-head h2 { font-size: 16px; }
+.summary-grid .resource-list, .summary-grid .client-summary { display: grid; gap: 10px; }
+.summary-grid .resource-item, .summary-grid .client-summary-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.summary-grid .resource-item:last-child, .summary-grid .client-summary-row:last-child { border-bottom: 0; }
+.summary-grid .resource-item b, .summary-grid .client-summary-row b { font-size: 15px; font-weight: 700; color: var(--text); }
+.summary-grid .resource-item span, .summary-grid .client-summary-row span { font-size: 12px; color: var(--text-3); }
+.client-lead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.client-lead b { font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.client-lead span { font-size: 12px; color: var(--text-3); }
+.text-btn { color: var(--blue); font-size: 12px; font-weight: 650; }
 .detail-grid { grid-template-columns: 1fr 1fr; }
 .budget-layout { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 24px; }
 .quota-ring { position: relative; width: 142px; height: 142px; flex: none; }
