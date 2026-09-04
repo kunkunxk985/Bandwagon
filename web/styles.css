@@ -322,7 +322,11 @@ tbody tr.row-off::before { background: var(--red); }
 .icon-btn:hover { color: var(--text); background: var(--surface-2); }
 .settings-sections { display: grid; gap: 16px; }
 .settings-section { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px 20px; }
-.settings-section-title { margin: 0 0 14px; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .01em; }
+.settings-section-title { margin: 0; padding: 10px 0; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .01em; cursor: pointer; background: transparent; border: 0; width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+.settings-section-title:hover { color: var(--blue); }
+.settings-section-title::after { content: "▼"; margin-left: auto; font-size: 10px; color: var(--text-3); transition: transform .16s ease; }
+.settings-section-title[aria-expanded="true"]::after { transform: rotate(180deg); }
+.settings-section-body[hidden] { display: none; }
 .settings-section-body { display: grid; gap: 12px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid label, .login-label { display: flex; flex-direction: column; gap: 5px; color: var(--text-2); font-size: 12px; }
@@ -392,7 +396,11 @@ tbody tr.row-off::before { background: var(--red); }
 
 .settings-sections { display: grid; gap: 16px; }
 .settings-section { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px 20px; }
-.settings-section-title { margin: 0 0 14px; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .01em; }
+.settings-section-title { margin: 0; padding: 10px 0; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .01em; cursor: pointer; background: transparent; border: 0; width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+.settings-section-title:hover { color: var(--blue); }
+.settings-section-title::after { content: "▼"; margin-left: auto; font-size: 10px; color: var(--text-3); transition: transform .16s ease; }
+.settings-section-title[aria-expanded="true"]::after { transform: rotate(180deg); }
+.settings-section-body[hidden] { display: none; }
 .settings-section-body { display: grid; gap: 12px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid label, .login-label { display: flex; flex-direction: column; gap: 5px; color: var(--text-2); font-size: 12px; }

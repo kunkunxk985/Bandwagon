@@ -576,6 +576,14 @@ function initEvents() {
   $("settingsBtn")?.addEventListener("click", openSettings);
   $("settingsCloseBtn")?.addEventListener("click", closeSettings);
   $("settingsCancel")?.addEventListener("click", closeSettings);
+  document.querySelectorAll(".settings-section-title").forEach((title) => {
+    title.addEventListener("click", () => {
+      const body = title.nextElementSibling;
+      const expanded = title.getAttribute("aria-expanded") === "true";
+      title.setAttribute("aria-expanded", String(!expanded));
+      if (body) body.hidden = expanded;
+    });
+  });
   $("settingsMask")?.addEventListener("click", (event) => { if (event.target === $("settingsMask")) closeSettings(); });
   $("testBwhBtn")?.addEventListener("click", testBwh);
   $("testXuiBtn")?.addEventListener("click", testXui);

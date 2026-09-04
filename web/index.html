@@ -112,8 +112,8 @@
       
             <div class="settings-sections">
         <section class="settings-section" data-section="bwh">
-          <h3 class="settings-section-title">搬瓦工连接</h3>
-          <div class="settings-section-body">
+          <button type="button" class="settings-section-title" aria-expanded="false">搬瓦工连接</button>
+          <div class="settings-section-body" hidden>
             <div class="form-grid">
               <label>VEID<input id="bwhVeid" placeholder="例如：1234567" autocomplete="off" /></label>
               <label>API Key<div class="input-wrap"><input id="bwhApiKey" type="password" placeholder="已保存则留空" autocomplete="off" /><button class="eye-btn" type="button" data-for="bwhApiKey" aria-label="显示或隐藏 API Key">显示</button></div></label>
@@ -123,8 +123,8 @@
           </div>
         </section>
         <section class="settings-section" data-section="xui">
-          <h3 class="settings-section-title">3X-UI 连接</h3>
-          <div class="settings-section-body">
+          <button type="button" class="settings-section-title" aria-expanded="false">3X-UI 连接</button>
+          <div class="settings-section-body" hidden>
             <div class="form-grid">
               <label class="wide">面板地址<input id="xuiBaseUrl" placeholder="http://127.0.0.1:2053 或 https://域名:2053/secret" autocomplete="off" /></label>
               <label>API Token<div class="input-wrap"><input id="xuiApiToken" type="password" placeholder="推荐；已保存则留空" autocomplete="off" /><button class="eye-btn" type="button" data-for="xuiApiToken" aria-label="显示或隐藏 API Token">显示</button></div></label>
@@ -137,8 +137,8 @@
           </div>
         </section>
         <section class="settings-section" data-section="prefs">
-          <h3 class="settings-section-title">偏好与安全</h3>
-          <div class="settings-section-body">
+          <button type="button" class="settings-section-title" aria-expanded="false">偏好与安全</button>
+          <div class="settings-section-body" hidden>
             <div class="form-grid">
               <label>自动刷新间隔<select id="refreshInterval"><option value="10">10 秒</option><option value="20" selected>20 秒（推荐）</option><option value="30">30 秒</option><option value="60">60 秒</option></select></label>
               <label>界面主题<select id="themeSelect"><option value="light" selected>浅色主题</option><option value="dark">深色主题</option></select></label>
