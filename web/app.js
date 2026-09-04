@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
 const UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
 
@@ -394,10 +395,7 @@ function renderOverview(data) {
   const budget = data.budget || {};
   const pct = Number(bwh.usedPercent || 0);
   if ($("ovrPct")) $("ovrPct").textContent = bwh.quotaBytes ? `${pct.toFixed(1)}%` : "—";
-  if ($("ovrUsed")) $("ovrUsed").textContent = formatBytes(bwh.usedBytes);
-  if ($("ovrLeft")) $("ovrLeft").textContent = formatBytes((bwh.quotaBytes || 0) - (bwh.usedBytes || 0));
-  if ($("ovrReset")) $("ovrReset").textContent = bwh.resetAt ? `${daysLeft(bwh.resetAt)}后 (${formatTime(bwh.resetAt, false)})` : "—";
-  const budgetPct = Number(budget.usedPercent || 0);
+        const budgetPct = Number(budget.usedPercent || 0);
   setRing(budgetPct || pct, ["ovrArc"]);
   const status = $("budgetStatusBadge");
   if (status) { status.className = `section-note ${budget.status === "urgent" ? "status-red" : budget.status === "warning" || budget.status === "moderate" ? "status-amber" : "status-green"}`; status.textContent = budget.hasBudget ? ({ urgent: "预算紧张", warning: "消耗偏快", moderate: "节奏适中", healthy: "充裕正常" }[budget.status] || "已计算") : "未配置"; }
@@ -584,14 +582,6 @@ function initEvents() {
   $("testXuiBtn")?.addEventListener("click", testXui);
   document.querySelectorAll(".eye-btn").forEach((button) => button.addEventListener("click", () => { const input = $(button.dataset.for); if (!input) return; input.type = input.type === "password" ? "text" : "password"; button.textContent = input.type === "password" ? "显示" : "隐藏"; }));
 
-  document.querySelectorAll(".settings-group-toggle").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const group = btn.closest(".settings-group");
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", String(!expanded));
-      group.classList.toggle("collapsed", expanded);
-    });
-  });
   $("settingsForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if ($("clearSecrets")?.checked && !window.confirm("确定清除所有已保存的 API Key、Token 和密码吗？此操作不可撤销。")) return;
