@@ -9,7 +9,6 @@ Bandwagon/
 ├── .impeccable.md      设计上下文与五条设计原则。改 UI 前必读。
 ├── README.md           构建、运行、数据位置。
 ├── .gitignore          Swift 构建产物、Python 缓存、凭据。
-├── .env / .env.example 【遗留】旧 Python 版本的配置，当前应用完全不读。
 └── swift/              全部源码与资产。工程自包含，不引用目录外任何东西。
 ```
 
@@ -122,6 +121,7 @@ swift/
 | `package-app.sh` | 构建 release、组装 `.app`、生成图标、签名、装到 `~/Desktop`。构建前会先校验辅助程序 |
 | `test.sh` | 离线回归套件。`--live` 追加真实面板测试 |
 | `install-credential-bridge.sh` | 安装辅助程序。已有 v3 钥匙串条目时**拒绝替换**，防止覆盖掉正在使用的凭据 |
+| `build-credential-bridge.sh` | 从源码产出新的辅助程序发布件：编译、签名、写入 `ReleaseAssets/`、打印需同步的三处摘要。`--update-pin` 可一并改写摘要锁定。**绝不触碰已安装的辅助程序** |
 | `verify-credential-bridge.sh` | 校验辅助程序的 SHA-256 与代码签名要求 |
 | `verify-credential-bridge-acl.py` | 只读钥匙串元数据，确认 v3 条目的 ACL 绑定在辅助程序的 cdhash 上，且旧条目仍在 |
 | `test-credential-bridge.sh` | 凭据辅助程序的完整验证：夹具协议 + 拒绝未签名调用者 + ACL 校验 |
@@ -137,17 +137,20 @@ swift/
 
 ## 已知的结构问题
 
-1. **`swift/` 未被 git 跟踪**（`git ls-files swift` 为 0）。仓库最后一个提交还是 Python/FastAPI 时代的，全部 Swift 代码没有任何版本控制。**这是当前最大的风险。**
-2. **`.env` / `.env.example` 是死配置**，描述的是旧 Web 服务，Swift 应用不读。
-3. **辅助程序的发布件无法可复现地重建**。`ReleaseAssets/` 里是冻结的二进制，摘要被三处锁定，`install-credential-bridge.sh` 也刻意拒绝替换——这是安全性要求，但意味着修辅助程序的 bug 没有路径。
-4. **测试不是 SwiftPM 测试目标**，而是 `scripts/test.sh` 逐个用 `swiftc` 编译出来的独立可执行文件。没有 `swift test`，每个用例都要重新编译一遍 Models + Services，新增测试要手工加进脚本。
-5. **磁盘占用条不显示**：`ve_used_disk_space_b` 取不到值，需真实凭据确认字段名。
+1. **测试不是 SwiftPM 测试目标**，而是 `scripts/test.sh` 逐个用 `swiftc` 编译出来的独立可执行文件。没有 `swift test`，每个用例都要重新编译一遍 Models + Services，新增测试要手工加进脚本。
+2. **辅助程序的发布件不是逐字节可复现的**。`scripts/build-credential-bridge.sh` 能从源码产出并签名新版本，但原始 v1 的确切构建命令已不可考（同一份源码、同一个 SDK，重建出来的机器码仍与 v1 不同），加上签名本身每次不同，所以产物摘要必然变化。采用新版本要同步三处摘要，并重新输入一次凭据。
+3. **状态未知时仍显示"运行中"**。`getLiveServiceInfo` 失败时回退到硬编码的 `"running"`，沿用部署版一直以来的行为。更诚实的做法是显示"未知"，但那会改变现有观感，未擅自改动。
 
 ## 已解决
 
+- **磁盘占用条从不显示**（原第 7 条）：根因是代码从 `getServiceInfo` 读 `ve_used_disk_space_b`，而该字段属于 **`getLiveServiceInfo`**，且只在 KVM 机型下返回。同一个错误还导致状态胶囊里的"运行中"一直是硬编码兜底值而非真实状态。已改为并发补调 `getLiveServiceInfo`，磁盘条与真实运行状态同时恢复。
+- **`swift/` 未被 git 跟踪**（原第 1 条）：曾是完全无版本控制。已分两次提交纳入：先移除被取代的 Python 应用，再跟踪 Swift 工程（73 个文件）。
+- **`.env` / `.env.example` 是死配置**（原第 2 条）：描述的是已删除的 Web 服务，凭据字段全为空。已删除。
+- **辅助程序无法从源码重建**（原第 3 条）：新增 `scripts/build-credential-bridge.sh`，编译、签名、产出带版本号的发布件、打印需要同步的三处摘要，并明确警告替换安装件会使钥匙串 ACL 失效。它绝不触碰已安装的辅助程序。
 - **`Package.swift` 与磁盘不符**：曾只声明一个目标，而 `Sources/` 下有两个可执行目录，`swift build` 完全忽略凭据辅助程序。已补全。
 - **`Theme.swift` 是杂物抽屉**：422 行里混了色板、窗口管道、11 个组件和 3 个模型扩展。已按职责拆成 `Theme.swift`（216 行）、`WindowChrome.swift`、`StatusViews.swift`、`ModelPresentation.swift`。
 - **失败呈现逻辑抄了三份**：`OverviewView` 与 `ClientsView` 各有 4 个逐字相同的函数，`VPSView` 内联了同一套判断，而且三页对同一个失败的中文措辞还不一致。已收敛到 `ServiceFailure`，三页共用。
 - **死代码**：`SettingsPayload`、`SettingsSaveResponse`、`refreshInterval`、`ColorToken`、`ClientState.color`、`overview.demo` 已删。
-- **图标不可再生**：曾同时被 `.gitignore` 排除且生成脚本已删。已去掉排除项。
+- **图标不可再生**：曾同时被 `.gitignore` 排除且生成脚本已删。已去掉排除项并纳入版本控制。
+
 

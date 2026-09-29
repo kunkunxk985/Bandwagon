@@ -28,7 +28,7 @@ open ~/Desktop/Bandwagon.app
 | 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/WagongDeck/settings.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
 
-仓库根目录的 `.env` / `.env.example` 是**旧 Python 版本的遗留**，当前应用完全不读，可以删。
+仓库根目录只有设计文档、本 README 和 `swift/`。曾经存在的 `.env` / `.env.example` 描述的是已删除的旧 Web 服务，已于本次整理中移除。
 
 ## 目录结构
 

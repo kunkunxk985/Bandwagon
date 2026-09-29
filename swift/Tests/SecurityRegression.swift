@@ -107,7 +107,18 @@ struct SecurityRegression {
             "Keychain migration must run off the main actor after the window appears"
         )
 
-        print("PASS transport, Keychain persistence, TLS verification, and ephemeral 2FA policies")
+        // getServiceInfo does not return used disk or the live run state; both belong to
+        // getLiveServiceInfo (KVM only). Reading them from the wrong response silently
+        // produced a blank disk bar and a hardcoded "running" pill.
+        let bwh = try source("Sources/Bandwagon/Services/BWHClient.swift")
+        require(
+            bwh.contains("optionalData(\"getLiveServiceInfo\"") &&
+            bwh.contains("diskUsed(live)") &&
+            !bwh.contains("info[\"ve_used_disk_space_b\"]"),
+            "disk usage and run state must be read from getLiveServiceInfo, not getServiceInfo"
+        )
+
+        print("PASS transport, Keychain persistence, TLS verification, ephemeral 2FA policies, and KiwiVM endpoint selection")
     }
 
     private static func source(_ path: String) throws -> String {
