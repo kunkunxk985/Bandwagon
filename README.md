@@ -1,110 +1,50 @@
-# Bandwagon
+# Bandwagon 瓦工台
 
-macOS 本地客户端：看搬瓦工 **本月套餐流量**，以及 3X-UI 里 **每个客户端** 的已用/配额/在线。
+macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超额、VPS 是否健康、哪个 3X-UI 客户端需要处理**。
 
-双击 **桌面上的「Bandwagon」** 即可。密钥写在应用内「设置」，存在本机：
+纯 SwiftUI，无第三方依赖，无后台服务。
 
-`~/Library/Application Support/WagongDeck/settings.json`
-
-没填密钥时显示演示数据。
-
-## 启动
-
-双击 `~/Desktop/Bandwagon.app`，或：
+## 构建与运行
 
 ```bash
-cd ~/Desktop/Bandwagon
-./start.sh
+./swift/scripts/package-app.sh    # 构建 + 签名，产物在 ~/Desktop/Bandwagon.app
+open ~/Desktop/Bandwagon.app
 ```
 
-## 接真实数据
+需要 Xcode（脚本会显式使用 `/Applications/Xcode.app` 的工具链和 macOS SDK，不用 CLT SDK）。
 
-打开应用后点右上角 **设置**，或继续用 `.env`（设置里的值优先）：
-
-### 搬瓦工
-
-1. 打开 [KiwiVM](https://kiwivm.64clouds.com/)
-2. 左侧 **API**
-3. 记下 **VEID**，点 **Show API Key**
-4. 填入：
-
-```env
-BWH_VEID=你的VEID
-BWH_API_KEY=你的API_KEY
-```
-
-已用流量会乘上 `monthly_data_multiplier`（和 KiwiVM 面板一致）。这是套餐计费流量，用满会停机。
-
-### 3X-UI
-
-面板地址含自定义路径，不要末尾斜杠，也不要带上 `/panel`（3X-UI v3 会自动拼接）：
-
-```env
-XUI_BASE_URL=http://127.0.0.1:2053
-```
-
-如果面板有路径前缀，写成：
-
-```env
-XUI_BASE_URL=https://你的域名:2053/secret
-```
-
-认证二选一：
-
-1. **推荐** 面板里：设置 → 安全 → API Token（v3 支持作用域，且不受登录限流影响）
-
-```env
-XUI_API_TOKEN=你的token
-```
-
-2. 或账号密码（v3 登录需要 CSRF token，应用已自动处理；密码输错会在界面顶部显示面板的报错）：
-
-```env
-XUI_USERNAME=admin
-XUI_PASSWORD=你的密码
-```
-
-自签证书：
-
-```env
-XUI_VERIFY_SSL=0
-```
-
-3X-UI 若只监听本机，在笔记本上可先做隧道：
+跑测试：
 
 ```bash
-ssh -L 2053:127.0.0.1:2053 root@你的VPS
+./swift/scripts/test.sh           # 离线回归，24 项断言
+./swift/scripts/test.sh --live    # 额外打一次真实 3X-UI 面板
 ```
 
-然后 `XUI_BASE_URL=http://127.0.0.1:2053`
+## 数据放在哪
 
-应用内保存后会立刻重拉数据；勾选「清除已保存的密钥」可以删掉已存的 API Key / Token / 密码。`.env` 改完后重新打开应用。
+| 内容 | 位置 |
+| --- | --- |
+| 凭据（API Key、面板账号密码） | 登录钥匙串，经独立的凭据辅助程序读写 |
+| 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/WagongDeck/settings.json` |
+| 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
 
-## 界面会显示什么
+仓库根目录的 `.env` / `.env.example` 是**旧 Python 版本的遗留**，当前应用完全不读，可以删。
 
-- 搬瓦工：本月已用 / 额度 / 剩余 / 重置日、IP、机房、套餐
-- 近几天入站/出站曲线（KiwiVM `getRawUsageStats`）
-- 3X-UI：CPU / 内存 / 磁盘 / Xray 状态、各入站合计
-- 客户端表：上传、下载、配额占比、到期、是否在线
+## 目录结构
 
-搬瓦工统计的是 **整机** 流量；3X-UI 只统计 **节点客户端**。两者本来就不会相等。
-
-## 安全
-
-这是本机窗口应用，不要把接口端口映射到公网。若必须外网访问（不推荐），设置：
-
-```env
-DASHBOARD_PASSWORD=一个长密码
-HOST=0.0.0.0
+```
+swift/
+├── Sources/            应用与凭据辅助程序源码
+├── Tests/              回归测试与夹具
+├── DevTools/           手动排查用的脚本，不属于测试
+├── scripts/            构建、打包、凭据辅助程序的验证脚本
+├── packaging/          App 图标资源
+├── ReleaseAssets/      固定不动的凭据辅助程序发布件
+└── Docs/               结构与历史文档
 ```
 
-密钥保存在本机 `settings.json`（权限 600，仅当前用户可读）。后台每 30 秒轮询一次数据源，连续 5 分钟没有前端访问会自动暂停，避免白白消耗 KiwiVM 的 API 配额。
+每个文件的职责见 [`swift/Docs/STRUCTURE.md`](swift/Docs/STRUCTURE.md)。
 
-## Docker（可装在 VPS 本机）
+## 设计约束
 
-```bash
-docker build -t wagong-deck .
-docker run --rm -p 8787:8787 --env-file .env wagong-deck
-```
-
-和 3X-UI 同机时，`XUI_BASE_URL` 用 `http://127.0.0.1:2053`（注意容器网络要用 `host` 或容器网关访问宿主机）。
+界面遵循 [`.impeccable.md`](.impeccable.md)：浅色优先、单一蓝色主行动色、少量语义状态色，明确避免信息过密和霓虹感。改 UI 前请先读那五条原则。

@@ -1,8 +1,13 @@
-.venv/
+.DS_Store
+
+# Swift 构建产物。swift/ 纳入版本控制后必须忽略，否则会把整个 .build 提交进去。
+.build/
+*.dSYM
+
+# Tests/ 与 DevTools/ 下的 Python 辅助脚本
 __pycache__/
 *.pyc
+
+# 凭据不入库。应用把凭据放在钥匙串，设置文件在
+# ~/Library/Application Support/WagongDeck/settings.json。
 .env
-.DS_Store
-dist/
-packaging/macos/icon.iconset/
-packaging/macos/icon.png
