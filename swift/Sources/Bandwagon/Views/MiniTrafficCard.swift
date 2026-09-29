@@ -8,6 +8,9 @@ struct MiniTrafficCard: View {
     /// two bar rows touched the buckets ten times, and each touch rebuilt a
     /// 2,000-entry sample array.
     @State private var sampleCache = TrafficSampleCache()
+    /// Measured height of the plot area. The bars scale to whatever the card was
+    /// stretched to, so extra row height becomes a taller chart rather than padding.
+    @State private var plotHeight: CGFloat = 116
 
     private var buckets: [DailyBucket] {
         sampleCache.buckets(for: points, range: .week).compactMap { bucket in
@@ -43,7 +46,7 @@ struct MiniTrafficCard: View {
     }
 
     var body: some View {
-        GlassCard(padding: 20) {
+        GlassCard(padding: 20, fillsHeight: true) {
             VStack(alignment: .leading, spacing: 14) {
                 header
                 bars
@@ -60,7 +63,7 @@ struct MiniTrafficCard: View {
                     Button(action: onOpen) {
                         HStack(spacing: 5) {
                             Text("近 7 天流量")
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 9, weight: .semibold))
@@ -72,7 +75,7 @@ struct MiniTrafficCard: View {
                     .help("打开流量趋势")
                 } else {
                     Text("近 7 天流量")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                 }
                 Spacer()
             }
@@ -122,8 +125,13 @@ struct MiniTrafficCard: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
-                .frame(height: 116, alignment: .bottom)
+                .frame(height: plotHeight, alignment: .bottom)
             }
+            // minHeight holds the chart at its original size when the card is not in a
+            // row to fill — alone in a ScrollView the proposal is unbounded, and
+            // without the floor the plot would collapse to nothing.
+            .frame(minHeight: 116, maxHeight: .infinity, alignment: .bottom)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { plotHeight = $0 }
             HStack(spacing: 6) {
                 ForEach(buckets) { bucket in
                     Text(dayLabel(bucket.day))
@@ -178,7 +186,7 @@ struct MiniTrafficCard: View {
 
     private func barHeight(_ value: Int) -> CGFloat {
         let ratio = Double(value) / Double(maxValue)
-        return max(4, CGFloat(ratio) * 116)
+        return max(4, CGFloat(ratio) * plotHeight)
     }
 
     private func isToday(_ date: Date) -> Bool {

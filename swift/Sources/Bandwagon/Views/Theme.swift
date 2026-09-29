@@ -55,6 +55,13 @@ struct CardSurface: View {
 struct GlassCard<Content: View>: View {
     var padding: CGFloat = 22
     var tint: Color? = nil
+    /// Stretch the surface itself to the row height. The frame has to sit inside,
+    /// before the background: applied from outside it would only grow transparent
+    /// space and leave the two cards looking ragged anyway.
+    ///
+    /// Only worth setting when the card's content can absorb the extra height —
+    /// otherwise the surplus simply becomes empty space inside the card.
+    var fillsHeight: Bool = false
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -63,6 +70,7 @@ struct GlassCard<Content: View>: View {
         }
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxHeight: fillsHeight ? .infinity : nil, alignment: .top)
             .background(CardSurface(tint: tint))
             .shadow(color: .black.opacity(0.05), radius: 1.5, x: 0, y: 1)
             .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 7)

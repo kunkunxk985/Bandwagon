@@ -229,6 +229,16 @@ struct UICompositionRegression {
             !vps.contains("NeedsSettings ?"),
             "Service failures must be presented from one shared rule, not per page"
         )
+        // The traffic card used to be capped at 430pt while its chart was a fixed
+        // height, so it sat narrower and shorter than the clients card beside it.
+        require(
+            !overview.contains("maxWidth: 430") &&
+            overview.contains("GlassCard(padding: 20, fillsHeight: true)") &&
+            miniTraffic.contains("fillsHeight: true") &&
+            miniTraffic.contains("onGeometryChange") &&
+            miniTraffic.contains(".frame(minHeight: 116, maxHeight: .infinity"),
+            "The overview row must be two equal columns whose cards share one height"
+        )
         require(
             contentView.contains("accessibilityReduceMotion") &&
             clients.contains("accessibilityReduceMotion") &&

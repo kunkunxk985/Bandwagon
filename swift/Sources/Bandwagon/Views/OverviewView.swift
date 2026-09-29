@@ -196,12 +196,14 @@ struct OverviewView: View {
         let history = model.overview.bwhHistory ?? []
         let clients = topClients ?? []
         if !history.isEmpty && !clients.isEmpty {
-            // Natural heights, top-aligned. Stretching both to the taller one only
-            // grew empty space inside the shorter card.
+            // One row, two equal columns. The traffic card used to be capped at 430pt,
+            // so it sat both narrower and — because its chart was a fixed height —
+            // shorter than the clients card beside it.
             HStack(alignment: .top, spacing: 18) {
                 MiniTrafficCard(points: history, onOpen: { selectedTab = .vps })
-                    .frame(minWidth: 340, maxWidth: 430)
+                    .frame(maxWidth: .infinity)
                 topClientsCard(clients)
+                    .frame(maxWidth: .infinity)
             }
         } else if !history.isEmpty {
             MiniTrafficCard(points: history, onOpen: { selectedTab = .vps })
@@ -212,7 +214,7 @@ struct OverviewView: View {
 
     private func topClientsCard(_ clients: [Client]) -> some View {
         let maxUsed = clients.map { $0.used ?? 0 }.max() ?? 0
-        return GlassCard(padding: 20) {
+        return GlassCard(padding: 20, fillsHeight: true) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     Text("Top 客户端")
