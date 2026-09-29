@@ -290,14 +290,21 @@ struct OverviewView: View {
         var items: [SpecRow] = []
         let bwh = model.overview.bwh
         appendSpecRow(&items, icon: "globe", title: "位置", value: bwh?.location)
-        appendSpecRow(&items, icon: "memorychip", title: "内存", value: ByteFormat.string(bwh?.ramBytes))
-        if let diskLabel = diskUsageLabel(total: bwh?.diskBytes, used: bwh?.diskUsedBytes) {
-            let fraction: Double? = {
-                guard let total = bwh?.diskBytes, total > 0,
-                      let used = bwh?.diskUsedBytes, used > 0 else { return nil }
-                return min(1, Double(used) / Double(total))
-            }()
-            items.append(SpecRow(icon: "internaldrive", title: "磁盘", value: diskLabel, fraction: fraction))
+        if let ramLabel = usageLabel(total: bwh?.ramBytes, used: bwh?.ramUsedBytes) {
+            items.append(SpecRow(
+                icon: "memorychip",
+                title: "内存",
+                value: ramLabel,
+                fraction: usageFraction(total: bwh?.ramBytes, used: bwh?.ramUsedBytes)
+            ))
+        }
+        if let diskLabel = usageLabel(total: bwh?.diskBytes, used: bwh?.diskUsedBytes) {
+            items.append(SpecRow(
+                icon: "internaldrive",
+                title: "磁盘",
+                value: diskLabel,
+                fraction: usageFraction(total: bwh?.diskBytes, used: bwh?.diskUsedBytes)
+            ))
         }
         return items
     }

@@ -141,7 +141,14 @@ final class TrafficSampleCache {
 struct TrafficSummary: Equatable {
     let inboundTotal: Int
     let outboundTotal: Int
+    /// Highest single-direction bucket. This is what the chart's y-axis has to
+    /// cover, because the plotted series are one direction each.
     let peak: Int
+    /// Highest combined (download + upload) bucket. The summary row reports this
+    /// instead of `peak`, so the "busiest bucket" figure is on the same footing as
+    /// the daily average — otherwise a single-direction peak can read as *lower*
+    /// than the combined average, which looks like a bug.
+    let combinedPeak: Int
     let medianInterval: Int
 }
 
@@ -297,15 +304,18 @@ enum TrafficChartData {
         var inboundTotal = 0
         var outboundTotal = 0
         var peak = 0
+        var combinedPeak = 0
         for bucket in buckets {
             inboundTotal = saturatingAdd(inboundTotal, bucket.inbound)
             outboundTotal = saturatingAdd(outboundTotal, bucket.outbound)
             peak = max(peak, max(bucket.inbound, bucket.outbound))
+            combinedPeak = max(combinedPeak, saturatingAdd(bucket.inbound, bucket.outbound))
         }
         return TrafficSummary(
             inboundTotal: inboundTotal,
             outboundTotal: outboundTotal,
             peak: peak,
+            combinedPeak: combinedPeak,
             medianInterval: 0
         )
     }
@@ -397,6 +407,7 @@ enum TrafficChartData {
             total = saturatingAdd(total, sample.outbound)
         }
         let peak = samples.map(\.peak).max() ?? 0
+        let combinedPeak = samples.map { saturatingAdd($0.inbound, $0.outbound) }.max() ?? 0
         let intervals = zip(samples, samples.dropFirst())
             .map { $1.timestamp - $0.timestamp }
             .filter { $0 > 0 }
@@ -406,6 +417,7 @@ enum TrafficChartData {
             inboundTotal: inboundTotal,
             outboundTotal: outboundTotal,
             peak: peak,
+            combinedPeak: combinedPeak,
             medianInterval: medianInterval
         )
     }
@@ -418,10 +430,12 @@ enum TrafficChartData {
             total = saturatingAdd(total, bucket.outbound)
         }
         let peak = buckets.map { max($0.inbound, $0.outbound) }.max() ?? 0
+        let combinedPeak = buckets.map { saturatingAdd($0.inbound, $0.outbound) }.max() ?? 0
         return TrafficSummary(
             inboundTotal: inboundTotal,
             outboundTotal: outboundTotal,
             peak: peak,
+            combinedPeak: combinedPeak,
             medianInterval: 0
         )
     }

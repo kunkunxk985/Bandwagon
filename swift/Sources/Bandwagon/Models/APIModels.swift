@@ -25,6 +25,7 @@ struct BWHOverview: Codable {
     var resetAt: Int?
     var multiplier: Double?
     var ramBytes: Int?
+    var ramUsedBytes: Int?
     var diskBytes: Int?
     var diskUsedBytes: Int?
 }

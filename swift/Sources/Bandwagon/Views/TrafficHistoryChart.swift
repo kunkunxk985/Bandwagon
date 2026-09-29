@@ -82,9 +82,12 @@ struct TrafficHistoryChart: View {
                 value: TrafficChartData.valueLabel(summary.outboundTotal),
                 color: Theme.accent
             )
+            // Combined, not single-direction: this tile sits beside the average, and
+            // the average is combined too. Reporting a single-direction peak here
+            // made it read as smaller than the average, which looks broken.
             TrafficMetric(
                 title: "单日/时段峰值",
-                value: TrafficChartData.valueLabel(summary.peak),
+                value: TrafficChartData.valueLabel(summary.combinedPeak),
                 color: .orange
             )
             TrafficMetric(

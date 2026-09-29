@@ -77,6 +77,7 @@ enum BWHClient {
             resetAt: JSONValue.int(info["data_next_reset"]),
             multiplier: multiplier,
             ramBytes: JSONValue.int(info["plan_ram"]),
+            ramUsedBytes: ramUsed(info, live: live),
             diskBytes: JSONValue.int(info["plan_disk"]),
             diskUsedBytes: diskUsed(live)
         )
@@ -98,6 +99,19 @@ enum BWHClient {
     private static func diskUsed(_ live: [String: Any]) -> Int? {
         let bytes = JSONValue.int(live["ve_used_disk_space_b"])
         return bytes > 0 ? bytes : nil
+    }
+
+    /// RAM in use. The plan states the allowance and the live call reports how much is
+    /// still available inside the guest, so the difference is what is in use. Clamped to
+    /// the plan: a guest that reports more free memory than the plan allows would
+    /// otherwise yield a negative figure and an inverted bar.
+    private static func ramUsed(_ info: [String: Any], live: [String: Any]) -> Int? {
+        let total = JSONValue.int(info["plan_ram"])
+        let availableKB = JSONValue.int(live["mem_available_kb"])
+        let (availableBytes, overflow) = availableKB.multipliedReportingOverflow(by: 1024)
+        guard total > 0, availableKB > 0, !overflow else { return nil }
+        let used = total - availableBytes
+        return used > 0 ? min(used, total) : nil
     }
 
     /// Returns the raw body so the two optional calls can run concurrently: `Data` is

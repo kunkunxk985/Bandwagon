@@ -210,14 +210,22 @@ func appendSpecRow(_ items: inout [SpecRow], icon: String, title: String, value:
     items.append(SpecRow(icon: icon, title: title, value: value))
 }
 
-/// Formats disk usage as "used / total" when a used value is known.
-func diskUsageLabel(total: Int?, used: Int?) -> String? {
+/// Formats a capacity as "used / total" when a used value is known, and as just the
+/// total otherwise. Used by the memory and disk cells, which read the same shape.
+func usageLabel(total: Int?, used: Int?) -> String? {
     guard let total, total > 0 else { return nil }
     let totalText = ByteFormat.string(total)
     if let used, used > 0 {
         return "\(ByteFormat.string(used)) / \(totalText)"
     }
     return totalText
+}
+
+/// Used/total as a 0...1 fraction for a spec cell's bar, or nil when either side is
+/// missing or nonsensical — a cell with no bar is better than a bar at a wrong length.
+func usageFraction(total: Int?, used: Int?) -> Double? {
+    guard let total, total > 0, let used, used > 0 else { return nil }
+    return min(1, Double(used) / Double(total))
 }
 
 /// Icon + label + value cell used by spec grids and the overview strip.

@@ -21,6 +21,7 @@ struct TrafficChartRegression {
         guard summary.inboundTotal == 6_442_450_944,
               summary.outboundTotal == 1_879_048_192,
               summary.peak == 3_221_225_472,
+              summary.combinedPeak == 4_294_967_296,
               summary.medianInterval == 7_200 else {
             fail("summary totals, peak, or median interval are incorrect")
         }
@@ -97,7 +98,8 @@ struct TrafficChartRegression {
         let hourlySummary = TrafficChartData.summary(for: hourlyBuckets)
         guard hourlySummary.inboundTotal == 35,
               hourlySummary.outboundTotal == 6,
-              hourlySummary.peak == 30 else {
+              hourlySummary.peak == 30,
+              hourlySummary.combinedPeak == 33 else {
             fail("24-hour summary must report aggregated hourly totals and peak")
         }
 
@@ -140,7 +142,8 @@ struct TrafficChartRegression {
         let weekSummary = TrafficChartData.summary(for: weekBuckets)
         guard weekSummary.inboundTotal == 70,
               weekSummary.outboundTotal == 28,
-              weekSummary.peak == 10 else {
+              weekSummary.peak == 10,
+              weekSummary.combinedPeak == 14 else {
             fail("chart summary must be derived from the same trimmed buckets it draws")
         }
 

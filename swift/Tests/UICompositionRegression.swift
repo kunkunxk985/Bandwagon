@@ -239,6 +239,20 @@ struct UICompositionRegression {
             miniTraffic.contains(".frame(minHeight: 116, maxHeight: .infinity"),
             "The overview row must be two equal columns whose cards share one height"
         )
+        // The y-axis must cover the single-direction series it plots, while the peak
+        // tile sits beside a combined average and has to match it. One figure cannot
+        // serve both: it made the peak read as smaller than the average.
+        require(
+            trafficChart.contains("Double(summary.peak) * 1.18") &&
+            trafficChart.contains("TrafficChartData.valueLabel(summary.combinedPeak)"),
+            "The peak tile must report the combined figure while the y-axis keeps the per-direction one"
+        )
+        require(
+            overview.contains("usageLabel(total: bwh?.ramBytes") &&
+            vps.contains("usageLabel(total: bwh?.ramBytes") &&
+            !overview.contains("diskUsageLabel"),
+            "Memory and disk cells must share one usage formatter"
+        )
         require(
             contentView.contains("accessibilityReduceMotion") &&
             clients.contains("accessibilityReduceMotion") &&
