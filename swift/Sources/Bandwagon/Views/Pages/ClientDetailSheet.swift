@@ -113,12 +113,7 @@ struct ClientDetailSheet: View {
     }
 
     private func header(_ client: Client) -> some View {
-        HStack(spacing: 14) {
-            Text(String(client.name.prefix(1)))
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 42, height: 42)
-                .background(Theme.fill, in: Circle())
+        HStack(alignment: .firstTextBaseline, spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(client.name)
                     .font(.system(size: 17, weight: .semibold))

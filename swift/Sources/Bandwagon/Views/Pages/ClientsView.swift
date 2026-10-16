@@ -199,7 +199,7 @@ struct ClientsView: View {
                             ForEach(Array(visibleClients.enumerated()), id: \.element.id) { index, client in
                                 if index > 0 {
                                     CardDivider()
-                                        .padding(.leading, 58)
+                                        .padding(.leading, ClientColumns.inset)
                                 }
                                 ClientRow(client: client, maxUsed: busiestUsage)
                             }
@@ -273,7 +273,6 @@ private struct ClientTableHeader: View {
         HStack(spacing: ClientColumns.spacing) {
             Text("客户端")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 40)
             Color.clear
                 .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
             Text("用量")
@@ -333,23 +332,18 @@ struct ClientRow: View {
 
     var body: some View {
         HStack(spacing: ClientColumns.spacing) {
-            HStack(spacing: 12) {
-                Text(String(client.name.prefix(1)))
-                    .font(.system(size: 11.5, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(Theme.fill, in: Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(client.name)
-                        .font(.system(size: 13, weight: .medium))
+            // Name first, no initial avatar: a grey circle holding "杜" twice and
+            // "C" once said nothing the name beside it didn't, and pushed every
+            // name 40pt in from the table edge.
+            VStack(alignment: .leading, spacing: 2) {
+                Text(client.name)
+                    .font(.system(size: 13, weight: .medium))
+                    .lineLimit(1)
+                if let email = client.email, !email.isEmpty, email != client.name {
+                    Text(email)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    if let email = client.email, !email.isEmpty, email != client.name {
-                        Text(email)
-                            .font(.system(size: 11.5))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

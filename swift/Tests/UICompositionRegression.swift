@@ -125,9 +125,11 @@ struct UICompositionRegression {
             "Repeated client rows must not use per-row real-time blur"
         )
         require(
-            clients.contains("Text(String(client.name.prefix(1)))") &&
+            clients.contains("Text(client.name)") &&
+            clients.contains("Text(email)") &&
+            !clients.contains("prefix(1)") &&
             clients.contains(".frame(minWidth: 64, maxWidth: 120)"),
-            "Client rows must show distinct identity and shrink the usage bar before names"
+            "Client rows lead with name and email (no initial avatar) and shrink the usage bar before names"
         )
         require(
             clients.contains(".accessibilityLabel(copied ? \"已复制 \\(client.name) 的邮箱\"") &&
