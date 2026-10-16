@@ -48,7 +48,7 @@ The fixture's one client is synthetic test data, not the production count. Tests
 - Binary: 1,134,064 bytes. `AppIcon.icns` present.
 - Installed `__TEXT,__text` and `__TEXT,__cstring` match the built release. Whole-file hash differs because bundle signing changes the signature.
 - UI verification output: `PASS packaged app Clients view shows authentication error, not empty state`.
-- Cua captures could not discover the window; native Accessibility traversal did find it and verified navigation and displayed error without recording private labels.
+- Screenshot-based window capture could not discover the window; native Accessibility traversal did find it and verified navigation and displayed error without recording private labels.
 
 ## Modified production files
 - `Sources/Bandwagon/Services/XUIClient.swift`: browser-equivalent form login (`application/x-www-form-urlencoded`), correct cookie-session CSRF, `X-Requested-With`, Origin/Referer, 2FA payload, HTTP errors retained, route fallback restricted to 404/405, session cleanup.

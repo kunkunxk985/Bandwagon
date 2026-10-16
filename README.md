@@ -54,7 +54,7 @@ swift/
 └── Docs/               结构与历史文档
 ```
 
-每个文件的职责见 [`swift/Docs/STRUCTURE.md`](swift/Docs/STRUCTURE.md)。
+每个文件的职责见 [`swift/Docs/STRUCTURE.md`](swift/Docs/STRUCTURE.md)；已定的取舍与踩过的坑见 [`swift/Docs/DECISIONS.md`](swift/Docs/DECISIONS.md)；连不上时看 [`swift/Docs/TROUBLESHOOTING.md`](swift/Docs/TROUBLESHOOTING.md)。
 
 ## 设计约束
 

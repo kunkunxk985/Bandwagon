@@ -155,6 +155,8 @@ swift/
 | --- | --- |
 | `packaging/macos/icon.iconset/` | App 图标源文件，`package-app.sh` 用 `iconutil` 转成 `.icns`。生成脚本 `make_icon.py` 已在 Python 时代删除，**所以这些 PNG 不可再生** |
 | `ReleaseAssets/BandwagonCredentialBridge-v1` | 已签名的辅助程序发布件。摘要与 `scripts/credential-bridge.sha256`、`KeychainCredentialStore.helperSHA256` 三处必须一致 |
+| `Docs/DECISIONS.md` | 已定的界面取舍、改 UI 的流程、工程约定与踩过的坑。改动前先看 |
+| `Docs/TROUBLESHOOTING.md` | 连接排查：搬瓦工 API 失败而 3X-UI 正常时，如何判断是不是本地代理（fake-ip）的问题 |
 | `Docs/3X-UI-verification.md` | 历史记录：当初 3X-UI 认证失败的排查过程与结论。**不是当前状态**，仅存档 |
 
 ## 3X-UI 写操作
