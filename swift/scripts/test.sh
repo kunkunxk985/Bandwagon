@@ -28,7 +28,7 @@ python3 Tests/http_fixture.py "$OUT/http"
 "$OUT/usage-policy-regression"
 
 "$SWIFTC" "${ARGS[@]}" -parse-as-library \
-  Sources/Bandwagon/Views/RomanCredentialField.swift \
+  Sources/Bandwagon/Views/Components/RomanCredentialField.swift \
   Tests/InputPolicyRegression.swift -o "$OUT/input-policy-regression"
 "$OUT/input-policy-regression"
 

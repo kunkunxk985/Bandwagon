@@ -6,7 +6,7 @@ struct SecurityRegression {
     static func main() throws {
         let client = try source("Sources/Bandwagon/Services/XUIClient.swift")
         let settings = try source("Sources/Bandwagon/Services/SettingsStore.swift")
-        let settingsView = try source("Sources/Bandwagon/Views/SettingsView.swift")
+        let settingsView = try source("Sources/Bandwagon/Views/Pages/SettingsView.swift")
         let appModel = try source("Sources/Bandwagon/Services/AppModel.swift")
         let app = try source("Sources/Bandwagon/BandwagonApp.swift")
         let packageScript = try source("scripts/package-app.sh")

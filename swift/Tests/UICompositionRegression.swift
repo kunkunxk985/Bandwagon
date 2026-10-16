@@ -3,18 +3,18 @@ import Foundation
 @main
 struct UICompositionRegression {
     static func main() throws {
-        let theme = try source("Sources/Bandwagon/Views/Theme.swift")
-        let statusViews = try source("Sources/Bandwagon/Views/StatusViews.swift")
-        let modelPresentation = try source("Sources/Bandwagon/Views/ModelPresentation.swift")
-        let settings = try source("Sources/Bandwagon/Views/SettingsView.swift")
-        let overview = try source("Sources/Bandwagon/Views/OverviewView.swift")
-        let clients = try source("Sources/Bandwagon/Views/ClientsView.swift")
+        let theme = try source("Sources/Bandwagon/Views/DesignSystem/Theme.swift")
+        let statusViews = try source("Sources/Bandwagon/Views/Components/StatusViews.swift")
+        let modelPresentation = try source("Sources/Bandwagon/Views/DesignSystem/ModelPresentation.swift")
+        let settings = try source("Sources/Bandwagon/Views/Pages/SettingsView.swift")
+        let overview = try source("Sources/Bandwagon/Views/Pages/OverviewView.swift")
+        let clients = try source("Sources/Bandwagon/Views/Pages/ClientsView.swift")
         let settingsStore = try source("Sources/Bandwagon/Services/SettingsStore.swift")
         let app = try source("Sources/Bandwagon/BandwagonApp.swift")
 
         require(
             theme.contains("VStack(alignment: .leading, spacing: 0) {\n            content"),
-            "GlassCard must wrap multi-view content in one stack so a section renders as one surface"
+            "Panel must wrap multi-view content in one stack so a section renders as one surface"
         )
         require(
             statusViews.contains("let action: (() -> Void)?") &&
@@ -41,7 +41,7 @@ struct UICompositionRegression {
             "Loading states must not create empty action buttons"
         )
 
-        let contentView = try source("Sources/Bandwagon/Views/ContentView.swift")
+        let contentView = try source("Sources/Bandwagon/Views/Shell/ContentView.swift")
         require(
             overview.contains("@Binding var selectedTab: ContentView.Tab") &&
             overview.contains("selectedTab = .settings") &&
@@ -55,7 +55,7 @@ struct UICompositionRegression {
             "Overview and Clients must route typed XUI authentication failures to Settings"
         )
 
-        let vps = try source("Sources/Bandwagon/Views/VPSView.swift")
+        let vps = try source("Sources/Bandwagon/Views/Pages/VPSView.swift")
         require(
             vps.contains("@Binding var selectedTab: ContentView.Tab") &&
             contentView.contains("VPSView(selectedTab: $tab)") &&
@@ -76,7 +76,7 @@ struct UICompositionRegression {
             "Sidebar must not spend space on decorative version microcopy"
         )
 
-        let trafficChart = try source("Sources/Bandwagon/Views/TrafficHistoryChart.swift")
+        let trafficChart = try source("Sources/Bandwagon/Views/Components/TrafficHistoryChart.swift")
         require(
             trafficChart.contains("ForEach(visibleBuckets)") &&
             !trafficChart.contains("ForEach(Array(visibleBuckets.enumerated()), id: \\.offset)"),
@@ -90,7 +90,7 @@ struct UICompositionRegression {
             "Traffic chart must retain shaded data and precisely positioned x-axis labels"
         )
 
-        let components = try source("Sources/Bandwagon/Views/Components.swift")
+        let components = try source("Sources/Bandwagon/Views/Components/Components.swift")
         require(
             components.contains("struct UsageBar: View") &&
             components.contains("struct StatusPill: View") &&
@@ -134,7 +134,7 @@ struct UICompositionRegression {
             overview.contains(".accessibilityLabel(copied ? \"已复制 \\(client.name) 的邮箱\""),
             "Copy buttons must name their client instead of repeating one identical VoiceOver label"
         )
-        let miniTraffic = try source("Sources/Bandwagon/Views/MiniTrafficCard.swift")
+        let miniTraffic = try source("Sources/Bandwagon/Views/Components/MiniTrafficCard.swift")
         let chartData = try source("Sources/Bandwagon/Models/TrafficChartData.swift")
         require(
             miniTraffic.contains("legend(\"下载\"") &&
@@ -215,9 +215,12 @@ struct UICompositionRegression {
         )
         require(
             theme.contains("var tint: Color = Theme.accent") &&
-            theme.contains("tint: UsageRing.color(for: progress)") &&
-            !theme.contains("AngularGradient(colors: [Theme.accent, .cyan, Theme.accent]"),
-            "The hero ring must take its colour from usage instead of a fixed gradient"
+            !theme.contains("AngularGradient(") &&
+            components.contains("forecast == .over") &&
+            components.contains("forecast == .tight") &&
+            overview.contains("tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict)") &&
+            vps.contains("tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict)"),
+            "The hero ring must take its colour from usage and the forecast instead of a fixed gradient"
         )
         // Three pages each carrying their own copy of the same four decisions is how
         // they drift apart; they must share one rule instead.
@@ -233,7 +236,7 @@ struct UICompositionRegression {
         // height, so it sat narrower and shorter than the clients card beside it.
         require(
             !overview.contains("maxWidth: 430") &&
-            overview.contains("GlassCard(padding: 20, fillsHeight: true)") &&
+            overview.contains("Panel(padding: 0, fillsHeight: true)") &&
             miniTraffic.contains("fillsHeight: true") &&
             miniTraffic.contains("onGeometryChange") &&
             miniTraffic.contains(".frame(minHeight: 116, maxHeight: .infinity"),
@@ -255,7 +258,7 @@ struct UICompositionRegression {
         )
         require(
             contentView.contains("accessibilityReduceMotion") &&
-            clients.contains("accessibilityReduceMotion") &&
+            (clients.contains("accessibilityReduceMotion") || !clients.contains(".animation(")) &&
             settings.contains("accessibilityReduceMotion") &&
             trafficChart.contains("accessibilityReduceMotion"),
             "Reduce Motion must be honoured wherever the app animates"

@@ -51,13 +51,7 @@ struct TrafficHistoryChart: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 20) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("流量趋势")
-                    .font(.system(size: 16, weight: .semibold))
-                Text(chartHint)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
+            PanelHeader(title: "流量趋势", subtitle: chartHint)
             Spacer()
             Picker("时间范围", selection: $range) {
                 ForEach(TrafficRange.allCases) { item in
@@ -66,34 +60,37 @@ struct TrafficHistoryChart: View {
             }
             .labelsHidden()
             .pickerStyle(.segmented)
-            .frame(width: 320)
+            .frame(width: 300)
         }
     }
 
     private var summaryRow: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 0) {
             TrafficMetric(
                 title: "区间下载",
                 value: TrafficChartData.valueLabel(summary.inboundTotal),
-                color: .teal
+                color: Theme.series2
             )
+            StatDivider(height: 38)
             TrafficMetric(
                 title: "区间上传",
                 value: TrafficChartData.valueLabel(summary.outboundTotal),
                 color: Theme.accent
             )
+            StatDivider(height: 38)
             // Combined, not single-direction: this tile sits beside the average, and
             // the average is combined too. Reporting a single-direction peak here
             // made it read as smaller than the average, which looks broken.
             TrafficMetric(
                 title: "单日/时段峰值",
                 value: TrafficChartData.valueLabel(summary.combinedPeak),
-                color: .orange
+                color: nil
             )
+            StatDivider(height: 38)
             TrafficMetric(
                 title: averageTitle,
                 value: TrafficChartData.valueLabel(perBucketAverage),
-                color: .secondary
+                color: nil
             )
         }
     }
@@ -135,7 +132,7 @@ struct TrafficHistoryChart: View {
                 )
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color.teal.opacity(0.18), Color.teal.opacity(0.015)],
+                        colors: [Theme.series2.opacity(0.14), Theme.series2.opacity(0.0)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -149,7 +146,7 @@ struct TrafficHistoryChart: View {
                 )
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Theme.accent.opacity(0.12), Theme.accent.opacity(0.01)],
+                        colors: [Theme.accent.opacity(0.10), Theme.accent.opacity(0.0)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -163,8 +160,8 @@ struct TrafficHistoryChart: View {
                     y: .value("下载", Double(bucket.inbound)),
                     series: .value("方向", "下载")
                 )
-                .foregroundStyle(.teal)
-                .lineStyle(StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                .foregroundStyle(Theme.series2)
+                .lineStyle(StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
                 .interpolationMethod(.linear)
 
                 LineMark(
@@ -173,7 +170,7 @@ struct TrafficHistoryChart: View {
                     series: .value("方向", "上传")
                 )
                 .foregroundStyle(Theme.accent)
-                .lineStyle(StrokeStyle(lineWidth: 2.0, lineCap: .round, lineJoin: .round, dash: [6, 4]))
+                .lineStyle(StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round, dash: [5, 3]))
                 .interpolationMethod(.linear)
 
                 if let hoveredDate, abs(hoveredDate.timeIntervalSince(bucket.date)) < 1 {
@@ -185,14 +182,14 @@ struct TrafficHistoryChart: View {
                         x: .value("时间", bucket.date),
                         y: .value("下载", Double(bucket.inbound))
                     )
-                    .symbolSize(48)
-                    .foregroundStyle(.teal)
+                    .symbolSize(36)
+                    .foregroundStyle(Theme.series2)
 
                     PointMark(
                         x: .value("时间", bucket.date),
                         y: .value("上传", Double(bucket.outbound))
                     )
-                    .symbolSize(48)
+                    .symbolSize(36)
                     .foregroundStyle(Theme.accent)
                 }
             }
@@ -200,14 +197,12 @@ struct TrafficHistoryChart: View {
         .chartYScale(domain: 0...yMaximum)
         .chartYAxis {
             AxisMarks(position: .leading, values: .automatic(desiredCount: 5)) { value in
-                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.6, dash: [3, 4]))
-                    .foregroundStyle(Color.primary.opacity(0.13))
-                AxisTick(stroke: StrokeStyle(lineWidth: 0.6))
-                    .foregroundStyle(Color.primary.opacity(0.22))
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(Theme.hairline)
                 if let bytes = value.as(Double.self) {
                     AxisValueLabel {
                         Text(TrafficChartData.axisLabel(bytes))
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .font(.system(size: 10.5))
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
@@ -216,26 +211,16 @@ struct TrafficHistoryChart: View {
         }
         .chartXAxis {
             AxisMarks(values: xAxisDates) { _ in
-                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                    .foregroundStyle(Color.primary.opacity(0.10))
-                AxisTick(stroke: StrokeStyle(lineWidth: 0.7))
-                    .foregroundStyle(Color.primary.opacity(0.28))
+                AxisTick(stroke: StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(Theme.border)
             }
         }
         .chartPlotStyle { plot in
-            plot
-                .background(
-                    LinearGradient(
-                        colors: [Theme.accent.opacity(0.055), Color.primary.opacity(0.012)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.055), lineWidth: 1)
-                )
+            plot.overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(Theme.border)
+                    .frame(height: 1)
+            }
         }
         .chartOverlay { proxy in
             GeometryReader { geometry in
@@ -300,8 +285,8 @@ struct TrafficHistoryChart: View {
             ForEach(xAxisDates, id: \.self) { date in
                 if let x = proxy.position(forX: date) {
                     Text(axisDate(date))
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.primary.opacity(0.72))
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(.secondary)
                         .monospacedDigit()
                         .position(
                             x: min(max(frame.origin.x + x, 24), geometry.size.width),
@@ -383,20 +368,19 @@ private struct FocusCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 18) {
+            HStack(spacing: 8) {
                 Text(title)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(Theme.label)
                     .foregroundStyle(.secondary)
                 Text(detail)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
+                    .font(Theme.number(13, weight: .semibold))
             }
             Spacer()
             TrafficLegendValue(
                 title: "下载",
                 value: TrafficChartData.valueLabel(bucket.inbound),
-                color: .teal
+                color: Theme.series2
             )
             TrafficLegendValue(
                 title: "上传",
@@ -405,70 +389,39 @@ private struct FocusCard: View {
                 dashed: true
             )
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(
-            LinearGradient(
-                colors: [Color.teal.opacity(0.10), Theme.accent.opacity(0.055)],
-                startPoint: .leading,
-                endPoint: .trailing
-            ),
-            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.accent.opacity(0.12), lineWidth: 0.8)
-        )
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Theme.fill.opacity(0.7), in: RoundedRectangle(cornerRadius: Theme.controlRadius + 1, style: .continuous))
     }
 }
 
 private struct TrafficMetric: View {
     let title: String
     let value: String
-    let color: Color
+    /// Series colour when the figure belongs to one plotted line; nil for derived
+    /// figures, which then carry no swatch.
+    let color: Color?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 7) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 7, height: 7)
-                    .shadow(color: color.opacity(0.45), radius: 4)
+            HStack(spacing: 6) {
+                if let color {
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(color)
+                        .frame(width: 8, height: 8)
+                }
                 Text(title)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(Theme.label)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .monospacedDigit()
+                .font(Theme.number(20))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 12)
-        .padding(.bottom, 17)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [color.opacity(0.12), Color.primary.opacity(0.025)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .strokeBorder(color.opacity(0.13), lineWidth: 0.8)
-        )
-        .overlay(alignment: .bottomLeading) {
-            Capsule()
-                .fill(color.opacity(0.78))
-                .frame(width: 27, height: 2)
-                .padding(.leading, 14)
-                .padding(.bottom, 8)
-        }
+        .padding(.leading, 4)
     }
 }
 
@@ -484,14 +437,13 @@ private struct TrafficLegendValue: View {
                 path.move(to: CGPoint(x: 0, y: 2))
                 path.addLine(to: CGPoint(x: 14, y: 2))
             }
-            .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: dashed ? [5, 3] : []))
+            .stroke(color, style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: dashed ? [4, 3] : []))
             .frame(width: 14, height: 4)
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.label)
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .monospacedDigit()
+                .font(Theme.number(13))
         }
     }
 }

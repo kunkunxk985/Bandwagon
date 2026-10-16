@@ -46,8 +46,8 @@ struct MiniTrafficCard: View {
     }
 
     var body: some View {
-        GlassCard(padding: 20, fillsHeight: true) {
-            VStack(alignment: .leading, spacing: 14) {
+        Panel(padding: 20, fillsHeight: true) {
+            VStack(alignment: .leading, spacing: 16) {
                 header
                 bars
                 CardDivider()
@@ -58,53 +58,31 @@ struct MiniTrafficCard: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 9) {
-            HStack(spacing: 10) {
+            PanelHeader(title: "近 7 天流量") {
                 if let onOpen {
-                    Button(action: onOpen) {
-                        HStack(spacing: 5) {
-                            Text("近 7 天流量")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(.tertiary)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("打开流量趋势")
-                } else {
-                    Text("近 7 天流量")
-                        .font(.system(size: 16, weight: .semibold))
+                    PanelLink(title: "流量趋势", action: onOpen)
+                        .help("打开流量趋势")
                 }
-                Spacer()
             }
-            HStack(spacing: 8) {
-                legend("下载", value: inboundTotal, color: .teal)
-                Spacer(minLength: 4)
+            HStack(spacing: 18) {
+                legend("下载", value: inboundTotal, color: Theme.series2)
                 legend("上传", value: outboundTotal, color: Theme.accent)
+                Spacer(minLength: 0)
             }
         }
     }
 
     private func legend(_ title: String, value: Int, color: Color) -> some View {
         HStack(spacing: 6) {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [color.opacity(0.95), color.opacity(0.55)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(width: 14, height: 3.5)
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(color)
+                .frame(width: 8, height: 8)
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(Theme.label)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Text(TrafficChartData.valueLabel(value))
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .monospacedDigit()
+                .font(Theme.number(12.5, weight: .medium))
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
         }
@@ -114,12 +92,12 @@ struct MiniTrafficCard: View {
         VStack(spacing: 7) {
             ZStack(alignment: .bottom) {
                 Rectangle()
-                    .fill(Color.primary.opacity(0.07))
+                    .fill(Theme.hairline)
                     .frame(height: 1)
                 HStack(alignment: .bottom, spacing: 6) {
                     ForEach(buckets) { bucket in
-                        HStack(alignment: .bottom, spacing: 5) {
-                            bar(height: barHeight(bucket.inbound), color: .teal, highlighted: isToday(bucket.day))
+                        HStack(alignment: .bottom, spacing: 3) {
+                            bar(height: barHeight(bucket.inbound), color: Theme.series2, highlighted: isToday(bucket.day))
                             bar(height: barHeight(bucket.outbound), color: Theme.accent, highlighted: isToday(bucket.day))
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -135,7 +113,7 @@ struct MiniTrafficCard: View {
             HStack(spacing: 6) {
                 ForEach(buckets) { bucket in
                     Text(dayLabel(bucket.day))
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .font(.system(size: 10.5, weight: isToday(bucket.day) ? .semibold : .regular))
                         .foregroundStyle(isToday(bucket.day) ? AnyShapeStyle(Color.primary) : AnyShapeStyle(Color.secondary))
                         .monospacedDigit()
                         .frame(maxWidth: .infinity)
@@ -163,30 +141,24 @@ struct MiniTrafficCard: View {
     private func stat(title: String, value: String) -> some View {
         HStack(spacing: 6) {
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(Theme.label)
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .monospacedDigit()
+                .font(Theme.number(12.5, weight: .medium))
         }
     }
 
+    /// Flat bars, rounded only at the top. The partial current day is drawn lighter
+    /// so its short bar reads as "not over yet" rather than as a drop in traffic.
     private func bar(height: CGFloat, color: Color, highlighted: Bool) -> some View {
-        RoundedRectangle(cornerRadius: 3.5, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [color.opacity(0.98), color.opacity(0.55)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .frame(width: 15, height: height)
-            .shadow(color: highlighted ? color.opacity(0.35) : Color.clear, radius: 4, x: 0, y: 1)
+        UnevenRoundedRectangle(topLeadingRadius: 2.5, topTrailingRadius: 2.5, style: .continuous)
+            .fill(color.opacity(highlighted ? 0.45 : 1))
+            .frame(width: 9, height: height)
     }
 
     private func barHeight(_ value: Int) -> CGFloat {
         let ratio = Double(value) / Double(maxValue)
-        return max(4, CGFloat(ratio) * plotHeight)
+        return max(3, CGFloat(ratio) * plotHeight)
     }
 
     private func isToday(_ date: Date) -> Bool {

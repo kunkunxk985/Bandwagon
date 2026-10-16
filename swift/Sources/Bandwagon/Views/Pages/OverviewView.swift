@@ -9,15 +9,25 @@ struct OverviewView: View {
     }
 
     var body: some View {
+        // The header scrolls with the page. Pinned outside the scroll view it ran
+        // wider than the panels whenever the system shows legacy scroll bars.
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                bwhSection
-                xuiSection
-                activitySection
-                serverSummarySection
+            VStack(alignment: .leading, spacing: 0) {
+                PageHeader(title: "总览", subtitle: hostSubtitle) {
+                    headerFacts
+                }
+                .pageHeaderInsets()
+
+                VStack(alignment: .leading, spacing: Theme.gap) {
+                    bwhSection
+                    xuiSection
+                    activitySection
+                    serverSummarySection
+                }
+                .padding(.horizontal, Theme.pagePadding)
+                .padding(.bottom, Theme.pagePadding)
+                .modifier(CenterWhenShort(enabled: !hasAnyData, reserving: Theme.pageHeaderHeight))
             }
-            .padding(28)
-            .modifier(CenterWhenShort(enabled: !hasAnyData))
         }
         .navigationTitle("总览")
     }
@@ -26,6 +36,34 @@ struct OverviewView: View {
     /// the page is nothing but state cards, which belong centred rather than scrolled.
     private var hasAnyData: Bool {
         model.overview.bwh != nil || model.overview.xui != nil
+    }
+
+    // MARK: - 页头
+
+    private var hostSubtitle: String? {
+        guard let bwh = model.overview.bwh, bwh.usedBytes != nil else { return nil }
+        return [hostTitle, hostIP].compactMap { $0 }.joined(separator: " · ")
+    }
+
+    /// Server health and client counts, read as one line of facts beside the title.
+    /// Counts stay visible even when the last fetch failed; the banner below is what
+    /// flags them as possibly stale.
+    private var headerFacts: some View {
+        HStack(spacing: 18) {
+            if let bwh = model.overview.bwh, bwh.usedBytes != nil {
+                // Status carries colour *and* text, so health is never colour-only.
+                StatusPill(title: bwh.healthLabel, tint: bwh.healthTint)
+            }
+            if let xui = model.overview.xui,
+               let online = xui.onlineCount, let clients = xui.clientCount {
+                HeroChip(icon: "person.2", value: "\(online)", label: "在线")
+                HeroChip(icon: "rectangle.stack", value: "\(clients)", label: "客户端")
+            }
+            if model.xuiLoading {
+                ProgressView()
+                    .controlSize(.small)
+            }
+        }
     }
 
     // MARK: - Bandwagon 套餐与用量
@@ -58,7 +96,7 @@ struct OverviewView: View {
                 title: failure.title,
                 message: failure.message,
                 icon: failure.icon,
-                tint: .orange,
+                tint: Theme.warning,
                 action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                 actionTitle: failure.actionTitle
             )
@@ -78,70 +116,28 @@ struct OverviewView: View {
             title: failure.staleTitle,
             message: failure.message,
             icon: failure.icon,
-            tint: .orange,
+            tint: Theme.warning,
             actionTitle: failure.actionTitle,
             action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
         )
     }
 
     private var heroCard: some View {
-        GlassCard(padding: 26, tint: Theme.accent) {
+        let progress = (model.overview.bwh?.usedPercent ?? 0) / 100
+        return Panel(padding: 24) {
             VStack(alignment: .leading, spacing: 20) {
                 UsageHero(
-                    progress: (model.overview.bwh?.usedPercent ?? 0) / 100,
+                    progress: progress,
                     percentage: ByteFormat.percent(model.overview.bwh?.usedPercent),
                     used: ByteFormat.string(model.overview.bwh?.usedBytes),
                     quota: ByteFormat.string(model.overview.bwh?.quotaBytes),
                     remaining: ByteFormat.string(remaining),
                     reset: ByteFormat.daysLeft(resetAt: model.overview.bwh?.resetAt),
-                    resetDate: ByteFormat.resetDate(model.overview.bwh?.resetAt)
+                    resetDate: ByteFormat.resetDate(model.overview.bwh?.resetAt),
+                    tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict)
                 )
                 if let forecast = model.forecast {
                     ForecastStrip(forecast: forecast)
-                }
-                CardDivider()
-                serverStrip
-            }
-        }
-    }
-
-    private var serverStrip: some View {
-        HStack(spacing: 10) {
-            HeroChip(
-                value: hostTitle,
-                label: hostIP
-            )
-            if let bwh = model.overview.bwh {
-                // Status carries colour *and* text, so health is never colour-only.
-                StatusPill(title: bwh.healthLabel, tint: bwh.healthTint)
-            }
-            Spacer(minLength: 8)
-            // Counts stay visible even when the last fetch failed; the banner above
-            // is what flags them as possibly stale.
-            if let xui = model.overview.xui,
-               let online = xui.onlineCount, let clients = xui.clientCount {
-                HeroChip(
-                    icon: "person.2.fill",
-                    value: "\(online)",
-                    valueColor: ClientState.online.swiftColor,
-                    label: "在线"
-                )
-                HeroChip(
-                    icon: "rectangle.stack.fill",
-                    value: "\(clients)",
-                    label: "客户端"
-                )
-                if model.xuiLoading {
-                    ProgressView()
-                        .controlSize(.mini)
-                }
-            } else if model.xuiLoading {
-                HStack(spacing: 7) {
-                    ProgressView()
-                        .controlSize(.small)
-                    Text("正在连接 3X-UI")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -153,14 +149,14 @@ struct OverviewView: View {
     private var xuiSection: some View {
         let xui = model.overview.xui
         if xui?.clientCount != nil {
-            // The hero strip already carries the counts; only the failure is news.
+            // The page header already carries the counts; only the failure is news.
             if let error = xui?.error {
                 let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
                 StatusBanner(
                     title: failure.staleTitle,
                     message: failure.message,
                     icon: failure.icon,
-                    tint: .orange,
+                    tint: Theme.warning,
                     actionTitle: failure.actionTitle,
                     action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
                 )
@@ -171,7 +167,7 @@ struct OverviewView: View {
                 title: failure.title,
                 message: failure.message,
                 icon: failure.icon,
-                tint: .orange,
+                tint: Theme.warning,
                 action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                 actionTitle: failure.actionTitle
             )
@@ -196,15 +192,15 @@ struct OverviewView: View {
         let history = model.overview.bwhHistory ?? []
         let clients = topClients ?? []
         if !history.isEmpty && !clients.isEmpty {
-            // One row, two equal columns. The traffic card used to be capped at 430pt,
-            // so it sat both narrower and — because its chart was a fixed height —
-            // shorter than the clients card beside it.
-            HStack(alignment: .top, spacing: 18) {
+            // One row, two equal columns of equal height. The traffic chart absorbs
+            // the extra height, so neither panel ends in empty space.
+            HStack(alignment: .top, spacing: Theme.gap) {
                 MiniTrafficCard(points: history, onOpen: { selectedTab = .vps })
                     .frame(maxWidth: .infinity)
                 topClientsCard(clients)
                     .frame(maxWidth: .infinity)
             }
+            .fixedSize(horizontal: false, vertical: true)
         } else if !history.isEmpty {
             MiniTrafficCard(points: history, onOpen: { selectedTab = .vps })
         } else if !clients.isEmpty {
@@ -214,33 +210,24 @@ struct OverviewView: View {
 
     private func topClientsCard(_ clients: [Client]) -> some View {
         let maxUsed = clients.map { $0.used ?? 0 }.max() ?? 0
-        return GlassCard(padding: 20, fillsHeight: true) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) {
-                    Text("Top 客户端")
-                        .font(.system(size: 16, weight: .semibold))
-                    Spacer()
-                    Button {
-                        selectedTab = .clients
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text("查看全部")
-                                .font(.system(size: 12, weight: .medium))
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
-                        }
-                        .foregroundStyle(Theme.accent)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.bottom, 10)
+        return Panel(padding: 0, fillsHeight: true) {
+            PanelHeader(title: "用量最高的客户端") {
+                PanelLink(title: "查看全部") { selectedTab = .clients }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 12)
 
-                VStack(spacing: 2) {
-                    ForEach(Array(clients.enumerated()), id: \.element.id) { index, client in
-                        TopClientRow(rank: index + 1, client: client, maxUsed: maxUsed)
+            VStack(spacing: 0) {
+                ForEach(Array(clients.enumerated()), id: \.element.id) { index, client in
+                    if index > 0 {
+                        CardDivider()
+                            .padding(.leading, 20)
                     }
+                    TopClientRow(rank: index + 1, client: client, maxUsed: maxUsed)
                 }
             }
+            .padding(.bottom, 6)
         }
     }
 
@@ -250,35 +237,18 @@ struct OverviewView: View {
     private var serverSummarySection: some View {
         let items = specItems
         if !items.isEmpty {
-            GlassCard(padding: 20) {
+            Panel(padding: 20) {
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 10) {
-                        Text("服务器概况")
-                            .font(.system(size: 16, weight: .semibold))
-                        Spacer()
-                        Button {
-                            selectedTab = .vps
-                        } label: {
-                            HStack(spacing: 4) {
-                                Text("VPS 详情")
-                                    .font(.system(size: 12, weight: .medium))
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 9, weight: .semibold))
-                            }
-                            .foregroundStyle(Theme.accent)
-                        }
-                        .buttonStyle(.plain)
+                    PanelHeader(title: "服务器") {
+                        PanelLink(title: "VPS 详情") { selectedTab = .vps }
                     }
 
-                    HStack(alignment: .center, spacing: 14) {
+                    HStack(alignment: .top, spacing: 20) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                            InfoCell(icon: item.icon, title: item.title, value: item.value, barFraction: item.fraction)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            if index < items.count - 1 {
-                                Rectangle()
-                                    .fill(Color.primary.opacity(0.06))
-                                    .frame(width: 1, height: 34)
+                            if index > 0 {
+                                StatDivider(height: 44)
                             }
+                            InfoCell(icon: item.icon, title: item.title, value: item.value, barFraction: item.fraction)
                         }
                     }
                 }
@@ -347,44 +317,30 @@ private struct TopClientRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             Text("\(rank)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(rank <= 3 ? Theme.accent : Color.secondary)
-                .frame(width: 24, height: 24)
-                .background(
-                    rank <= 3 ? Theme.accent.opacity(0.13) : Color.primary.opacity(0.045),
-                    in: RoundedRectangle(cornerRadius: 7, style: .continuous)
-                )
+                .font(Theme.number(12, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .frame(width: 16, alignment: .trailing)
 
             Text(client.name)
-                .font(.system(size: 13.5, weight: .semibold))
+                .font(.system(size: 13, weight: .medium))
                 .lineLimit(1)
                 .layoutPriority(1)
 
-            HStack(spacing: 5) {
-                Circle()
-                    .fill(client.state.swiftColor)
-                    .frame(width: 6, height: 6)
-                Text(client.state.title)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(client.state.swiftColor)
-                    .lineLimit(1)
-            }
-            .fixedSize(horizontal: true, vertical: false)
-
             Spacer(minLength: 8)
 
-            // Single accent colour: the state pill beside the name already carries
-            // risk, so colouring the bars too only added noise to the first screen.
+            StatusPill(title: client.state.title, tint: client.state.swiftColor)
+                .frame(width: 52, alignment: .leading)
+
+            // Single accent colour: the state beside the name already carries risk,
+            // so colouring the bars too only added noise to the first screen.
             UsageBar(value: fraction, tint: Theme.accent)
-                .frame(minWidth: 36, maxWidth: 72)
+                .frame(minWidth: 36, maxWidth: 64)
 
             Text(ByteFormat.string(client.used))
-                .font(.system(size: 14.5, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .frame(minWidth: 60, alignment: .trailing)
+                .font(Theme.number(13))
+                .frame(minWidth: 64, alignment: .trailing)
 
             Button {
                 let text = client.email ?? client.name
@@ -406,14 +362,13 @@ private struct TopClientRow: View {
             // Name the client so this button is distinguishable from the seven
             // others on the card when read by VoiceOver.
             .accessibilityLabel(copied ? "已复制 \(client.name) 的邮箱" : "复制 \(client.name) 的邮箱")
-            .opacity(hovered || copied ? 1 : 0.6)
+            .opacity(hovered || copied ? 1 : 0)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(
-            hovered ? Color.primary.opacity(0.05) : Color.clear,
-            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-        )
+        .padding(.leading, 16)
+        .padding(.trailing, 14)
+        .padding(.vertical, 9)
+        .background(hovered ? Theme.fill.opacity(0.6) : Color.clear)
+        .contentShape(Rectangle())
         .onHover { hovering in
             hovered = hovering
         }

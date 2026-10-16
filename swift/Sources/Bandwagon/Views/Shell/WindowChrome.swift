@@ -28,7 +28,10 @@ struct WindowChrome: NSViewRepresentable {
         DispatchQueue.main.async {
             guard let window = view.window else { return }
             window.titlebarAppearsTransparent = true
-            window.titleVisibility = .visible
+            // Each page draws its own large title, so the toolbar keeps only the
+            // freshness label and refresh. The title still names the window in
+            // the Window menu and Mission Control.
+            window.titleVisibility = .hidden
             if !window.styleMask.contains(.fullSizeContentView) {
                 window.styleMask.insert(.fullSizeContentView)
             }

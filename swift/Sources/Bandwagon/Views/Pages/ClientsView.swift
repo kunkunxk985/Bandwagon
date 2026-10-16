@@ -25,11 +25,15 @@ struct ClientsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let clients = loadedClients, !clients.isEmpty {
-                header(clients)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                PageHeader(title: "客户端", subtitle: headerSubtitle)
+                    .pageHeaderInsets()
+                if let clients = loadedClients, !clients.isEmpty {
+                    header(clients)
+                }
+                listContent
             }
-            listContent
         }
         .navigationTitle("客户端")
     }
@@ -39,61 +43,71 @@ struct ClientsView: View {
         return xui.clients
     }
 
+    private var headerSubtitle: String? {
+        guard let clients = loadedClients, !clients.isEmpty else { return nil }
+        return "3X-UI 面板上的 \(clients.count) 个客户端，按用量与配额风险排列"
+    }
+
     // MARK: - 汇总与筛选
 
     private func header(_ clients: [Client]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                SummaryTile(icon: "person.2.fill", tint: Theme.accent, title: "客户端", value: "\(clients.count)")
-                SummaryTile(
-                    dotColor: ClientState.online.swiftColor,
-                    title: "在线",
-                    value: "\(clients.filter { $0.online == true }.count)"
-                )
-                SummaryTile(
-                    icon: "exclamationmark.triangle.fill",
-                    tint: clients.contains { $0.state == .warn } ? ClientState.warn.swiftColor : Color.secondary,
-                    title: "预警",
-                    value: "\(clients.filter { $0.state == .warn }.count)"
-                )
-                SummaryTile(icon: "chart.bar.fill", tint: Theme.accent, title: "总用量", value: ByteFormat.string(totalUsed(clients)))
+        let warnCount = clients.filter { $0.state == .warn }.count
+        return VStack(alignment: .leading, spacing: Theme.gap) {
+            Panel(padding: 18) {
+                HStack(spacing: 20) {
+                    SummaryTile(title: "客户端", value: "\(clients.count)")
+                    StatDivider(height: 40)
+                    SummaryTile(
+                        dotColor: ClientState.online.swiftColor,
+                        title: "在线",
+                        value: "\(clients.filter { $0.online == true }.count)"
+                    )
+                    StatDivider(height: 40)
+                    SummaryTile(
+                        dotColor: warnCount > 0 ? ClientState.warn.swiftColor : nil,
+                        title: "预警",
+                        value: "\(warnCount)",
+                        valueColor: warnCount > 0 ? ClientState.warn.swiftColor : .primary
+                    )
+                    StatDivider(height: 40)
+                    SummaryTile(title: "总用量", value: ByteFormat.string(totalUsed(clients)))
+                }
             }
 
-            CardDivider()
-
             HStack(spacing: 12) {
-                Picker("", selection: $filter) {
+                Picker("筛选", selection: $filter) {
                     ForEach(Filter.allCases, id: \.self) { item in
                         Text(item.rawValue).tag(item)
                     }
                 }
+                .labelsHidden()
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 300)
+                .frame(maxWidth: 280)
 
                 Spacer(minLength: 12)
 
                 sortMenu
 
-                HStack(spacing: 8) {
+                HStack(spacing: 7) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(.secondary)
-                    TextField("搜索客户端", text: $query)
+                    TextField("搜索名称或邮箱", text: $query)
                         .textFieldStyle(.plain)
+                        .font(.system(size: 12.5))
                 }
-                .padding(.horizontal, 13)
-                .padding(.vertical, 8)
-                .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.09), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                        .strokeBorder(Theme.border, lineWidth: 1)
                 )
-                .frame(width: 200)
+                .frame(width: 220)
             }
         }
-        .padding(.horizontal, 28)
-        .padding(.top, 18)
-        .padding(.bottom, 16)
+        .padding(.horizontal, Theme.pagePadding)
+        .padding(.bottom, 14)
     }
 
     private var sortMenu: some View {
@@ -114,13 +128,12 @@ struct ClientsView: View {
                 Image(systemName: "arrow.up.arrow.down")
                     .font(.system(size: 10, weight: .semibold))
                 Text(sort.rawValue)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12.5))
             }
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(Color.primary.opacity(0.05), in: Capsule())
-            .contentShape(Capsule())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -151,18 +164,20 @@ struct ClientsView: View {
                 icon: "antenna.radiowaves.left.and.right",
                 tint: .secondary
             )
-            .padding(.horizontal, 28)
+            .padding(.horizontal, Theme.pagePadding)
+            .modifier(CenterWhenShort(enabled: true, reserving: Theme.pageHeaderHeight))
         } else if let error = model.overview.xui?.error {
             let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
             StatusCard(
                 title: failure.title,
                 message: failure.message,
                 icon: failure.icon,
-                tint: .orange,
+                tint: Theme.warning,
                 action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                 actionTitle: failure.actionTitle
             )
-            .padding(.horizontal, 28)
+            .padding(.horizontal, Theme.pagePadding)
+            .modifier(CenterWhenShort(enabled: true, reserving: Theme.pageHeaderHeight))
         } else if let clients = model.overview.xui?.clients {
             if clients.isEmpty {
                 StatusCard(
@@ -173,19 +188,29 @@ struct ClientsView: View {
                     action: { selectedTab = .settings },
                     actionTitle: "前往设置"
                 )
-                .padding(.horizontal, 28)
+                .padding(.horizontal, Theme.pagePadding)
+                .modifier(CenterWhenShort(enabled: true, reserving: Theme.pageHeaderHeight))
             } else if visibleClients.isEmpty {
                 filteredEmptyState
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(visibleClients) { client in
-                            ClientRow(client: client, maxUsed: busiestUsage)
+                Panel(padding: 0) {
+                    LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+                        Section {
+                            ForEach(Array(visibleClients.enumerated()), id: \.element.id) { index, client in
+                                if index > 0 {
+                                    CardDivider()
+                                        .padding(.leading, 58)
+                                }
+                                ClientRow(client: client, maxUsed: busiestUsage)
+                            }
+                        } header: {
+                            ClientTableHeader()
                         }
                     }
-                    .padding(.horizontal, 28)
-                    .padding(.bottom, 28)
                 }
+                .clipShape(RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
+                .padding(.horizontal, Theme.pagePadding)
+                .padding(.bottom, Theme.pagePadding)
             }
         } else {
             StatusCard(
@@ -196,22 +221,22 @@ struct ClientsView: View {
                 action: { selectedTab = .settings },
                 actionTitle: "前往设置"
             )
-            .padding(.horizontal, 28)
+            .padding(.horizontal, Theme.pagePadding)
+            .modifier(CenterWhenShort(enabled: true, reserving: Theme.pageHeaderHeight))
         }
     }
 
     private var filteredEmptyState: some View {
         VStack(spacing: 10) {
-            Spacer()
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 30, weight: .light))
+                .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
             Text("没有匹配的客户端")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.secondary)
-            Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 64)
+        .frame(maxWidth: .infinity)
     }
 
     private var visibleClients: [Client] {
@@ -241,10 +266,46 @@ struct ClientsView: View {
     }
 }
 
+/// Column titles, pinned to the top of the table while it scrolls. Widths match
+/// `ClientRow` column for column.
+private struct ClientTableHeader: View {
+    var body: some View {
+        HStack(spacing: ClientColumns.spacing) {
+            Text("客户端")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 40)
+            Color.clear
+                .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
+            Text("用量")
+                .frame(width: ClientColumns.used, alignment: .trailing)
+            Text("配额")
+                .frame(width: ClientColumns.quota, alignment: .trailing)
+            Text("状态")
+                .frame(width: ClientColumns.state, alignment: .leading)
+            Color.clear
+                .frame(width: ClientColumns.copy, height: 1)
+        }
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, ClientColumns.inset)
+        .padding(.vertical, 9)
+        .background(Theme.surface)
+        .overlay(alignment: .bottom) { CardDivider() }
+    }
+}
+
+private enum ClientColumns {
+    static let spacing: CGFloat = 16
+    static let inset: CGFloat = 18
+    static let used: CGFloat = 72
+    static let quota: CGFloat = 96
+    static let state: CGFloat = 56
+    static let copy: CGFloat = 24
+}
+
 struct ClientRow: View {
     let client: Client
     let maxUsed: Int
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var copied = false
     @State private var hovered = false
 
@@ -270,66 +331,41 @@ struct ClientRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Text(String(client.name.prefix(1)))
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(client.state.swiftColor)
-                .frame(width: 38, height: 38)
-                .background(
-                    LinearGradient(
-                        colors: [client.state.swiftColor.opacity(0.20), client.state.swiftColor.opacity(0.07)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(client.state.swiftColor.opacity(0.22), lineWidth: 0.8)
-                )
+        HStack(spacing: ClientColumns.spacing) {
+            HStack(spacing: 12) {
+                Text(String(client.name.prefix(1)))
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+                    .background(Theme.fill, in: Circle())
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(client.name)
-                    .font(.system(size: 15, weight: .semibold))
-                    .lineLimit(1)
-                    .layoutPriority(1)
-                if let email = client.email, !email.isEmpty, email != client.name {
-                    Text(email)
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(client.name)
+                        .font(.system(size: 13, weight: .medium))
                         .lineLimit(1)
+                    if let email = client.email, !email.isEmpty, email != client.name {
+                        Text(email)
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer(minLength: 12)
-
-            UsageBar(value: usageFraction, tint: usageTint, height: 6)
+            UsageBar(value: usageFraction, tint: usageTint)
                 .frame(minWidth: 64, maxWidth: 120)
                 .help("长度＝相对最大用量，颜色＝配额占用风险")
 
-            VStack(alignment: .trailing, spacing: 3) {
-                Text(ByteFormat.string(client.used))
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                if let utilization {
-                    Text("\(Int(utilization.percent.rounded()))%")
-                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(UsageTint.color(for: utilization.fraction))
-                }
-                if let expiryWarning = client.expiryWarning {
-                    // Without this the row shows "预警" beside a green, low bar and
-                    // leaves the reader to guess what actually triggered it.
-                    Text(expiryWarning)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(ClientState.warn.swiftColor)
-                        .lineLimit(1)
-                }
-            }
-            .frame(minWidth: 62, alignment: .trailing)
+            Text(ByteFormat.string(client.used))
+                .font(Theme.number(13))
+                .frame(width: ClientColumns.used, alignment: .trailing)
+
+            quotaCell
+                .frame(width: ClientColumns.quota, alignment: .trailing)
 
             StatusPill(title: client.state.title, tint: client.state.swiftColor)
-                .frame(minWidth: 64)
+                .frame(width: ClientColumns.state, alignment: .leading)
 
             Button {
                 let text = client.email ?? client.name
@@ -343,7 +379,7 @@ struct ClientRow: View {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(copied ? ClientState.online.swiftColor : Color.secondary)
-                    .frame(width: 24, height: 24)
+                    .frame(width: ClientColumns.copy, height: 24)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -351,32 +387,37 @@ struct ClientRow: View {
             // Every row carries the same icon, so VoiceOver announced nineteen
             // identical "拷贝" buttons. Name the client in the label.
             .accessibilityLabel(copied ? "已复制 \(client.name) 的邮箱" : "复制 \(client.name) 的邮箱")
-            .opacity(hovered || copied ? 1 : 0.6)
+            .opacity(hovered || copied ? 1 : 0)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.primary.opacity(hovered ? 0.065 : 0.032))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            hovered ? Theme.accent.opacity(0.35) : Color.primary.opacity(0.11),
-                            Color.primary.opacity(0.035)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: .black.opacity(hovered ? 0.075 : 0.025), radius: hovered ? 10 : 3, x: 0, y: hovered ? 5 : 1)
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: hovered)
+        .padding(.horizontal, ClientColumns.inset)
+        .padding(.vertical, 11)
+        .background(hovered ? Theme.fill.opacity(0.6) : Color.clear)
+        .contentShape(Rectangle())
         .onHover { hovering in
             hovered = hovering
+        }
+    }
+
+    /// Quota share, or the expiry that raised a warning. Without the expiry text a
+    /// row could show "预警" beside a low, green bar and leave the reader guessing.
+    @ViewBuilder
+    private var quotaCell: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            if let utilization {
+                Text("\(Int(utilization.percent.rounded()))%")
+                    .font(Theme.number(12.5, weight: .medium))
+                    .foregroundStyle(utilization.fraction >= UsageThreshold.warn ? usageTint : Color.secondary)
+            } else {
+                Text("—")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+            }
+            if let expiryWarning = client.expiryWarning {
+                Text(expiryWarning)
+                    .font(.system(size: 10.5, weight: .medium))
+                    .foregroundStyle(ClientState.warn.swiftColor)
+                    .lineLimit(1)
+            }
         }
     }
 }

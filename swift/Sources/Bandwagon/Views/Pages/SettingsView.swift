@@ -12,7 +12,10 @@ struct SettingsView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 12) {
+                    PageHeader(title: "设置", subtitle: "连接两个数据源。凭据只保存在钥匙串，不写入设置文件。")
+                        .padding(.bottom, 6)
+
                     if let error = model.error {
                         inlineError(error)
                     }
@@ -48,8 +51,10 @@ struct SettingsView: View {
 
                     refreshCard
                 }
-                .padding(28)
-                .frame(maxWidth: 700)
+                .padding(.horizontal, Theme.pagePadding)
+                .padding(.top, 4)
+                .padding(.bottom, Theme.pagePadding)
+                .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity, alignment: .center)
             }
 
@@ -64,7 +69,7 @@ struct SettingsView: View {
             if saved {
                 Label("已保存", systemImage: "checkmark.circle.fill")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color(red: 0.20, green: 0.66, blue: 0.39))
+                    .foregroundStyle(Theme.success)
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
             }
 
@@ -97,11 +102,12 @@ struct SettingsView: View {
             .tint(Theme.accent)
             .controlSize(.large)
             .disabled(saving)
+            .keyboardShortcut("s", modifiers: .command)
         }
-        .padding(.horizontal, 28)
-        .padding(.vertical, 14)
-        .background(.bar)
-        .overlay(alignment: .top) { Divider() }
+        .padding(.horizontal, Theme.pagePadding)
+        .padding(.vertical, 12)
+        .background(Theme.surface)
+        .overlay(alignment: .top) { CardDivider() }
     }
 
     private func settingsSection<Content: View>(
@@ -118,29 +124,18 @@ struct SettingsView: View {
                 }
             } label: {
                 HStack(spacing: 12) {
-                    Image(systemName: icon)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
-                        .frame(width: 32, height: 32)
-                        .background(
-                            Theme.accent.opacity(0.11),
-                            in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        )
+                    SettingsIcon(systemName: icon)
 
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.primary)
 
                     Spacer()
 
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(configured ? Color.green : Color.secondary.opacity(0.45))
-                            .frame(width: 7, height: 7)
-                        Text(configured ? "已配置" : "未配置")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
+                    StatusPill(
+                        title: configured ? "已配置" : "未配置",
+                        tint: configured ? Theme.success : .secondary
+                    )
 
                     Image(systemName: "chevron.down")
                         .font(.system(size: 11, weight: .semibold))
@@ -152,7 +147,7 @@ struct SettingsView: View {
             .buttonStyle(.plain)
 
             if isOpen.wrappedValue {
-                Divider()
+                CardDivider()
                     .padding(.top, 16)
 
                 VStack(alignment: .leading, spacing: 14) {
@@ -163,29 +158,18 @@ struct SettingsView: View {
             }
         }
         .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+        .panelSurface()
     }
 
     /// App-wide preference, deliberately not a third collapsible credentials
     /// section — the two sections above are about connecting, this is about cadence.
     private var refreshCard: some View {
         HStack(spacing: 12) {
-            Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 32, height: 32)
-                .background(
-                    Theme.accent.opacity(0.11),
-                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                )
+            SettingsIcon(systemName: "arrow.triangle.2.circlepath")
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("自动刷新")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                 Text(refreshHint)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
@@ -202,11 +186,7 @@ struct SettingsView: View {
             .frame(width: 132)
         }
         .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+        .panelSurface()
     }
 
     private func refreshLabel(_ seconds: Int) -> String {
@@ -229,7 +209,7 @@ struct SettingsView: View {
     private func inlineError(_ message: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(Theme.warning)
             Text(message)
                 .font(.system(size: 13))
                 .foregroundStyle(.primary)
@@ -237,13 +217,14 @@ struct SettingsView: View {
             Spacer()
         }
         .padding(14)
-        .background(.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Theme.warning.opacity(0.09), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
     }
 
     private func field(_ title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
             TextField(title, text: text)
                 .textFieldStyle(.roundedBorder)
                 .frame(minHeight: 34)
@@ -253,7 +234,8 @@ struct SettingsView: View {
     private func credential(_ title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
             RomanCredentialField(title, text: text)
                 .frame(minHeight: 34)
         }
@@ -262,9 +244,23 @@ struct SettingsView: View {
     private func secret(_ title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
             RomanCredentialField(title, text: text, isSecure: true)
                 .frame(minHeight: 34)
         }
+    }
+}
+
+/// Monochrome glyph on a neutral square, the one icon treatment on this page.
+private struct SettingsIcon: View {
+    var systemName: String
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(.secondary)
+            .frame(width: 30, height: 30)
+            .background(Theme.fill, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
     }
 }

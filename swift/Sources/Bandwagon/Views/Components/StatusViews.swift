@@ -28,14 +28,17 @@ struct StatusCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 42, weight: .light))
+                .font(.system(size: 22, weight: .regular))
                 .foregroundStyle(tint)
+                .frame(width: 48, height: 48)
+                .background(Theme.fill, in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
+                .padding(.bottom, 4)
             Text(title)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
             Text(message)
-                .font(.system(size: 13))
+                .font(Theme.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 460)
@@ -43,6 +46,7 @@ struct StatusCard: View {
                 Button(actionTitle, action: action)
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.accent)
+                    .padding(.top, 6)
             }
         }
         // No Spacers: inside a ScrollView they collapse to zero, so the card used to
@@ -94,11 +98,7 @@ struct StatusBanner: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(tint.opacity(0.22), lineWidth: 0.8)
-        )
+        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
     }
 }
 
@@ -107,10 +107,15 @@ struct StatusBanner: View {
 /// a centred empty state has to claim the container's height explicitly.
 struct CenterWhenShort: ViewModifier {
     var enabled: Bool
+    /// Height already taken above this content in the same scroll view (a page
+    /// header), so the centred block does not push the page into scrolling.
+    var reserving: CGFloat = 0
 
     func body(content: Content) -> some View {
         if enabled {
-            content.containerRelativeFrame(.vertical, alignment: .center)
+            content.containerRelativeFrame(.vertical, alignment: .center) { length, _ in
+                max(0, length - reserving)
+            }
         } else {
             content
         }

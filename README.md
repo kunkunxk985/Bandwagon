@@ -20,6 +20,14 @@ open ~/Desktop/Bandwagon.app
 ./swift/scripts/test.sh --live    # 额外打一次真实 3X-UI 面板
 ```
 
+检查界面改动（无需屏幕录制权限，应用自己把四个页面渲染成 PNG 后退出）：
+
+```bash
+open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.app
+```
+
+加 `--env BANDWAGON_SNAPSHOT_APPEARANCE=dark` 渲染深色模式。
+
 ## 数据放在哪
 
 | 内容 | 位置 |
@@ -34,7 +42,7 @@ open ~/Desktop/Bandwagon.app
 
 ```
 swift/
-├── Sources/            应用与凭据辅助程序源码
+├── Sources/            应用与凭据辅助程序源码（Views 下分 Shell / Pages / Components / DesignSystem）
 ├── Tests/              回归测试与夹具
 ├── DevTools/           手动排查用的脚本，不属于测试
 ├── scripts/            构建、打包、凭据辅助程序的验证脚本
@@ -48,3 +56,5 @@ swift/
 ## 设计约束
 
 界面遵循 [`.impeccable.md`](.impeccable.md)：浅色优先、单一蓝色主行动色、少量语义状态色，明确避免信息过密和霓虹感。改 UI 前请先读那五条原则。
+
+视觉上是「精致数据面板」：白色面板 + 1px 细边框，不用毛玻璃、渐变和阴影，层级靠字号。颜色、圆角、间距都在 `swift/Sources/Bandwagon/Views/DesignSystem/Theme.swift`，深浅两套值。

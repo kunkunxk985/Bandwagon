@@ -10,7 +10,33 @@ struct VPSView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 0) {
+                PageHeader(title: "VPS", subtitle: headerSubtitle) {
+                    if let bwh, bwh.usedBytes != nil {
+                        StatusPill(title: bwh.healthLabel, tint: bwh.healthTint)
+                    }
+                }
+                .pageHeaderInsets()
+
+                pageContent
+                    .padding(.horizontal, Theme.pagePadding)
+                    .padding(.bottom, Theme.pagePadding)
+                    .modifier(CenterWhenShort(enabled: bwh?.usedBytes == nil, reserving: Theme.pageHeaderHeight))
+            }
+        }
+        .navigationTitle("VPS")
+    }
+
+    private var headerSubtitle: String? {
+        guard bwh?.usedBytes != nil else { return nil }
+        return [heroHost, heroIP, bwh?.location].compactMap { value in
+            guard let value, !value.isEmpty else { return nil }
+            return value
+        }.joined(separator: " · ")
+    }
+
+    private var pageContent: some View {
+            VStack(alignment: .leading, spacing: Theme.gap) {
                 if !model.settings.bwhReady {
                     StatusCard(
                         title: "尚未配置 Bandwagon",
@@ -35,7 +61,7 @@ struct VPSView: View {
                         title: failure.title,
                         message: failure.message,
                         icon: failure.icon,
-                        tint: .orange,
+                        tint: Theme.warning,
                         action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                         actionTitle: failure.actionTitle
                     )
@@ -48,10 +74,6 @@ struct VPSView: View {
                     )
                 }
             }
-            .padding(28)
-            .modifier(CenterWhenShort(enabled: bwh?.usedBytes == nil))
-        }
-        .navigationTitle("VPS")
     }
 
     private func bwhBanner(_ error: String) -> some View {
@@ -60,7 +82,7 @@ struct VPSView: View {
             title: failure.staleTitle,
             message: failure.message,
             icon: failure.icon,
-            tint: .orange,
+            tint: Theme.warning,
             actionTitle: failure.actionTitle,
             action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
         )
@@ -69,30 +91,21 @@ struct VPSView: View {
     // MARK: - 用量概览
 
     private var heroCard: some View {
-        GlassCard(padding: 26, tint: Theme.accent) {
+        let progress = (bwh?.usedPercent ?? 0) / 100
+        return Panel(padding: 24) {
             VStack(alignment: .leading, spacing: 20) {
                 UsageHero(
-                    progress: (bwh?.usedPercent ?? 0) / 100,
+                    progress: progress,
                     percentage: ByteFormat.percent(bwh?.usedPercent),
                     used: ByteFormat.string(bwh?.usedBytes),
                     quota: ByteFormat.string(bwh?.quotaBytes),
                     remaining: ByteFormat.string(remaining),
                     reset: ByteFormat.daysLeft(resetAt: bwh?.resetAt),
-                    resetDate: ByteFormat.resetDate(bwh?.resetAt)
+                    resetDate: ByteFormat.resetDate(bwh?.resetAt),
+                    tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict)
                 )
                 if let forecast = model.forecast {
                     ForecastStrip(forecast: forecast)
-                }
-                CardDivider()
-                // The metrics grid above already states the reset date, so the chip
-                // row carries only the host identity.
-                HStack(spacing: 10) {
-                    HeroChip(
-                        dotColor: bwh?.healthTint ?? .secondary,
-                        value: heroHost,
-                        label: heroIP
-                    )
-                    Spacer(minLength: 8)
                 }
             }
         }
@@ -100,39 +113,33 @@ struct VPSView: View {
 
     // MARK: - 系统概况
 
+    /// Spec sheet: label-over-value cells in two columns, rows split by hairlines.
+    /// The page header already names the host and its health.
     private var systemCard: some View {
-        GlassCard(padding: 22) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 10) {
-                    Image(systemName: "server.rack")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
-                        .frame(width: 30, height: 30)
-                        .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                    Text("系统概况")
-                        .font(.system(size: 16, weight: .semibold))
-                    Spacer()
-                    if let bwh, bwh.status?.isEmpty == false {
-                        StatusPill(title: bwh.healthLabel, tint: bwh.healthTint)
-                    }
+        let rows = stride(from: 0, to: specItems.count, by: 2).map { start in
+            Array(specItems[start..<min(start + 2, specItems.count)])
+        }
+        return Panel(padding: 0) {
+            PanelHeader(title: "系统概况")
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .padding(.bottom, 4)
+
+            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                if index > 0 {
+                    CardDivider()
+                        .padding(.horizontal, 20)
                 }
-
-                CardDivider()
-
-                // Two columns. Three filled the width no better — the spare space
-                // simply moved behind the third column and the grid became 3/3/2.
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 16, alignment: .leading),
-                        GridItem(.flexible(), spacing: 16, alignment: .leading)
-                    ],
-                    alignment: .leading,
-                    spacing: 18
-                ) {
-                    ForEach(specItems) { item in
+                HStack(alignment: .top, spacing: 20) {
+                    ForEach(row) { item in
                         InfoCell(icon: item.icon, title: item.title, value: item.value, barFraction: item.fraction)
                     }
+                    if row.count == 1 {
+                        Color.clear.frame(maxWidth: .infinity)
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
             }
         }
     }
@@ -170,7 +177,7 @@ struct VPSView: View {
         if points.isEmpty {
             Color.clear
         } else {
-            GlassCard(padding: 22, tint: .teal) {
+            Panel(padding: 20) {
                 TrafficHistoryChart(points: points)
             }
         }

@@ -18,7 +18,7 @@ Bandwagon/
 swift/
 ├── Package.swift                 SwiftPM 清单，声明主应用与凭据辅助程序两个可执行目标
 ├── Sources/
-│   ├── Bandwagon/                主应用
+│   ├── Bandwagon/                主应用（Models / Services / Views）
 │   └── BandwagonCredentialBridge/ 凭据辅助程序（独立可执行文件）
 ├── Tests/                        回归测试与夹具
 ├── DevTools/                     手动排查脚本，不参与自动测试
@@ -56,23 +56,43 @@ swift/
 | `KeychainCredentialStore.swift` | 凭据读写入口。实际通过辅助程序完成，并在首次运行时做一次性 v2→v3 迁移 |
 | `CredentialBridgeClient.swift` | 与辅助程序的 IPC 客户端。发请求前校验辅助程序文件的 SHA-256 与签名，并校验**正在运行的子进程**身份 |
 
-**Views/**
+**Views/** —— 按职责分四个子目录
+
+`Shell/`（窗口外壳）
 
 | 文件 | 职责 |
 | --- | --- |
-| `ContentView.swift` | 外壳：侧栏、工具栏（更新时间 + 刷新）、标签路由、错误条 |
-| `OverviewView.swift` | 总览页：hero、流量小卡、Top 客户端、服务器概况 |
-| `VPSView.swift` | VPS 页：hero、系统概况、流量趋势图 |
-| `ClientsView.swift` | 客户端页：汇总、筛选、搜索、排序、列表 |
-| `SettingsView.swift` | 设置页：两个凭据区块 + 自动刷新 |
-| `Theme.swift` | 设计令牌与卡片外壳：`Theme`、`CardSurface`、`GlassCard`、`RingMeter`、`UsageHero`、`MiniMetric`、`SectionTitle` |
-| `WindowChrome.swift` | 窗口管道：`VisualEffectView`（侧栏材质）与 `WindowChrome`（透明标题栏 + 全尺寸内容视图） |
+| `ContentView.swift` | 外壳：侧栏、工具栏（更新时间 + 刷新）、标签路由、错误提示 |
+| `WindowChrome.swift` | 窗口管道：`VisualEffectView`（侧栏材质）与 `WindowChrome`（透明标题栏、隐藏窗口标题、全尺寸内容视图） |
+| `DevSnapshot.swift` | 开发辅助：设置 `BANDWAGON_SNAPSHOT_DIR` 启动时把四个页面（含滚到底部的长页）渲染成 PNG 后退出。不设该变量时完全不生效 |
+
+`Pages/`（四个页面）
+
+| 文件 | 职责 |
+| --- | --- |
+| `OverviewView.swift` | 总览：页头（主机、运行状态、在线数）、用量 hero、近 7 天流量、用量最高的客户端、服务器 |
+| `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
+| `ClientsView.swift` | 客户端：统计条、筛选/排序/搜索、带固定表头的客户端表格 |
+| `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 底部保存栏（⌘S） |
+
+`Components/`（跨页复用的组件）
+
+| 文件 | 职责 |
+| --- | --- |
+| `Components.swift` | `ForecastStrip`、`CardDivider`、`SummaryTile`、`UsageBar`、`UsageTint`、`UsageRing`（随用量与预测变色）、`StatusPill`、`InfoCell`、`HeroChip` |
 | `StatusViews.swift` | 状态呈现：`StatusCard`（整页）、`StatusBanner`（有数据时的内联提示）、`CenterWhenShort` |
-| `ModelPresentation.swift` | 模型类型的展示规则：健康色/文案、预测结论色/图标、`ClientState` 配色，以及 `ServiceFailure`（三页共用的失败呈现与恢复动作） |
-| `Components.swift` | 共用小组件：`HeroChip`、`StatusPill`、`InfoCell`、`UsageBar`、`ForecastStrip`、`CardDivider`、`UsageTint`、`UsageRing` |
-| `MiniTrafficCard.swift` | 总览的「近 7 天流量」小卡 |
+| `MiniTrafficCard.swift` | 总览的「近 7 天流量」柱状卡 |
 | `TrafficHistoryChart.swift` | VPS 的流量趋势图（Swift Charts）与汇总指标 |
 | `RomanCredentialField.swift` | 强制凭据输入走罗马输入源，避免中文输入法吞掉 ASCII 字符 |
+
+`DesignSystem/`（设计令牌与基础构件）
+
+| 文件 | 职责 |
+| --- | --- |
+| `Theme.swift` | 设计令牌（颜色含深浅两套值、圆角、间距、字号）与基础构件：`Panel`、`PanelHeader`、`PanelLink`、`PageHeader`、`RingMeter`、`UsageHero`、`StatDivider` |
+| `ModelPresentation.swift` | 模型类型的展示规则：健康色/文案、预测结论色/图标、`ClientState` 配色，以及 `ServiceFailure`（三页共用的失败呈现与恢复动作） |
+
+**视觉语言**（2026-10-16 起）：精致数据面板。中性画布 + 白色面板，只用 1px 细边框区分层级，不用毛玻璃、渐变和阴影；层级靠字号与字重（大号等宽数字 + 小号次要标签）；每页有页内大标题，工具栏只留更新时间与刷新；状态用圆点 + 文字，不用彩色胶囊。新增 UI 一律从 `Theme` 取色与尺寸，不在页面里写死颜色。
 
 ### Sources/BandwagonCredentialBridge/ —— 凭据辅助程序
 
@@ -82,7 +102,7 @@ swift/
 
 **为什么单独拆出来**：主应用每次重新打包签名都会变，钥匙串 ACL 随之失效。辅助程序装在 `.app` 之外、发布后永不重建，ACL 绑定的是它的 cdhash，因此重新打包不再影响凭据读取。
 
-⚠️ **它不在 `Package.swift` 里**，`swift build` 不会构建它。只有 `scripts/test-credential-bridge.sh` 会临时编译一份夹具版本。正式发布件是 `ReleaseAssets/BandwagonCredentialBridge-v1`，**目前没有从源码可复现重建它的脚本**。
+⚠️ 它在 `Package.swift` 里声明为第二个目标，`swift build` 会编译它，但那只是开发期便利：**真正安装的是 `ReleaseAssets/BandwagonCredentialBridge-v1` 这份冻结件**，摘要被三处锁定，从源码构建的产物会被 `verify-credential-bridge.sh` 拒绝。要出新版本用 `scripts/build-credential-bridge.sh`（见下）。
 
 ### Tests/ —— 回归测试
 

@@ -90,19 +90,10 @@ extension TrafficForecast.Verdict {
 extension ClientState {
     var swiftColor: Color {
         switch self {
-        case .online: Color(red: 0.20, green: 0.72, blue: 0.42)
-        case .warn: Color(red: 0.90, green: 0.55, blue: 0.12)
-        case .off: Color(red: 0.86, green: 0.22, blue: 0.27)
+        case .online: Theme.success
+        case .warn: Theme.warning
+        case .off: Theme.danger
         case .idle: .secondary
-        }
-    }
-
-    var tagColor: Color {
-        switch self {
-        case .online: Color(red: 0.20, green: 0.72, blue: 0.42).opacity(0.14)
-        case .warn: Color(red: 0.90, green: 0.55, blue: 0.12).opacity(0.14)
-        case .off: Color(red: 0.86, green: 0.22, blue: 0.27).opacity(0.14)
-        case .idle: Color.clear
         }
     }
 }
