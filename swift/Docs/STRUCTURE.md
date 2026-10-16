@@ -32,7 +32,7 @@ swift/
 
 | 文件 | 职责 |
 | --- | --- |
-| `BandwagonApp.swift` | `@main` 入口。WindowGroup、窗口尺寸约束、⌘R 刷新、按 scenePhase 启停轮询 |
+| `BandwagonApp.swift` | `@main` 入口。主窗口 WindowGroup（id `main`）与菜单栏 `MenuBarExtra`；两者都调用幂等的 `model.start()`；⌘R 刷新；开着菜单栏时窗口进后台也继续轮询 |
 
 **Models/**
 
@@ -48,7 +48,7 @@ swift/
 | --- | --- |
 | `AppModel.swift` | `@Observable` 全局状态。后台加载设置、并发拉取两个数据源、保留上次成功数据、按间隔轮询、保存设置 |
 | `BWHClient.swift` | 搬瓦工 KiwiVM API（套餐、用量、重置日、流量历史） |
-| `XUIClient.swift` | 3X-UI 面板客户端。Cookie 会话、CSRF、表单登录、2FA、API Token |
+| `XUIClient.swift` | 3X-UI 面板客户端。Cookie 会话、CSRF、表单登录、2FA、API Token；读取客户端列表；写操作（启用/停用、改配额与到期、重置流量）与订阅地址。写操作按 **3X-UI v3** 的 `/panel/api/clients/*` 接口实现，见下方「3X-UI 写操作」 |
 | `XUIError.swift` | 把底层错误翻译成不含敏感信息的用户可读文案，并标记是否需要改设置 |
 | `SecureURLPolicy.swift` | 面板地址校验（仅 HTTPS 或环回 HTTP）与 TLS 校验策略 |
 | `JSONValue.swift` | JSON 值的安全强制转换，避免 `as?` 满天飞 |
@@ -64,7 +64,8 @@ swift/
 | --- | --- |
 | `ContentView.swift` | 外壳：侧栏、工具栏（更新时间 + 刷新）、标签路由、错误提示 |
 | `WindowChrome.swift` | 窗口管道：`VisualEffectView`（侧栏材质）与 `WindowChrome`（透明标题栏、隐藏窗口标题、全尺寸内容视图） |
-| `DevSnapshot.swift` | 开发辅助：设置 `BANDWAGON_SNAPSHOT_DIR` 启动时把四个页面（含滚到底部的长页）渲染成 PNG 后退出。不设该变量时完全不生效 |
+| `MenuBarPanel.swift` | 菜单栏图标（符号随预测变化 + 已用百分比）与下拉面板：用量环、预测结论、在线数、需要注意的客户端、打开主窗口 / 退出 |
+| `DevSnapshot.swift` | 开发辅助：设置 `BANDWAGON_SNAPSHOT_DIR` 启动时把四个页面（含滚到底部的长页）、菜单栏面板、首个客户端的详情弹窗渲染成 PNG 后退出。不设该变量时完全不生效 |
 
 `Pages/`（四个页面）
 
@@ -73,7 +74,8 @@ swift/
 | `OverviewView.swift` | 总览：页头（主机、运行状态、在线数）、用量 hero、近 7 天流量、用量最高的客户端、服务器 |
 | `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
 | `ClientsView.swift` | 客户端：统计条、筛选/排序/搜索、带固定表头的客户端表格 |
-| `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 底部保存栏（⌘S） |
+| `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ 底部保存栏（⌘S） |
+| `ClientDetailSheet.swift` | 客户端详情弹窗：用量、订阅链接与二维码、启用开关、配额与到期编辑、重置流量。每个写操作先确认、完成后刷新 |
 
 `Components/`（跨页复用的组件）
 
@@ -154,6 +156,19 @@ swift/
 | `packaging/macos/icon.iconset/` | App 图标源文件，`package-app.sh` 用 `iconutil` 转成 `.icns`。生成脚本 `make_icon.py` 已在 Python 时代删除，**所以这些 PNG 不可再生** |
 | `ReleaseAssets/BandwagonCredentialBridge-v1` | 已签名的辅助程序发布件。摘要与 `scripts/credential-bridge.sha256`、`KeychainCredentialStore.helperSHA256` 三处必须一致 |
 | `Docs/3X-UI-verification.md` | 历史记录：当初 3X-UI 认证失败的排查过程与结论。**不是当前状态**，仅存档 |
+
+## 3X-UI 写操作
+
+按 3X-UI v3（React 前端、客户端独立成记录并可挂到多个入站）实现，接口与上游 v3.10.2 源码逐一核对过：
+
+| 动作 | 接口 | 说明 |
+| --- | --- | --- |
+| 启用 / 停用 | `POST /panel/api/clients/bulkEnable` · `bulkDisable`，`{"emails":[…]}` | 只改启用状态；面板拒绝时原因在成功响应的 `skipped` 里，会转成错误提示 |
+| 改配额 / 到期 | `GET /clients/get/{email}` → `POST /clients/update/{email}` | `update` 整条替换，所以先读记录，再按面板自己的 `ClientRecord.ToClient` 转换后只改这两项送回。`totalGB` 单位是**字节**，`expiryTime` 是毫秒，负数表示「首次使用后 N 天」 |
+| 重置流量 | `POST /clients/resetTraffic/{email}` | v3 会同时**重新启用**已停用的客户端，界面已说明 |
+| 订阅链接 | `POST /panel/api/setting/defaultSettings` → `subURI` + 客户端 `subId` | 与面板自己的二维码弹窗同源，不读含密钥的 `setting/all` |
+
+v2 的 `/panel/api/inbounds/updateClient`、`resetClientTraffic` 和 `/panel/setting/*` 在 v3 已不存在。回归测试 `HTTPRegression` 的 `writes` / `write-reject` 两组在本地夹具上逐字节校验以上请求体。
 
 ## 已知的结构问题
 

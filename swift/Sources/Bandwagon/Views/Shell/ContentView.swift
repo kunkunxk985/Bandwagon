@@ -60,6 +60,15 @@ struct ContentView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .background(WindowChrome())
+        .sheet(isPresented: Binding(
+            get: { model.inspectedClientID != nil },
+            set: { if !$0 { model.inspectedClientID = nil } }
+        )) {
+            if let id = model.inspectedClientID {
+                ClientDetailSheet(clientID: id)
+                    .environment(model)
+            }
+        }
         .task {
             if DevSnapshot.directory != nil {
                 await DevSnapshot.run(model: model) { tab = $0 }
@@ -68,7 +77,7 @@ struct ContentView: View {
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: tab)
     }
 
-    fileprivate static func updatedLabel(_ timestamp: Double, now: Date) -> String {
+    static func updatedLabel(_ timestamp: Double, now: Date) -> String {
         let date = Date(timeIntervalSince1970: timestamp)
         let age = now.timeIntervalSince(date)
         if age < 60 { return "更新于 刚刚" }

@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var draft = AppSettings()
     @State private var saved = false
     @State private var saving = false
+    @AppStorage(MenuBarPreference.key) private var showMenuBar = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,6 +51,7 @@ struct SettingsView: View {
                     }
 
                     refreshCard
+                    menuBarCard
                 }
                 .padding(.horizontal, Theme.pagePadding)
                 .padding(.top, 4)
@@ -184,6 +186,30 @@ struct SettingsView: View {
             }
             .labelsHidden()
             .frame(width: 132)
+        }
+        .padding(18)
+        .panelSurface()
+    }
+
+    /// Takes effect at once rather than on save: it is about this Mac, not about
+    /// the connections the save button commits.
+    private var menuBarCard: some View {
+        HStack(spacing: 12) {
+            SettingsIcon(systemName: "menubar.rectangle")
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("菜单栏")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("在菜单栏显示套餐用量与超额预测；关闭主窗口后仍会按间隔刷新")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 12)
+
+            Toggle("在菜单栏显示", isOn: $showMenuBar)
+                .labelsHidden()
+                .toggleStyle(.switch)
         }
         .padding(18)
         .panelSurface()

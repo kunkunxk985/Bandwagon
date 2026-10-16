@@ -63,8 +63,24 @@ struct Client: Codable, Identifiable, Hashable {
     var lastOnline: Int?
     var online: Bool?
     var enable: Bool?
+    /// Subscription id; the subscription link is the panel's sub URI plus this.
+    var subId: String? = nil
 
     var id: String { "\(email ?? "")|\(inbound ?? "")" }
+
+    /// Expiry as a date, when it is one. 3X-UI stores a negative value for
+    /// "N days after first use", which is a duration, not a date.
+    var expiryDate: Date? {
+        guard let expiryTime, expiryTime > 0 else { return nil }
+        return Date(timeIntervalSince1970: Double(expiryTime) / 1000)
+    }
+
+    /// Days of a "starts on first use" expiry, or nil when the expiry is a date
+    /// or unset.
+    var delayedStartDays: Int? {
+        guard let expiryTime, expiryTime < 0 else { return nil }
+        return Int((Double(-expiryTime) / 86_400_000).rounded())
+    }
 
     var name: String {
         let comment = (comment ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -107,6 +123,17 @@ enum ClientState: String {
         case .idle: "离线"
         }
     }
+}
+
+/// Edits to one 3X-UI client. Nil leaves a field as the panel has it.
+struct ClientChanges: Equatable, Sendable {
+    var enable: Bool? = nil
+    /// Quota in bytes; 0 means unlimited.
+    var totalBytes: Int? = nil
+    /// Expiry in Unix milliseconds; 0 means never.
+    var expiryTime: Int? = nil
+
+    var isEmpty: Bool { enable == nil && totalBytes == nil && expiryTime == nil }
 }
 
 struct Inbound: Codable, Hashable {

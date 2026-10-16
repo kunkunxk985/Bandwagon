@@ -101,9 +101,11 @@ struct SecurityRegression {
             appModel.contains("var settings = AppSettings()") &&
             appModel.contains("func restoreSettings() async") &&
             appModel.contains("Task.detached") &&
-            app.contains("await model.restoreSettings()") &&
-            (app.range(of: "await model.restoreSettings()")?.lowerBound ?? app.endIndex) <
-            (app.range(of: "await model.load()")?.lowerBound ?? app.startIndex),
+            app.contains(".task { await model.start() }") &&
+            !app.contains("await model.restoreSettings()") &&
+            appModel.contains("func start() async") &&
+            (appModel.range(of: "await restoreSettings()")?.lowerBound ?? appModel.endIndex) <
+            (appModel.range(of: "        await load()\n        startAutoRefresh()")?.lowerBound ?? appModel.startIndex),
             "Keychain migration must run off the main actor after the window appears"
         )
 

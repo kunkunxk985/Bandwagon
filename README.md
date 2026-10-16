@@ -2,6 +2,9 @@
 
 macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超额、VPS 是否健康、哪个 3X-UI 客户端需要处理**。
 
+- 菜单栏常驻：不开窗口也能看到已用百分比和超额预测
+- 客户端管理（3X-UI v3）：订阅链接与二维码、启用 / 停用、改配额与到期、重置流量。每次写操作都先确认
+
 纯 SwiftUI，无第三方依赖，无后台服务。
 
 ## 构建与运行
@@ -16,7 +19,7 @@ open ~/Desktop/Bandwagon.app
 跑测试：
 
 ```bash
-./swift/scripts/test.sh           # 离线回归，24 项断言
+./swift/scripts/test.sh           # 离线回归，26 项断言
 ./swift/scripts/test.sh --live    # 额外打一次真实 3X-UI 面板
 ```
 

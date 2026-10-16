@@ -23,7 +23,14 @@ final class AppModel {
         let limit = interval > 0 ? Double(interval) * 3 : 6 * 3600
         return Date().timeIntervalSince1970 - fetchedAt > limit
     }
+    /// The client whose detail sheet is open. Lives here, not in a view, so the
+    /// overview, the clients page and the menu bar can all open the same sheet.
+    var inspectedClientID: String?
+    /// The panel's subscription URI. `.some(nil)` means the panel answered and
+    /// subscriptions are off; `nil` means not asked yet in this session.
+    private(set) var subscriptionBase: String??
     private var refreshTask: Task<Void, Never>?
+    private var started = false
     private var autoRefreshTask: Task<Void, Never>?
     private var restoreTask: Task<AppSettings, Never>?
     private var settingsRestored = false
@@ -37,6 +44,16 @@ final class AppModel {
         settings = await restoreTask.value
         settingsRestored = true
         self.restoreTask = nil
+    }
+
+    /// Launch sequence, safe to call from every scene that may appear first (the
+    /// window or the menu bar item).
+    func start() async {
+        guard !started else { return }
+        started = true
+        await restoreSettings()
+        await load()
+        startAutoRefresh()
     }
 
     /// Polls on the configured interval. Idempotent on purpose: calling it while a
@@ -150,6 +167,38 @@ final class AppModel {
         }
     }
 
+    // MARK: - Client actions
+
+    var inspectedClient: Client? {
+        guard let inspectedClientID else { return nil }
+        return overview.xui?.clients?.first { $0.id == inspectedClientID }
+    }
+
+    /// Edits one client on the panel, then refreshes so every page shows the
+    /// panel's own view of the result rather than an optimistic guess.
+    func updateClient(_ client: Client, changes: ClientChanges) async throws {
+        if let refreshTask { await refreshTask.value }
+        try await XUIClient.updateClient(settings, client: client, changes: changes)
+        await load()
+    }
+
+    func resetTraffic(_ client: Client) async throws {
+        if let refreshTask { await refreshTask.value }
+        try await XUIClient.resetTraffic(settings, client: client)
+        await load()
+    }
+
+    /// Full subscription link for `client`, asking the panel for its sub URI once
+    /// per session. Returns nil when subscriptions are off or the client has none.
+    func subscriptionLink(for client: Client) async throws -> String? {
+        guard let subId = client.subId, !subId.isEmpty else { return nil }
+        if subscriptionBase == nil {
+            subscriptionBase = .some(try await XUIClient.subscriptionBase(settings))
+        }
+        guard let base = subscriptionBase ?? nil else { return nil }
+        return base + subId
+    }
+
     func saveSettings(_ newValue: AppSettings) async -> Bool {
         // Join any old refresh before applying new credentials; no stale result can win.
         if let refreshTask { await refreshTask.value }
@@ -161,6 +210,7 @@ final class AppModel {
             return false
         }
         overview = OverviewResponse()
+        subscriptionBase = nil
         // Restart so a changed interval takes effect now rather than after the
         // old countdown finishes.
         stopAutoRefresh()

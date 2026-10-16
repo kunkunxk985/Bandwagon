@@ -24,6 +24,41 @@ import Foundation
      print("PASS concurrent refresh publishes XUI before BWH; independent errors/loading")
      return
    }
+   if expected == "writes" || expected == "write-reject" {
+     do {
+       let overview = try await XUIClient.fetch(settings)
+       guard let client = overview.clients?.first, client.subId == "sub-fixture" else {
+         print("FAIL client must carry its subId"); exit(1)
+       }
+       if expected == "write-reject" {
+         do {
+           try await XUIClient.updateClient(settings, client: client, changes: ClientChanges(enable: false))
+           print("FAIL a skipped client must throw"); exit(1)
+         } catch {
+           guard XUIError.safeMessage(error).contains("fixture refused") else {
+             print("FAIL the panel's refusal reason must reach the user: \(XUIError.safeMessage(error))"); exit(1)
+           }
+         }
+         print("PASS refused client write surfaces the panel's reason")
+         return
+       }
+       // Quota + expiry: read the record, send it back as ToClient would, edited.
+       try await XUIClient.updateClient(
+         settings, client: client,
+         changes: ClientChanges(totalBytes: 50 * 1_073_741_824, expiryTime: 1_893_456_000_000)
+       )
+       // Enable alone must not rewrite the record.
+       try await XUIClient.updateClient(settings, client: client, changes: ClientChanges(enable: false))
+       try await XUIClient.resetTraffic(settings, client: client)
+       guard try await XUIClient.subscriptionBase(settings) == "https://sub.example/sub/" else {
+         print("FAIL subscription base must come from setting/defaultSettings"); exit(1)
+       }
+     } catch {
+       print("FAIL client writes: \(XUIError.safeMessage(error))"); exit(1)
+     }
+     print("PASS v3 client update mirrors ToClient, enable via bulk, traffic reset, subscription URI (fixture)")
+     return
+   }
    if expected.hasPrefix("routing-") {
      let model = AppModel(); model.settings = settings
      await model.load()

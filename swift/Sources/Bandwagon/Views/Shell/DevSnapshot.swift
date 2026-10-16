@@ -35,11 +35,40 @@ enum DevSnapshot {
                 capture(to: directory.appendingPathComponent("\(tab.rawValue)-bottom.png"))
             }
         }
+        // The menu bar panel is its own window that only exists while open, so
+        // render the view directly.
+        let dark = ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_APPEARANCE"] == "dark"
+        let renderer = ImageRenderer(content: MenuBarPanel()
+            .environment(model)
+            .environment(\.colorScheme, dark ? .dark : .light))
+        renderer.scale = 2
+        if let image = renderer.nsImage, let tiff = image.tiffRepresentation,
+           let rep = NSBitmapImageRep(data: tiff) {
+            try? rep.representation(using: .png, properties: [:])?
+                .write(to: directory.appendingPathComponent("menubar.png"))
+        }
+
+        // The detail sheet for the busiest client, once its subscription link has
+        // had time to load.
+        if let client = model.overview.xui?.clients?.first {
+            select(.clients)
+            model.inspectedClientID = client.id
+            try? await Task.sleep(for: .seconds(4))
+            if let sheet = NSApp.windows.first(where: { $0.isSheet && $0.isVisible }) {
+                capture(window: sheet, to: directory.appendingPathComponent("client-sheet.png"))
+            }
+            model.inspectedClientID = nil
+        }
         NSApp.terminate(nil)
     }
 
+    /// The document window, skipping the menu bar item's status window and sheets.
+    private static var mainWindow: NSWindow? {
+        NSApp.windows.first { $0.isVisible && !$0.isSheet && $0.contentView != nil && $0.frame.width > 600 }
+    }
+
     private static func scrollToBottom() -> Bool {
-        guard let root = NSApp.windows.first(where: { $0.isVisible })?.contentView else { return false }
+        guard let root = mainWindow?.contentView else { return false }
         var best: NSScrollView?
         var stack: [NSView] = [root]
         while let view = stack.popLast() {
@@ -58,8 +87,15 @@ enum DevSnapshot {
     }
 
     private static func capture(to url: URL) {
-        guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }),
-              let view = window.contentView?.superview ?? window.contentView,
+        guard let window = mainWindow else {
+            NSLog("DevSnapshot: no window to capture (\(NSApp.windows.count) windows)")
+            return
+        }
+        capture(window: window, to: url)
+    }
+
+    private static func capture(window: NSWindow, to url: URL) {
+        guard let view = window.contentView?.superview ?? window.contentView,
               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
             NSLog("DevSnapshot: no window to capture (\(NSApp.windows.count) windows)")
             return

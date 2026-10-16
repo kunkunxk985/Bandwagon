@@ -304,6 +304,7 @@ struct OverviewView: View {
 }
 
 private struct TopClientRow: View {
+    @Environment(AppModel.self) private var model
     let rank: Int
     let client: Client
     let maxUsed: Int
@@ -372,5 +373,7 @@ private struct TopClientRow: View {
         .onHover { hovering in
             hovered = hovering
         }
+        .onTapGesture { model.inspectedClientID = client.id }
+        .accessibilityAction(named: "查看详情") { model.inspectedClientID = client.id }
     }
 }

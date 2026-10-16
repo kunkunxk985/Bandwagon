@@ -2,6 +2,140 @@ import Foundation
 
 enum XUIClient {
     static func fetch(_ settings: AppSettings) async throws -> XUIOverview {
+        try await withConnection(settings) { base, session, csrf in
+            try await overview(base: base, settings: settings, session: session, csrf: csrf)
+        }
+    }
+
+    // MARK: - Writes
+    //
+    // Written against 3X-UI v3, where a client is one record (addressed by email)
+    // that can be attached to several inbounds. The per-inbound `updateClient`
+    // and `resetClientTraffic` routes of v2 no longer exist there.
+
+    /// Applies `changes` to one client.
+    ///
+    /// Enabling and disabling go through `bulkEnable` / `bulkDisable`, which touch
+    /// nothing else. Quota and expiry need `update`, which replaces the whole
+    /// client row, so the stored record is read first and sent back with only
+    /// those fields changed — converted the same way the panel's own
+    /// `ClientRecord.ToClient` does, which is also what its traffic reset uses.
+    static func updateClient(_ settings: AppSettings, client: Client, changes: ClientChanges) async throws {
+        guard !changes.isEmpty else { return }
+        guard let email = client.email, !email.isEmpty else { throw XUIError.missingClientData }
+        try await withConnection(settings) { base, session, csrf in
+            if changes.totalBytes != nil || changes.expiryTime != nil {
+                let raw = try await request(
+                    "GET", base: base, path: "/panel/api/clients/get/" + pathComponent(email),
+                    settings: settings, session: session, csrf: csrf
+                )
+                let record = JSONValue.object(JSONValue.object(raw)["client"])
+                guard !record.isEmpty, JSONValue.string(record["email"]) == email else {
+                    throw XUIError.missingClientData
+                }
+                var payload = clientPayload(fromRecord: record)
+                if let total = changes.totalBytes { payload["totalGB"] = max(0, total) }
+                if let expiry = changes.expiryTime { payload["expiryTime"] = expiry }
+                if let enable = changes.enable { payload["enable"] = enable }
+                _ = try await request(
+                    "POST", base: base, path: "/panel/api/clients/update/" + pathComponent(email),
+                    settings: settings, session: session, csrf: csrf, json: payload
+                )
+            } else if let enable = changes.enable {
+                let raw = try await request(
+                    "POST", base: base,
+                    path: enable ? "/panel/api/clients/bulkEnable" : "/panel/api/clients/bulkDisable",
+                    settings: settings, session: session, csrf: csrf, json: ["emails": [email]]
+                )
+                // A refusal for this one email comes back inside a successful
+                // response, as a skipped entry with the reason.
+                for item in JSONValue.array(JSONValue.object(raw)["skipped"]) {
+                    let entry = JSONValue.object(item)
+                    if JSONValue.string(entry["email"]) == email {
+                        let reason = JSONValue.string(entry["reason"])
+                        throw XUIError.rejected(reason.isEmpty ? "面板跳过了这个客户端" : reason)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Zeroes the client's counters on every inbound it is attached to. On v3 the
+    /// panel also re-enables a client that was switched off.
+    static func resetTraffic(_ settings: AppSettings, client: Client) async throws {
+        guard let email = client.email, !email.isEmpty else { throw XUIError.missingClientData }
+        try await withConnection(settings) { base, session, csrf in
+            _ = try await request(
+                "POST", base: base, path: "/panel/api/clients/resetTraffic/" + pathComponent(email),
+                settings: settings, session: session, csrf: csrf
+            )
+        }
+    }
+
+    /// The panel's subscription URI, to which a client's `subId` is appended. Nil
+    /// when subscriptions are switched off on the panel.
+    ///
+    /// `defaultSettings` is what the panel's own QR dialog uses: it already folds
+    /// the sub domain, port, path and TLS into one URI, and unlike `setting/all`
+    /// it carries no secrets.
+    static func subscriptionBase(_ settings: AppSettings) async throws -> String? {
+        try await withConnection(settings) { base, session, csrf in
+            let raw = try await request(
+                "POST", base: base, path: "/panel/api/setting/defaultSettings",
+                settings: settings, session: session, csrf: csrf
+            )
+            let object = JSONValue.object(raw)
+            guard JSONValue.bool(object["subEnable"]) else { return nil }
+            let uri = JSONValue.string(object["subURI"]).trimmingCharacters(in: .whitespacesAndNewlines)
+            return uri.isEmpty ? nil : uri
+        }
+    }
+
+    /// `ClientRecord` (what `clients/get` returns) → `model.Client` (what
+    /// `clients/update` binds), field for field as the panel's `ToClient` maps
+    /// them. The two shapes disagree on `id` (row number vs UUID), `reverse`
+    /// (JSON text vs object) and `allowedIPs` (comma list vs array), so the
+    /// record cannot be sent back as it came.
+    static func clientPayload(fromRecord record: [String: Any]) -> [String: Any] {
+        var out: [String: Any] = [:]
+        let copied = [
+            "email", "subId", "password", "auth", "flow", "security", "limitIp", "totalGB",
+            "expiryTime", "enable", "tgId", "group", "comment", "reset", "resetDay",
+            "resetWeekday", "resetMax", "trafficReset", "trafficResetDay",
+            "privateKey", "publicKey", "preSharedKey", "forwardedPorts", "secret", "adTag",
+            "limitHwid",
+        ]
+        for key in copied {
+            if let value = record[key], !(value is NSNull) { out[key] = value }
+        }
+        out["id"] = JSONValue.string(record["uuid"])
+        let allowed = JSONValue.string(record["allowedIPs"])
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        if !allowed.isEmpty { out["allowedIPs"] = allowed }
+        let keepAlive = JSONValue.int(record["keepAlive"])
+        if keepAlive > 0 { out["keepAlive"] = keepAlive }
+        let reverse = JSONValue.string(record["reverse"])
+        if !reverse.isEmpty, let data = reverse.data(using: .utf8),
+           let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            out["reverse"] = object
+        }
+        return out
+    }
+
+    private static func pathComponent(_ value: String) -> String {
+        value.addingPercentEncoding(withAllowedCharacters: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~"))) ?? value
+    }
+
+    // MARK: - Session
+
+    /// One authenticated session per call: log in (unless an API token is set),
+    /// run `body`, tear the session down.
+    private static func withConnection<T>(
+        _ settings: AppSettings,
+        _ body: (String, URLSession, String?) async throws -> T
+    ) async throws -> T {
         let session = makeSession()
         defer { session.invalidateAndCancel() }
         let baseURL = try SecureURLPolicy.baseURL(from: settings.xuiBaseUrl)
@@ -10,6 +144,10 @@ enum XUIClient {
         if settings.xuiApiToken.isEmpty {
             csrf = try await login(base: base, settings: settings, session: session)
         }
+        return try await body(base, session, csrf)
+    }
+
+    private static func overview(base: String, settings: AppSettings, session: URLSession, csrf: String?) async throws -> XUIOverview {
         let inbounds = try await inboundsList(base: base, settings: settings, session: session, csrf: csrf)
         let online = await onlineEmails(base: base, settings: settings, session: session, csrf: csrf)
         var clients = parseClients(inbounds: inbounds, online: online)
@@ -124,18 +262,27 @@ enum XUIClient {
         path: String,
         settings: AppSettings,
         session: URLSession,
-        csrf: String?
+        csrf: String?,
+        json: Any? = nil
     ) async throws -> Any {
         guard let url = URL(string: base + path) else { throw XUIError.invalidURL }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue(csrf, forHTTPHeaderField: "X-CSRF-Token")
         for (k, v) in headers(settings) { request.setValue(v, forHTTPHeaderField: k) }
+        if let json {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
+        }
         let (data, response) = try await session.data(for: request)
         try checkHTTP(response)
         guard let obj = try? JSONSerialization.jsonObject(with: data) else { throw XUIError.invalidResponse }
         if let dict = obj as? [String: Any] {
-            if dict["success"] as? Bool == false { throw XUIError.invalidResponse }
+            if dict["success"] as? Bool == false {
+                // A write the panel refused says why in `msg`; keep it for the user.
+                let message = JSONValue.string(dict["msg"])
+                throw message.isEmpty ? XUIError.invalidResponse : XUIError.rejected(message)
+            }
             return dict["obj"] ?? dict
         }
         return obj
@@ -199,10 +346,10 @@ enum XUIClient {
                 let info = meta[email] ?? [:]
                 let up = JSONValue.int(stat["up"])
                 let down = JSONValue.int(stat["down"])
+                // Despite the name, the panel stores `totalGB` in bytes — its own
+                // client dialog multiplies the GB field by 1024³ before saving.
                 var total = JSONValue.int(stat["total"])
-                if total == 0, JSONValue.int(info["totalGB"]) > 0 {
-                    total = JSONValue.int(info["totalGB"]) * 1_073_741_824
-                }
+                if total == 0 { total = JSONValue.int(info["totalGB"]) }
                 let used = up + down
                 var expiry = JSONValue.int(stat["expiryTime"] ?? info["expiryTime"])
                 if expiry > 0, expiry < 100_000_000_000 { expiry *= 1000 }
@@ -220,7 +367,8 @@ enum XUIClient {
                         expiryTime: expiry,
                         lastOnline: JSONValue.int(stat["lastOnline"]),
                         online: online.contains(email),
-                        enable: JSONValue.bool(stat["enable"] ?? info["enable"], default: true)
+                        enable: JSONValue.bool(stat["enable"] ?? info["enable"], default: true),
+                        subId: JSONValue.string(info["subId"]).isEmpty ? nil : JSONValue.string(info["subId"])
                     )
                 )
             }

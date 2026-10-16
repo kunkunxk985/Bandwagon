@@ -304,6 +304,7 @@ private enum ClientColumns {
 }
 
 struct ClientRow: View {
+    @Environment(AppModel.self) private var model
     let client: Client
     let maxUsed: Int
     @State private var copied = false
@@ -396,6 +397,10 @@ struct ClientRow: View {
         .onHover { hovering in
             hovered = hovering
         }
+        // The copy button keeps its own tap; anywhere else opens the detail sheet.
+        .onTapGesture { model.inspectedClientID = client.id }
+        .accessibilityAction(named: "查看详情") { model.inspectedClientID = client.id }
+        .help("查看详情与管理")
     }
 
     /// Quota share, or the expiry that raised a warning. Without the expiry text a

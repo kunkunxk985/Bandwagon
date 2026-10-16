@@ -208,6 +208,7 @@ struct RingMeter: View {
     var tint: Color = Theme.accent
     var size: CGFloat = 112
     var lineWidth: CGFloat = 9
+    var labelSize: CGFloat = 24
 
     var body: some View {
         ZStack {
@@ -218,7 +219,7 @@ struct RingMeter: View {
                 .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text(label)
-                .font(Theme.number(24))
+                .font(Theme.number(labelSize))
         }
         .frame(width: size, height: size)
         .accessibilityElement(children: .ignore)

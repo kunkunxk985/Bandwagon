@@ -5,6 +5,10 @@ enum XUIError: LocalizedError {
     case invalidResponse
     case authentication(String?)
     case http(Int)
+    /// The panel answered `success: false` with a reason.
+    case rejected(String)
+    /// The client is missing the inbound id or stored object a write needs.
+    case missingClientData
 
     var errorDescription: String? {
         switch self {
@@ -17,6 +21,10 @@ enum XUIError: LocalizedError {
                 return "3X-UI 拒绝认证（HTTP 200）：\(serverMessage)"
             }
             return "3X-UI 拒绝认证（HTTP 200，success:false）。可能是认证信息无效或触发登录限流，请勿连续重试。"
+        case .rejected(let message):
+            return "3X-UI 拒绝了此操作：\(message)"
+        case .missingClientData:
+            return "缺少修改这个客户端所需的面板数据，请刷新后重试。"
         case .http(403):
             return "3X-UI 拒绝请求（HTTP 403）：请检查 CSRF / 反向代理访问策略。"
         case .http(let code):

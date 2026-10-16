@@ -2,20 +2,21 @@ import SwiftUI
 
 @main
 struct BandwagonApp: App {
+    static let mainWindowID = "main"
+
     @State private var model = AppModel()
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(MenuBarPreference.key) private var showMenuBar = true
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: Self.mainWindowID) {
             ContentView()
                 .environment(model)
                 .frame(minWidth: 1040, minHeight: 680)
                 .background(WindowChrome())
-                .task {
-                    await model.restoreSettings()
-                    await model.load()
-                    model.startAutoRefresh()
-                }
+                // Shared with the menu bar item: whichever appears first starts the
+                // app, and the other finds it already running.
+                .task { await model.start() }
                 .onChange(of: scenePhase) { _, phase in
                     switch phase {
                     case .active:
@@ -24,7 +25,11 @@ struct BandwagonApp: App {
                         Task { await model.refreshIfStale() }
                         model.startAutoRefresh()
                     case .background:
-                        model.stopAutoRefresh()
+                        // The menu bar item keeps showing the numbers after the
+                        // window is gone, so it keeps polling; without it, rest.
+                        if !showMenuBar {
+                            model.stopAutoRefresh()
+                        }
                     default:
                         break
                     }
@@ -41,5 +46,14 @@ struct BandwagonApp: App {
                     .disabled(model.loading)
             }
         }
+
+        MenuBarExtra(isInserted: $showMenuBar) {
+            MenuBarPanel()
+                .environment(model)
+        } label: {
+            MenuBarLabel()
+                .environment(model)
+        }
+        .menuBarExtraStyle(.window)
     }
 }
