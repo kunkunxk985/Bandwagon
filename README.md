@@ -19,7 +19,7 @@ open ~/Desktop/Bandwagon.app
 跑测试：
 
 ```bash
-./swift/scripts/test.sh           # 离线回归，26 项断言
+./swift/scripts/test.sh           # 离线回归，27 项断言
 ./swift/scripts/test.sh --live    # 额外打一次真实 3X-UI 面板
 ```
 

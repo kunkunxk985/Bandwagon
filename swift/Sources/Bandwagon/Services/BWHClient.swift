@@ -28,6 +28,9 @@ enum BWHError: LocalizedError {
         if let error = error as? BWHError { return error.localizedDescription }
         if let error = error as? TransportSecurityError { return error.localizedDescription }
         let code = (error as NSError).code
+        if code == NSURLErrorTimedOut {
+            return "Bandwagon API 请求超时，请检查网络或本地代理。"
+        }
         return "Bandwagon API 请求失败（\(code)），请检查连接与设置。"
     }
 }

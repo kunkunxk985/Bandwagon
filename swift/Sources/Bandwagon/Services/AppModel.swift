@@ -161,7 +161,17 @@ final class AppModel {
             )
         } catch {
             if overview.bwh == nil { overview.bwh = BWHOverview(configured: true) }
-            overview.bwh?.error = BWHError.safeMessage(error)
+            var message = BWHError.safeMessage(error)
+            // A connection that never got through may be a dead local proxy node
+            // rather than a dead server; resolving the host tells them apart.
+            if ProxyDiagnosis.isConnectivityFailure(error) {
+                let apiBase = snapshot.bwhApiBase
+                let hint = await Task.detached(priority: .utility) {
+                    ProxyDiagnosis.explain(error: error, apiBase: apiBase)
+                }.value
+                if let hint { message = hint }
+            }
+            overview.bwh?.error = message
             bwhNeedsSettings = BWHError.needsSettings(error)
         }
     }

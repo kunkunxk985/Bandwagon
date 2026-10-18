@@ -274,7 +274,10 @@ private struct ClientTableHeader: View {
             Text("状态")
                 .frame(width: ClientColumns.state, alignment: .leading)
             Text("客户端")
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
+            Text("上次在线")
+                .frame(width: ClientColumns.lastOnline, alignment: .leading)
+            Spacer(minLength: 0)
             Color.clear
                 .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
             Text("用量")
@@ -299,6 +302,12 @@ private enum ClientColumns {
     static let used: CGFloat = 72
     static let quota: CGFloat = 96
     static let state: CGFloat = 56
+    static let nameMin: CGFloat = 120
+    /// Capped so the identity columns (status, name, last online) stay together
+    /// on the left and the numbers on the right, instead of the name column
+    /// absorbing every spare point of a wide window.
+    static let nameMax: CGFloat = 260
+    static let lastOnline: CGFloat = 84
     static let copy: CGFloat = 24
 }
 
@@ -351,7 +360,16 @@ struct ClientRow: View {
                         .lineLimit(1)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
+
+            Text(client.lastOnlineText())
+                .font(.system(size: 12.5))
+                .foregroundStyle(client.online == true ? AnyShapeStyle(ClientState.online.swiftColor) : AnyShapeStyle(.secondary))
+                .monospacedDigit()
+                .lineLimit(1)
+                .frame(width: ClientColumns.lastOnline, alignment: .leading)
+
+            Spacer(minLength: 0)
 
             UsageBar(value: usageFraction, tint: usageTint)
                 .frame(minWidth: 64, maxWidth: 120)

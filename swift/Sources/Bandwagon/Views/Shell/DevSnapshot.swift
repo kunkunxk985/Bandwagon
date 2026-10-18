@@ -19,6 +19,11 @@ enum DevSnapshot {
         if ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_APPEARANCE"] == "dark" {
             NSApp.appearance = NSAppearance(named: .darkAqua)
         }
+        // Optional wide-window check: BANDWAGON_SNAPSHOT_WIDTH=1800 and so on.
+        if let width = ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_WIDTH"].flatMap(Double.init),
+           let window = mainWindow {
+            window.setContentSize(NSSize(width: width, height: window.contentLayoutRect.height))
+        }
         // Wait for the first refresh to settle so pages show data, not spinners.
         for _ in 0..<120 where model.overview.fetchedAt == nil && model.overview.bwh?.error == nil {
             try? await Task.sleep(for: .milliseconds(250))

@@ -50,6 +50,7 @@ swift/
 | `BWHClient.swift` | 搬瓦工 KiwiVM API（套餐、用量、重置日、流量历史） |
 | `XUIClient.swift` | 3X-UI 面板客户端。Cookie 会话、CSRF、表单登录、2FA、API Token；读取客户端列表；写操作（启用/停用、改配额与到期、重置流量）与订阅地址。写操作按 **3X-UI v3** 的 `/panel/api/clients/*` 接口实现，见下方「3X-UI 写操作」 |
 | `XUIError.swift` | 把底层错误翻译成不含敏感信息的用户可读文案，并标记是否需要改设置 |
+| `ProxyDiagnosis.swift` | 搬瓦工连不上时判断是不是本地代理 fake-ip（解析结果落在 `198.18.0.0/15`），是则给出明确提示。见 `Docs/TROUBLESHOOTING.md` |
 | `SecureURLPolicy.swift` | 面板地址校验（仅 HTTPS 或环回 HTTP）与 TLS 校验策略 |
 | `JSONValue.swift` | JSON 值的安全强制转换，避免 `as?` 满天飞 |
 | `SettingsStore.swift` | `settings.json` 的读写。凭据不入文件，只存 VEID、地址、刷新间隔 |
@@ -81,7 +82,7 @@ swift/
 
 | 文件 | 职责 |
 | --- | --- |
-| `Components.swift` | `ForecastStrip`、`CardDivider`、`SummaryTile`、`UsageBar`、`UsageTint`、`UsageRing`（随用量与预测变色）、`StatusPill`、`InfoCell`、`HeroChip` |
+| `Components.swift` | `ForecastStrip`（结论句 + `ForecastTimeline`：今天到重置日的时间轴，标出预计用尽日与无流量天数）、`CardDivider`、`SummaryTile`、`UsageBar`、`UsageTint`、`UsageRing`（随用量与预测变色）、`StatusPill`、`InfoCell`、`HeroChip` |
 | `StatusViews.swift` | 状态呈现：`StatusCard`（整页）、`StatusBanner`（有数据时的内联提示）、`CenterWhenShort` |
 | `MiniTrafficCard.swift` | 总览的「近 7 天流量」柱状卡 |
 | `TrafficHistoryChart.swift` | VPS 的流量趋势图（Swift Charts）与汇总指标 |
@@ -118,6 +119,7 @@ swift/
 | `UsagePolicyRegression.swift` | 阈值口径：`Client.state` 与 `UsageTint` 必须共用同一套阈值 |
 | `InputPolicyRegression.swift` | 凭据输入框强制罗马字符 |
 | `TrafficChartRegression.swift` | 区间裁剪、汇总、悬停、单位、缓存失效、稳定标识、逐帧成本 |
+| `ProxyDiagnosisRegression.swift` | fake-ip 网段边界、哪些错误算「连不上」、只有 fake-ip 时才提示代理、解析器、接线 |
 | `ForecastRegression.swift` | 超额预测的三档判定、边界、措辞、以及「该不该给结论」 |
 | `UICompositionRegression.swift` | 源码级 UI 断言：卡片统一、错误降级、主环取色、减弱动效、格式化器缓存等 |
 | `CredentialBridgeFixtureRegression.swift` | 临时签名一份辅助程序与父进程，跑完整协议、摘要锁定、ACL 分区 |

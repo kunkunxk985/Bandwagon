@@ -46,6 +46,18 @@ python3 Tests/http_fixture.py "$OUT/http"
 "$OUT/forecast-regression"
 
 "$SWIFTC" "${ARGS[@]}" -parse-as-library \
+  Sources/Bandwagon/Services/ProxyDiagnosis.swift \
+  Sources/Bandwagon/Services/BWHClient.swift \
+  Sources/Bandwagon/Services/JSONValue.swift \
+  Sources/Bandwagon/Services/SecureURLPolicy.swift \
+  Sources/Bandwagon/Services/SettingsStore.swift \
+  Sources/Bandwagon/Services/KeychainCredentialStore.swift \
+  Sources/Bandwagon/Services/CredentialBridgeClient.swift \
+  Sources/Bandwagon/Models/*.swift \
+  Tests/ProxyDiagnosisRegression.swift -o "$OUT/proxy-diagnosis-regression"
+"$OUT/proxy-diagnosis-regression"
+
+"$SWIFTC" "${ARGS[@]}" -parse-as-library \
   Tests/SecurityRegression.swift -o "$OUT/security-regression"
 "$OUT/security-regression"
 

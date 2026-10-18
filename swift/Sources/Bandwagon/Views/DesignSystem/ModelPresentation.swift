@@ -87,6 +87,24 @@ extension TrafficForecast.Verdict {
     }
 }
 
+extension Client {
+    /// When this client was last connected, for the clients table: "现在" while
+    /// online, then minutes / hours / days ago, then a date. "—" when the panel
+    /// has never seen it connect.
+    func lastOnlineText(now: Date = Date()) -> String {
+        if online == true { return "现在" }
+        guard var stamp = lastOnline, stamp > 0 else { return "—" }
+        if stamp < 100_000_000_000 { stamp *= 1000 }
+        let date = Date(timeIntervalSince1970: Double(stamp) / 1000)
+        let seconds = now.timeIntervalSince(date)
+        if seconds < 60 { return "刚刚" }
+        if seconds < 3600 { return "\(Int(seconds / 60)) 分钟前" }
+        if seconds < 86_400 { return "\(Int(seconds / 3600)) 小时前" }
+        if seconds < 7 * 86_400 { return "\(Int(seconds / 86_400)) 天前" }
+        return DateFormats.string("M/d", date)
+    }
+}
+
 extension ClientState {
     var swiftColor: Color {
         switch self {

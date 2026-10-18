@@ -1,39 +1,144 @@
 import SwiftUI
 
-/// One-line verdict on whether this cycle's quota will hold. It is the conclusion,
-/// so it sits directly under the quota numbers and above the supporting detail.
+/// Verdict on whether this cycle's quota will hold: the sentence first, then the
+/// same answer drawn as a timeline from today to the reset. It is the conclusion,
+/// so it sits directly under the quota numbers.
 struct ForecastStrip: View {
     var forecast: TrafficForecast
+    var showsTimeline = true
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: forecast.verdict.icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(forecast.verdict.tint)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: forecast.verdict.icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(forecast.verdict.tint)
 
-            Text(forecast.headline)
-                .font(.system(size: 12.5, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
+                Text(forecast.headline)
+                    .font(.system(size: 12.5, weight: .medium))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
 
-            Spacer(minLength: 10)
+                Spacer(minLength: 10)
 
-            Text(forecast.detail)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-                .lineLimit(1)
-                .fixedSize()
+                Text(forecast.detail)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            if showsTimeline {
+                ForecastTimeline(forecast: forecast)
+            }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .padding(.vertical, showsTimeline ? 11 : 9)
         .background(
-            forecast.verdict.tint.opacity(0.09),
+            forecast.verdict.tint.opacity(0.07),
             in: RoundedRectangle(cornerRadius: Theme.controlRadius + 1, style: .continuous)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(forecast.headline)，\(forecast.detail)")
+    }
+}
+
+/// Today → reset on a hairline. Three dots mark today, the projected run-out and
+/// the reset; the stretch with nothing left before the reset is drawn dashed in
+/// red. When the quota outlasts the cycle there is no run-out dot, and the far end
+/// says roughly how much will be left over.
+struct ForecastTimeline: View {
+    var forecast: TrafficForecast
+    var now: Date = Date()
+
+    private var runsOut: Bool { forecast.daysUntilExhausted < forecast.daysLeft }
+    private var exhaustFraction: Double {
+        guard forecast.daysLeft > 0 else { return 1 }
+        return min(1, max(0, forecast.daysUntilExhausted / forecast.daysLeft))
+    }
+    private var resetDate: Date { now.addingTimeInterval(forecast.daysLeft * 86_400) }
+    private var exhaustDate: Date { now.addingTimeInterval(forecast.daysUntilExhausted * 86_400) }
+    private var lineColor: Color { forecast.verdict == .tight ? Theme.warning : Theme.accent }
+
+    /// Expected surplus at reset when the quota outlasts the cycle.
+    private var leftoverAtReset: Int {
+        let spent = Double(forecast.dailyAverageBytes) * forecast.daysLeft
+        return max(0, forecast.remainingBytes - Int(min(spent, Double(Int.max))))
+    }
+
+    private let dot: CGFloat = 9
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { proxy in
+                let width = proxy.size.width
+                let inset = dot / 2
+                let span = max(0, width - dot)
+                let split = inset + span * (runsOut ? exhaustFraction : 1)
+                let mid = proxy.size.height / 2
+                ZStack(alignment: .topLeading) {
+                    Path { path in
+                        path.move(to: CGPoint(x: inset, y: mid))
+                        path.addLine(to: CGPoint(x: split, y: mid))
+                    }
+                    .stroke(lineColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    if runsOut {
+                        Path { path in
+                            path.move(to: CGPoint(x: split, y: mid))
+                            path.addLine(to: CGPoint(x: width - inset, y: mid))
+                        }
+                        .stroke(Theme.danger, style: StrokeStyle(lineWidth: 2, dash: [4, 3]))
+                    }
+                    Circle()
+                        .fill(lineColor)
+                        .frame(width: dot, height: dot)
+                        .position(x: inset, y: mid)
+                    if runsOut {
+                        ring(Theme.danger)
+                            .position(x: split, y: mid)
+                    }
+                    ring(Color.secondary)
+                        .position(x: width - inset, y: mid)
+                }
+            }
+            .frame(height: dot + 2)
+
+            HStack(spacing: 6) {
+                Text("今天 \(DateFormats.string("M/d", now))")
+                Spacer(minLength: 8)
+                if runsOut {
+                    Text("约 \(DateFormats.string("M/d", exhaustDate)) 用尽 · 空档 \(TrafficForecast.dayText(forecast.daysLeft - forecast.daysUntilExhausted))")
+                        .foregroundStyle(Theme.danger)
+                        .padding(.trailing, 14)
+                } else if leftoverAtReset > 0 {
+                    Text("重置时约剩 \(TrafficChartData.valueLabel(leftoverAtReset))")
+                        .padding(.trailing, 14)
+                }
+                Text("\(DateFormats.string("M/d", resetDate)) 重置")
+            }
+            .font(.system(size: 11.5))
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .lineLimit(1)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+    }
+
+    private func ring(_ color: Color) -> some View {
+        Circle()
+            .fill(Theme.surface)
+            .overlay(Circle().strokeBorder(color, lineWidth: 2))
+            .frame(width: dot, height: dot)
+    }
+
+    private var accessibilityText: String {
+        let reset = DateFormats.string("M月d日", resetDate)
+        if runsOut {
+            return "预计 \(DateFormats.string("M月d日", exhaustDate)) 用尽，\(reset) 重置"
+        }
+        return "\(reset) 重置，届时约剩 \(TrafficChartData.valueLabel(leftoverAtReset))"
     }
 }
 

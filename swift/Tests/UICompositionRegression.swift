@@ -224,6 +224,13 @@ struct UICompositionRegression {
             vps.contains("tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict)"),
             "The hero ring must take its colour from usage and the forecast instead of a fixed gradient"
         )
+        require(
+            components.contains("struct ForecastTimeline: View") &&
+            components.contains("ForecastTimeline(forecast: forecast)") &&
+            overview.contains("ForecastStrip(forecast: forecast)") &&
+            vps.contains("ForecastStrip(forecast: forecast)"),
+            "The forecast must be drawn as a today-to-reset timeline under its sentence on both quota heroes"
+        )
         // Three pages each carrying their own copy of the same four decisions is how
         // they drift apart; they must share one rule instead.
         require(
