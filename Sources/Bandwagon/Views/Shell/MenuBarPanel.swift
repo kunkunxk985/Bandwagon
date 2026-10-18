@@ -43,6 +43,12 @@ struct MenuBarLabel: View {
 
 /// The window that drops from the menu bar item: the answer to "am I fine?"
 /// without opening the main window.
+///
+/// Laid out like the system's own menu bar panels (Wi-Fi, Control Center) and
+/// painted with no background of its own, so the system's glass material shows
+/// through: small grey section titles, round icon badges, inset separators, and
+/// menu-style rows at the bottom. The main window keeps the flat dashboard look;
+/// this one belongs to the menu bar.
 struct MenuBarPanel: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
@@ -50,30 +56,37 @@ struct MenuBarPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-                .padding(.horizontal, 16)
-                .padding(.top, 14)
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
+
+            quota
+                .padding(.horizontal, 14)
                 .padding(.bottom, 12)
-            CardDivider()
 
-            VStack(alignment: .leading, spacing: 14) {
-                quota
-                clients
+            separator
+            clients
+            separator
+
+            VStack(spacing: 0) {
+                PanelMenuRow(title: "打开 Bandwagon…") { openMain() }
+                PanelMenuRow(title: "退出 Bandwagon") { NSApp.terminate(nil) }
             }
-            .padding(16)
-
-            CardDivider()
-            footer
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 5)
         }
-        .frame(width: 320)
-        .background(Theme.surface)
+        .frame(width: 300)
+    }
+
+    private var separator: some View {
+        Divider()
+            .padding(.horizontal, 14)
     }
 
     private var header: some View {
         HStack(spacing: 8) {
             Text("Bandwagon")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 13, weight: .bold))
             Spacer()
             if let fetchedAt = model.overview.fetchedAt {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
@@ -86,17 +99,23 @@ struct MenuBarPanel: View {
             Button {
                 Task { await model.load() }
             } label: {
-                if model.loading {
-                    ProgressView().controlSize(.mini)
-                } else {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 11.5, weight: .medium))
+                Group {
+                    if model.loading {
+                        ProgressView().controlSize(.mini)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
                 }
+                .frame(width: 22, height: 22)
+                .background(Color.primary.opacity(0.08), in: Circle())
+                .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .disabled(model.loading)
             .help("刷新")
+            .accessibilityLabel("刷新")
         }
     }
 
@@ -104,17 +123,17 @@ struct MenuBarPanel: View {
     private var quota: some View {
         if let bwh = model.overview.bwh, bwh.usedBytes != nil {
             let progress = (bwh.usedPercent ?? 0) / 100
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 14) {
                     RingMeter(
                         progress: progress,
                         label: ByteFormat.percent(bwh.usedPercent),
                         tint: UsageRing.color(for: progress, forecast: model.forecast?.verdict),
-                        size: 64,
+                        size: 58,
                         lineWidth: 6,
-                        labelSize: 14
+                        labelSize: 13
                     )
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(ByteFormat.string(bwh.usedBytes))
                             .font(Theme.number(20))
                         Text("套餐 \(ByteFormat.string(bwh.quotaBytes)) · \(ByteFormat.daysLeft(resetAt: bwh.resetAt))后重置")
@@ -125,9 +144,9 @@ struct MenuBarPanel: View {
                     }
                 }
                 if let forecast = model.forecast {
-                    HStack(alignment: .top, spacing: 7) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Image(systemName: forecast.verdict.icon)
-                            .font(.system(size: 11.5, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(forecast.verdict.tint)
                         Text(forecast.headline)
                             .font(.system(size: 12))
@@ -154,55 +173,55 @@ struct MenuBarPanel: View {
         }
     }
 
-    /// Counts, then only the clients that need a look. A healthy panel shows one
-    /// line here, not a list.
+    /// The online count as one row, then only the clients that need a look —
+    /// each a row that opens its detail sheet. A healthy panel shows one line.
     @ViewBuilder
     private var clients: some View {
         if let xui = model.overview.xui, let list = xui.clients {
             let flagged = list.filter { $0.state == .warn }
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 14) {
-                    HeroChip(dotColor: ClientState.online.swiftColor, value: "\(xui.onlineCount ?? 0)", label: "在线")
-                    HeroChip(value: "\(xui.clientCount ?? list.count)", label: "客户端")
-                    if !flagged.isEmpty {
-                        HeroChip(dotColor: ClientState.warn.swiftColor, value: "\(flagged.count)", label: "预警")
-                    }
-                }
-                ForEach(flagged.prefix(3)) { client in
-                    Button {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("客户端")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 9)
+                    .padding(.bottom, 3)
+
+                VStack(spacing: 0) {
+                    PanelItemRow(
+                        icon: "person.2.fill",
+                        badge: ClientState.online.swiftColor,
+                        title: "\(xui.onlineCount ?? 0) 个在线",
+                        detail: "共 \(xui.clientCount ?? list.count) 个"
+                    ) {
                         openMain()
-                        model.inspectedClientID = client.id
-                    } label: {
-                        HStack {
-                            Text(client.name)
-                                .font(.system(size: 12.5))
-                                .lineLimit(1)
-                            Spacer()
-                            Text(client.expiryWarning ?? client.percent.map { "\(Int($0.rounded()))%" } ?? "")
-                                .font(Theme.number(12, weight: .medium))
-                                .foregroundStyle(ClientState.warn.swiftColor)
-                        }
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    ForEach(flagged.prefix(3)) { client in
+                        PanelItemRow(
+                            icon: "exclamationmark",
+                            badge: ClientState.warn.swiftColor,
+                            title: client.name,
+                            detail: client.expiryWarning ?? client.percent.map { "已用 \(Int($0.rounded()))%" } ?? "预警"
+                        ) {
+                            openMain()
+                            model.inspectedClientID = client.id
+                        }
+                    }
                 }
+                .padding(.horizontal, 5)
+                .padding(.bottom, 5)
+
                 if let error = xui.error {
                     errorLine(error)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 10)
                 }
             }
         }
     }
 
-    private var footer: some View {
-        HStack(spacing: 4) {
-            MenuRowButton(title: "打开 Bandwagon", systemImage: "macwindow") { openMain() }
-            Spacer()
-            MenuRowButton(title: "退出", systemImage: "power") { NSApp.terminate(nil) }
-        }
-    }
-
     private func errorLine(_ message: String) -> some View {
-        HStack(alignment: .top, spacing: 7) {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 11))
                 .foregroundStyle(Theme.warning)
@@ -220,19 +239,57 @@ struct MenuBarPanel: View {
     }
 }
 
-private struct MenuRowButton: View {
+/// A row with a round coloured badge, like the network rows in the Wi-Fi panel.
+private struct PanelItemRow: View {
+    let icon: String
+    let badge: Color
     let title: String
-    let systemImage: String
+    let detail: String
     let action: () -> Void
     @State private var hovered = false
 
     var body: some View {
         Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12.5))
-                .padding(.horizontal, 8)
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(badge, in: Circle())
+                Text(title)
+                    .font(.system(size: 13))
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Text(detail)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(hovered ? Color.primary.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovered = $0 }
+    }
+}
+
+/// A plain text row at the foot of the panel, like "Wi-Fi 设置…".
+private struct PanelMenuRow: View {
+    let title: String
+    let action: () -> Void
+    @State private var hovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 13))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 9)
                 .padding(.vertical, 5)
-                .background(hovered ? Theme.fill : Color.clear, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .background(hovered ? Color.primary.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
