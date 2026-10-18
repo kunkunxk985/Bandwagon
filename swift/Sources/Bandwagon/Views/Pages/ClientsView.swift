@@ -5,6 +5,7 @@ struct ClientsView: View {
     @State private var filter: Filter = .all
     @State private var query = ""
     @State private var sort: SortMode = .usage
+    @State private var ascending = SortMode.usage.defaultAscending
     @Binding var selectedTab: ContentView.Tab
 
     enum Filter: String, CaseIterable {
@@ -15,9 +16,14 @@ struct ClientsView: View {
     }
 
     enum SortMode: String, CaseIterable {
-        case usage = "按用量"
-        case name = "按名称"
-        case recent = "按最近在线"
+        case usage = "用量"
+        case name = "客户端"
+        case recent = "上次在线"
+        case quota = "配额"
+
+        /// The direction a first click sorts in: names A→Z, everything else
+        /// biggest or most recent first.
+        var defaultAscending: Bool { self == .name }
     }
 
     init(selectedTab: Binding<ContentView.Tab>) {
@@ -86,8 +92,6 @@ struct ClientsView: View {
 
                 Spacer(minLength: 12)
 
-                sortMenu
-
                 HStack(spacing: 7) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 11.5, weight: .medium))
@@ -108,36 +112,6 @@ struct ClientsView: View {
         }
         .padding(.horizontal, Theme.pagePadding)
         .padding(.bottom, 14)
-    }
-
-    private var sortMenu: some View {
-        Menu {
-            ForEach(SortMode.allCases, id: \.self) { mode in
-                Button {
-                    sort = mode
-                } label: {
-                    if sort == mode {
-                        Label(mode.rawValue, systemImage: "checkmark")
-                    } else {
-                        Text(mode.rawValue)
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 5) {
-                Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 10, weight: .semibold))
-                Text(sort.rawValue)
-                    .font(.system(size: 12.5))
-            }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-        }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .fixedSize()
     }
 
     private func totalUsed(_ clients: [Client]) -> Int {
@@ -204,7 +178,7 @@ struct ClientsView: View {
                                 ClientRow(client: client, maxUsed: busiestUsage)
                             }
                         } header: {
-                            ClientTableHeader()
+                            ClientTableHeader(sort: $sort, ascending: $ascending)
                         }
                     }
                 }
@@ -254,35 +228,55 @@ struct ClientsView: View {
             let q = query.lowercased()
             return client.name.lowercased().contains(q) || (client.email?.lowercased().contains(q) ?? false)
         }
-        switch sort {
-        case .usage:
-            list.sort { ($0.used ?? 0) > ($1.used ?? 0) }
-        case .name:
-            list.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        case .recent:
-            list.sort { ($0.lastOnline ?? 0) > ($1.lastOnline ?? 0) }
+        list.sort { lhs, rhs in
+            let order = compare(lhs, rhs)
+            if order == .orderedSame {
+                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+            }
+            return ascending ? order == .orderedAscending : order == .orderedDescending
         }
         return list
+    }
+
+    private func compare(_ lhs: Client, _ rhs: Client) -> ComparisonResult {
+        func order<T: Comparable>(_ a: T, _ b: T) -> ComparisonResult {
+            a < b ? .orderedAscending : (a > b ? .orderedDescending : .orderedSame)
+        }
+        switch sort {
+        case .usage:
+            return order(lhs.used ?? 0, rhs.used ?? 0)
+        case .name:
+            return lhs.name.localizedStandardCompare(rhs.name)
+        case .recent:
+            // Online now counts as the most recent of all.
+            func key(_ client: Client) -> Int { client.online == true ? Int.max : (client.lastOnline ?? 0) }
+            return order(key(lhs), key(rhs))
+        case .quota:
+            return order(lhs.percent ?? -1, rhs.percent ?? -1)
+        }
     }
 }
 
 /// Column titles, pinned to the top of the table while it scrolls. Widths match
 /// `ClientRow` column for column.
 private struct ClientTableHeader: View {
+    @Binding var sort: ClientsView.SortMode
+    @Binding var ascending: Bool
+
     var body: some View {
         HStack(spacing: ClientColumns.spacing) {
             Text("状态")
                 .frame(width: ClientColumns.state, alignment: .leading)
-            Text("客户端")
+            sortable(.name, alignment: .leading)
                 .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
-            Text("上次在线")
+            sortable(.recent, alignment: .leading)
                 .frame(width: ClientColumns.lastOnline, alignment: .leading)
             Spacer(minLength: 0)
             Color.clear
                 .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
-            Text("用量")
+            sortable(.usage, alignment: .trailing)
                 .frame(width: ClientColumns.used, alignment: .trailing)
-            Text("配额")
+            sortable(.quota, alignment: .trailing)
                 .frame(width: ClientColumns.quota, alignment: .trailing)
             Color.clear
                 .frame(width: ClientColumns.copy, height: 1)
@@ -293,6 +287,33 @@ private struct ClientTableHeader: View {
         .padding(.vertical, 9)
         .background(Theme.surface)
         .overlay(alignment: .bottom) { CardDivider() }
+    }
+
+    /// A column title that sorts by that column; clicking the active column again
+    /// flips the direction. The active one is darker and carries the arrow.
+    private func sortable(_ mode: ClientsView.SortMode, alignment: HorizontalAlignment) -> some View {
+        let active = sort == mode
+        return Button {
+            if active {
+                ascending.toggle()
+            } else {
+                sort = mode
+                ascending = mode.defaultAscending
+            }
+        } label: {
+            HStack(spacing: 3) {
+                Text(mode.rawValue)
+                Image(systemName: ascending ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 8, weight: .bold))
+                    .opacity(active ? 1 : 0)
+            }
+            .foregroundStyle(active ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("按\(mode.rawValue)排序")
+        .accessibilityLabel("按\(mode.rawValue)排序")
+        .accessibilityValue(active ? (ascending ? "升序" : "降序") : "")
     }
 }
 

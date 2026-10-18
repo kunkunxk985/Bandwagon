@@ -91,11 +91,7 @@ struct ContentView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
-                Image(systemName: "gauge.with.dots.needle.67percent")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 24, height: 24)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                BrandMark(size: 24)
                 Text("Bandwagon")
                     .font(.system(size: 14, weight: .semibold))
             }

@@ -231,6 +231,13 @@ struct UICompositionRegression {
             vps.contains("ForecastStrip(forecast: forecast)"),
             "The forecast must be drawn as a today-to-reset timeline under its sentence on both quota heroes"
         )
+        require(
+            clients.contains("ClientTableHeader(sort: $sort, ascending: $ascending)") &&
+            clients.contains("private func sortable(") &&
+            clients.contains("ascending.toggle()") &&
+            !clients.contains("private var sortMenu"),
+            "Client columns must sort by clicking their headers, with a second click flipping the direction"
+        )
         // Three pages each carrying their own copy of the same four decisions is how
         // they drift apart; they must share one rule instead.
         require(

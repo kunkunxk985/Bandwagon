@@ -74,7 +74,7 @@ swift/
 | --- | --- |
 | `OverviewView.swift` | 总览：页头（主机、运行状态、在线数）、用量 hero、近 7 天流量、用量最高的客户端、服务器 |
 | `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
-| `ClientsView.swift` | 客户端：统计条、筛选/排序/搜索、带固定表头的客户端表格 |
+| `ClientsView.swift` | 客户端：统计条、筛选与搜索、带固定表头的客户端表格（点表头排序，再点切换方向） |
 | `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ 底部保存栏（⌘S） |
 | `ClientDetailSheet.swift` | 客户端详情弹窗：用量、订阅链接与二维码、启用开关、配额与到期编辑、重置流量。每个写操作先确认、完成后刷新 |
 
@@ -92,7 +92,7 @@ swift/
 
 | 文件 | 职责 |
 | --- | --- |
-| `Theme.swift` | 设计令牌（颜色含深浅两套值、圆角、间距、字号）与基础构件：`Panel`、`PanelHeader`、`PanelLink`、`PageHeader`、`RingMeter`、`UsageHero`、`StatDivider` |
+| `Theme.swift` | 设计令牌（颜色含深浅两套值、圆角、间距、字号）与基础构件：`Panel`、`PanelHeader`、`PanelLink`、`PageHeader`、`BrandMark`（应用标志）、`RingMeter`、`UsageHero`、`StatDivider` |
 | `ModelPresentation.swift` | 模型类型的展示规则：健康色/文案、预测结论色/图标、`ClientState` 配色，以及 `ServiceFailure`（三页共用的失败呈现与恢复动作） |
 
 **视觉语言**（2026-10-16 起）：精致数据面板。中性画布 + 白色面板，只用 1px 细边框区分层级，不用毛玻璃、渐变和阴影；层级靠字号与字重（大号等宽数字 + 小号次要标签）；每页有页内大标题，工具栏只留更新时间与刷新；状态用圆点 + 文字，不用彩色胶囊。新增 UI 一律从 `Theme` 取色与尺寸，不在页面里写死颜色。
@@ -142,6 +142,7 @@ swift/
 
 | 文件 | 用途 |
 | --- | --- |
+| `make-icon.sh` | 由 `packaging/macos/MakeIcon.swift` 重新生成全部图标尺寸 |
 | `package-app.sh` | 构建 release、组装 `.app`、生成图标、签名、装到 `~/Desktop`。构建前会先校验辅助程序 |
 | `test.sh` | 离线回归套件。`--live` 追加真实面板测试 |
 | `install-credential-bridge.sh` | 安装辅助程序。已有 v3 钥匙串条目时**拒绝替换**，防止覆盖掉正在使用的凭据 |
@@ -155,7 +156,8 @@ swift/
 
 | 路径 | 说明 |
 | --- | --- |
-| `packaging/macos/icon.iconset/` | App 图标源文件，`package-app.sh` 用 `iconutil` 转成 `.icns`。生成脚本 `make_icon.py` 已在 Python 时代删除，**所以这些 PNG 不可再生** |
+| `packaging/macos/MakeIcon.swift` | App 图标的源：用量环（蓝底白环，250° 弧）。`scripts/make-icon.sh` 编译运行它，按各尺寸原生渲染出 `icon.iconset/` 与 `icon.png`；侧栏的 `BrandMark` 用同一套比例 |
+| `packaging/macos/icon.iconset/` | 生成产物，`package-app.sh` 用 `iconutil` 转成 `.icns`。改图标请改 `MakeIcon.swift` 后重跑脚本，不要手改 PNG |
 | `ReleaseAssets/BandwagonCredentialBridge-v1` | 已签名的辅助程序发布件。摘要与 `scripts/credential-bridge.sha256`、`KeychainCredentialStore.helperSHA256` 三处必须一致 |
 | `Docs/DECISIONS.md` | 已定的界面取舍、改 UI 的流程、工程约定与踩过的坑。改动前先看 |
 | `Docs/TROUBLESHOOTING.md` | 连接排查：搬瓦工 API 失败而 3X-UI 正常时，如何判断是不是本地代理（fake-ip）的问题 |
@@ -190,6 +192,6 @@ v2 的 `/panel/api/inbounds/updateClient`、`resetClientTraffic` 和 `/panel/set
 - **`Theme.swift` 是杂物抽屉**：422 行里混了色板、窗口管道、11 个组件和 3 个模型扩展。已按职责拆成 `Theme.swift`（216 行）、`WindowChrome.swift`、`StatusViews.swift`、`ModelPresentation.swift`。
 - **失败呈现逻辑抄了三份**：`OverviewView` 与 `ClientsView` 各有 4 个逐字相同的函数，`VPSView` 内联了同一套判断，而且三页对同一个失败的中文措辞还不一致。已收敛到 `ServiceFailure`，三页共用。
 - **死代码**：`SettingsPayload`、`SettingsSaveResponse`、`refreshInterval`、`ColorToken`、`ClientState.color`、`overview.demo` 已删。
-- **图标不可再生**：曾同时被 `.gitignore` 排除且生成脚本已删。已去掉排除项并纳入版本控制。
+- **图标不可再生**：曾同时被 `.gitignore` 排除且生成脚本已删。已去掉排除项并纳入版本控制；2026-10-18 换成新图标时补上了生成源 `packaging/macos/MakeIcon.swift` 与 `scripts/make-icon.sh`，现在可以随时重新生成。
 
 

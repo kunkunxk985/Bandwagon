@@ -46,7 +46,8 @@ enum ProxyDiagnosis {
                 var address = sockaddr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee.sin_addr }
                 var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
                 if inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN)) != nil {
-                    let text = String(cString: buffer)
+                    let bytes = buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }
+                    let text = String(decoding: bytes, as: UTF8.self)
                     if !addresses.contains(text) { addresses.append(text) }
                 }
             }

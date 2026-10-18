@@ -332,3 +332,38 @@ struct SectionTitle: View {
         .padding(.bottom, 12)
     }
 }
+
+/// The app's mark: the icon's ring on an accent tile, drawn from the same
+/// proportions as packaging/macos/MakeIcon.swift so the sidebar and the Dock
+/// show one shape. Vector, so it stays sharp at any size.
+struct BrandMark: View {
+    var size: CGFloat = 24
+
+    private struct RingArc: Shape {
+        var degrees: Double
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2,
+                        startAngle: .degrees(-90), endAngle: .degrees(degrees - 90), clockwise: false)
+            return path
+        }
+    }
+
+    var body: some View {
+        // Icon proportions relative to the 824 body: ring 470 across, 78 wide.
+        let ring = size * 470 / 824
+        let line = max(1.5, size * 78 / 824)
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 185 / 824, style: .continuous)
+                .fill(Theme.accent)
+            Circle()
+                .stroke(Color.white.opacity(0.28), lineWidth: line)
+                .frame(width: ring, height: ring)
+            RingArc(degrees: 250)
+                .stroke(Color.white, style: StrokeStyle(lineWidth: line, lineCap: .round))
+                .frame(width: ring, height: ring)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
