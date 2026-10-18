@@ -1,13 +1,12 @@
 .DS_Store
 
-# Swift 构建产物。swift/ 纳入版本控制后必须忽略，否则会把整个 .build 提交进去。
+# SwiftPM build output.
 .build/
-*.dSYM
 
-# Tests/ 与 DevTools/ 下的 Python 辅助脚本
+# Python cache from Tests/http_fixture.py and scripts/verify-credential-bridge-acl.py.
 __pycache__/
 *.pyc
 
-# 凭据不入库。应用把凭据放在钥匙串，设置文件在
-# ~/Library/Application Support/WagongDeck/settings.json。
+# Credentials never live in the repo: secrets are in the login keychain, and the
+# non-sensitive settings in ~/Library/Application Support/Bandwagon/settings.json.
 .env

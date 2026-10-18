@@ -2,62 +2,63 @@
 
 macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超额、VPS 是否健康、哪个 3X-UI 客户端需要处理**。
 
+- 总览：用量环、超额预测与时间轴、近 7 天流量、用量最高的客户端
 - 菜单栏常驻：不开窗口也能看到已用百分比和超额预测
-- 客户端管理（3X-UI v3）：订阅链接与二维码、启用 / 停用、改配额与到期、重置流量。每次写操作都先确认
+- 客户端管理（3X-UI v3）：订阅链接（通用 / Clash）与二维码、启用 / 停用、改配额与到期、重置流量；每次写操作都先确认
+- 连不上搬瓦工时，自动判断是不是本地代理（fake-ip）的问题
 
 纯 SwiftUI，无第三方依赖，无后台服务。
 
 ## 构建与运行
 
 ```bash
-./swift/scripts/package-app.sh    # 构建 + 签名，产物在 ~/Desktop/Bandwagon.app
+./scripts/package-app.sh    # 构建 + 签名，产物在 ~/Desktop/Bandwagon.app
 open ~/Desktop/Bandwagon.app
 ```
 
-需要 Xcode（脚本会显式使用 `/Applications/Xcode.app` 的工具链和 macOS SDK，不用 CLT SDK）。
-
-跑测试：
+需要 Xcode（脚本显式使用 `/Applications/Xcode.app` 的工具链和 macOS SDK，不用 CLT SDK）。
 
 ```bash
-./swift/scripts/test.sh           # 离线回归，27 项断言
-./swift/scripts/test.sh --live    # 额外打一次真实 3X-UI 面板
+./scripts/test.sh           # 离线回归测试
+./scripts/make-icon.sh      # 改了 packaging/MakeIcon.swift 后重新生成图标
 ```
 
-检查界面改动（无需屏幕录制权限，应用自己把四个页面渲染成 PNG 后退出）：
+检查界面改动（不需要屏幕录制权限，应用自己把各页面渲染成 PNG 后退出）：
 
 ```bash
 open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.app
 ```
 
-加 `--env BANDWAGON_SNAPSHOT_APPEARANCE=dark` 渲染深色模式。
+可再加 `--env BANDWAGON_SNAPSHOT_APPEARANCE=dark`（深色）或 `--env BANDWAGON_SNAPSHOT_WIDTH=1700`（宽窗口）。
 
 ## 数据放在哪
 
 | 内容 | 位置 |
 | --- | --- |
 | 凭据（API Key、面板账号密码） | 登录钥匙串，经独立的凭据辅助程序读写 |
-| 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/WagongDeck/settings.json` |
+| 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/Bandwagon/settings.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
 
-仓库根目录只有设计文档、本 README 和 `swift/`。曾经存在的 `.env` / `.env.example` 描述的是已删除的旧 Web 服务，已于本次整理中移除。
+旧版本把设置放在 `~/Library/Application Support/WagongDeck/`，启动时会自动搬过来。
 
 ## 目录结构
 
 ```
-swift/
-├── Sources/            应用与凭据辅助程序源码（Views 下分 Shell / Pages / Components / DesignSystem）
-├── Tests/              回归测试与夹具
-├── DevTools/           手动排查用的脚本，不属于测试
-├── scripts/            构建、打包、凭据辅助程序的验证脚本
-├── packaging/          App 图标资源
-├── ReleaseAssets/      固定不动的凭据辅助程序发布件
-└── Docs/               结构与历史文档
+Bandwagon/
+├── Package.swift       SwiftPM 清单：主应用 + 凭据辅助程序
+├── Sources/
+│   ├── Bandwagon/      主应用（Models / Services / Views）
+│   └── BandwagonCredentialBridge/
+├── Tests/              回归测试与本地夹具
+├── scripts/            构建、打包、测试、图标、凭据辅助程序
+├── packaging/          图标源码与生成的 iconset
+├── ReleaseAssets/      冻结的凭据辅助程序发布件
+└── Docs/               设计、决策、结构、排查
 ```
 
-每个文件的职责见 [`swift/Docs/STRUCTURE.md`](swift/Docs/STRUCTURE.md)；已定的取舍与踩过的坑见 [`swift/Docs/DECISIONS.md`](swift/Docs/DECISIONS.md)；连不上时看 [`swift/Docs/TROUBLESHOOTING.md`](swift/Docs/TROUBLESHOOTING.md)。
-
-## 设计约束
-
-界面遵循 [`.impeccable.md`](.impeccable.md)：浅色优先、单一蓝色主行动色、少量语义状态色，明确避免信息过密和霓虹感。改 UI 前请先读那五条原则。
-
-视觉上是「精致数据面板」：白色面板 + 1px 细边框，不用毛玻璃、渐变和阴影，层级靠字号。颜色、圆角、间距都在 `swift/Sources/Bandwagon/Views/DesignSystem/Theme.swift`，深浅两套值。
+| 文档 | 内容 |
+| --- | --- |
+| [`Docs/DESIGN.md`](Docs/DESIGN.md) | 设计原则与无障碍基线，改 UI 前先读 |
+| [`Docs/DECISIONS.md`](Docs/DECISIONS.md) | 已定的取舍、改 UI 的流程、踩过的坑 |
+| [`Docs/STRUCTURE.md`](Docs/STRUCTURE.md) | 每个文件的职责、3X-UI 接口、已知问题 |
+| [`Docs/TROUBLESHOOTING.md`](Docs/TROUBLESHOOTING.md) | 连不上搬瓦工时怎么排查 |
