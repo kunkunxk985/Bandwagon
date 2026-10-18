@@ -72,22 +72,29 @@ enum XUIClient {
         }
     }
 
-    /// The panel's subscription URI, to which a client's `subId` is appended. Nil
-    /// when subscriptions are switched off on the panel.
+    /// The panel's subscription addresses, to which a client's `subId` is
+    /// appended: the standard link list and the Clash YAML, each nil when that
+    /// format is switched off on the panel.
     ///
     /// `defaultSettings` is what the panel's own QR dialog uses: it already folds
-    /// the sub domain, port, path and TLS into one URI, and unlike `setting/all`
-    /// it carries no secrets.
-    static func subscriptionBase(_ settings: AppSettings) async throws -> String? {
+    /// the sub domain, port, path and TLS into each URI (filling in any left
+    /// blank), and unlike `setting/all` it carries no secrets.
+    static func subscriptionBases(_ settings: AppSettings) async throws -> SubscriptionBases {
         try await withConnection(settings) { base, session, csrf in
             let raw = try await request(
                 "POST", base: base, path: "/panel/api/setting/defaultSettings",
                 settings: settings, session: session, csrf: csrf
             )
             let object = JSONValue.object(raw)
-            guard JSONValue.bool(object["subEnable"]) else { return nil }
-            let uri = JSONValue.string(object["subURI"]).trimmingCharacters(in: .whitespacesAndNewlines)
-            return uri.isEmpty ? nil : uri
+            func uri(_ enableKey: String, _ uriKey: String) -> String? {
+                guard JSONValue.bool(object[enableKey]) else { return nil }
+                let value = JSONValue.string(object[uriKey]).trimmingCharacters(in: .whitespacesAndNewlines)
+                return value.isEmpty ? nil : value
+            }
+            return SubscriptionBases(
+                standard: uri("subEnable", "subURI"),
+                clash: uri("subClashEnable", "subClashURI")
+            )
         }
     }
 

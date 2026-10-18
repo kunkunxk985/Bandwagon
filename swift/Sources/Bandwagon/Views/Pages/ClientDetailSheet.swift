@@ -11,6 +11,7 @@ struct ClientDetailSheet: View {
     let clientID: String
 
     @State private var link: LinkState = .loading
+    @State private var linkFormat: SubscriptionLink.Format = .standard
     @State private var linkCopied = false
     @State private var working = false
     @State private var errorMessage: String?
@@ -23,7 +24,7 @@ struct ClientDetailSheet: View {
 
     private enum LinkState: Equatable {
         case loading
-        case ready(String)
+        case ready([SubscriptionLink])
         case unavailable(String)
     }
 
@@ -184,11 +185,26 @@ struct ClientDetailSheet: View {
                     .font(.system(size: 12.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-            case .ready(let url):
+            case .ready(let links):
+                let current = links.first { $0.format == linkFormat } ?? links[0]
+                let url = current.url
+                if links.count > 1 {
+                    Picker("订阅格式", selection: $linkFormat) {
+                        ForEach(links) { item in
+                            Text(item.format.title).tag(item.format)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 200)
+                }
                 HStack(alignment: .top, spacing: 16) {
                     QRCodeView(text: url)
                         .frame(width: 120, height: 120)
                     VStack(alignment: .leading, spacing: 10) {
+                        Text(current.format.hint)
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(.secondary)
                         Text(url)
                             .font(.system(size: 12, design: .monospaced))
                             .textSelection(.enabled)
@@ -200,11 +216,18 @@ struct ClientDetailSheet: View {
                             linkCopied = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { linkCopied = false }
                         } label: {
-                            Label(linkCopied ? "已复制" : "复制订阅链接", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
+                            Label(linkCopied ? "已复制" : "复制链接", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
                         }
                         .controlSize(.small)
+                        if links.count == 1, current.format == .standard {
+                            Text("面板没有开启 Clash 订阅。在 3X-UI 的「面板设置 → 订阅」里打开 Clash 后，这里会多出一个 Clash 链接。")
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(.tertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
+                .onChange(of: linkFormat) { linkCopied = false }
             }
         }
     }
@@ -215,8 +238,10 @@ struct ClientDetailSheet: View {
             return
         }
         do {
-            if let url = try await model.subscriptionLink(for: client) {
-                link = .ready(url)
+            let links = try await model.subscriptionLinks(for: client)
+            if !links.isEmpty {
+                if !links.contains(where: { $0.format == linkFormat }) { linkFormat = links[0].format }
+                link = .ready(links)
             } else {
                 link = .unavailable("面板没有开启订阅服务。在 3X-UI 的「面板设置 → 订阅」里启用后即可在这里取得链接。")
             }
@@ -547,5 +572,21 @@ struct QRCodeView: View {
         guard let output = filter.outputImage,
               let cgImage = CIContext().createCGImage(output, from: output.extent) else { return nil }
         return NSImage(cgImage: cgImage, size: NSSize(width: output.extent.width, height: output.extent.height))
+    }
+}
+
+private extension SubscriptionLink.Format {
+    var title: String {
+        switch self {
+        case .standard: "通用"
+        case .clash: "Clash"
+        }
+    }
+
+    var hint: String {
+        switch self {
+        case .standard: "小火箭、v2rayN 等直接导入"
+        case .clash: "Clash Verge、Mihomo 等 Clash 系客户端"
+        }
     }
 }

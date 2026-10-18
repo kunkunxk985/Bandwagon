@@ -104,7 +104,7 @@ def handle_write(self):
     if self.command == "GET" and path == "/private/panel/api/clients/get/fixture":
         self.send(200, {"success": True, "obj": {"client": RECORD, "inboundIds": [7]}}); return
     if path == "/private/panel/api/setting/defaultSettings":
-        self.send(200, {"success": True, "obj": {"subEnable": True, "subURI": "https://sub.example/sub/"}}); return
+        self.send(200, {"success": True, "obj": {"subEnable": True, "subURI": "https://sub.example/sub/", "subClashEnable": True, "subClashURI": "https://sub.example/clash/", "subJsonEnable": False, "subJsonURI": ""}}); return
     if path == "/private/panel/api/clients/resetTraffic/fixture":
         self.send(200, {"success": True, "obj": None}); return
     if path in ("/private/panel/api/clients/bulkDisable", "/private/panel/api/clients/bulkEnable"):

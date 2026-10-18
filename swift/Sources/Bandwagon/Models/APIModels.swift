@@ -125,6 +125,26 @@ enum ClientState: String {
     }
 }
 
+/// The panel's subscription addresses, each waiting for a client's `subId`.
+/// Nil means that format is switched off on the panel.
+struct SubscriptionBases: Equatable, Sendable {
+    /// Base64 link list — what Shadowrocket, v2rayN and most clients import.
+    var standard: String?
+    /// Clash / Mihomo YAML.
+    var clash: String?
+}
+
+/// One ready-to-import subscription link for a client.
+struct SubscriptionLink: Identifiable, Hashable, Sendable {
+    enum Format: String, CaseIterable, Sendable {
+        case standard, clash
+    }
+
+    let format: Format
+    let url: String
+    var id: Format { format }
+}
+
 /// Edits to one 3X-UI client. Nil leaves a field as the panel has it.
 struct ClientChanges: Equatable, Sendable {
     var enable: Bool? = nil

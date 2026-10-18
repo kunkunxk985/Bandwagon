@@ -50,13 +50,14 @@ import Foundation
        // Enable alone must not rewrite the record.
        try await XUIClient.updateClient(settings, client: client, changes: ClientChanges(enable: false))
        try await XUIClient.resetTraffic(settings, client: client)
-       guard try await XUIClient.subscriptionBase(settings) == "https://sub.example/sub/" else {
-         print("FAIL subscription base must come from setting/defaultSettings"); exit(1)
+       let bases = try await XUIClient.subscriptionBases(settings)
+       guard bases == SubscriptionBases(standard: "https://sub.example/sub/", clash: "https://sub.example/clash/") else {
+         print("FAIL standard and Clash subscription URIs must come from setting/defaultSettings: \(bases)"); exit(1)
        }
      } catch {
        print("FAIL client writes: \(XUIError.safeMessage(error))"); exit(1)
      }
-     print("PASS v3 client update mirrors ToClient, enable via bulk, traffic reset, subscription URI (fixture)")
+     print("PASS v3 client update mirrors ToClient, enable via bulk, traffic reset, standard + Clash subscription URIs (fixture)")
      return
    }
    if expected.hasPrefix("routing-") {

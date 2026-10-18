@@ -26,9 +26,8 @@ final class AppModel {
     /// The client whose detail sheet is open. Lives here, not in a view, so the
     /// overview, the clients page and the menu bar can all open the same sheet.
     var inspectedClientID: String?
-    /// The panel's subscription URI. `.some(nil)` means the panel answered and
-    /// subscriptions are off; `nil` means not asked yet in this session.
-    private(set) var subscriptionBase: String??
+    /// The panel's subscription addresses; nil until asked once this session.
+    private(set) var subscriptionBases: SubscriptionBases?
     private var refreshTask: Task<Void, Never>?
     private var started = false
     private var autoRefreshTask: Task<Void, Never>?
@@ -188,15 +187,19 @@ final class AppModel {
         await load()
     }
 
-    /// Full subscription link for `client`, asking the panel for its sub URI once
-    /// per session. Returns nil when subscriptions are off or the client has none.
-    func subscriptionLink(for client: Client) async throws -> String? {
-        guard let subId = client.subId, !subId.isEmpty else { return nil }
-        if subscriptionBase == nil {
-            subscriptionBase = .some(try await XUIClient.subscriptionBase(settings))
+    /// Every subscription link the panel serves for `client`, standard first,
+    /// asking the panel for its addresses once per session. Empty when the client
+    /// has no subId or every format is switched off.
+    func subscriptionLinks(for client: Client) async throws -> [SubscriptionLink] {
+        guard let subId = client.subId, !subId.isEmpty else { return [] }
+        if subscriptionBases == nil {
+            subscriptionBases = try await XUIClient.subscriptionBases(settings)
         }
-        guard let base = subscriptionBase ?? nil else { return nil }
-        return base + subId
+        guard let bases = subscriptionBases else { return [] }
+        return [
+            bases.standard.map { SubscriptionLink(format: .standard, url: $0 + subId) },
+            bases.clash.map { SubscriptionLink(format: .clash, url: $0 + subId) },
+        ].compactMap { $0 }
     }
 
     func saveSettings(_ newValue: AppSettings) async -> Bool {
@@ -210,7 +213,7 @@ final class AppModel {
             return false
         }
         overview = OverviewResponse()
-        subscriptionBase = nil
+        subscriptionBases = nil
         // Restart so a changed interval takes effect now rather than after the
         // old countdown finishes.
         stopAutoRefresh()

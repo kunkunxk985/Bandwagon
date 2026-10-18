@@ -271,6 +271,8 @@ struct ClientsView: View {
 private struct ClientTableHeader: View {
     var body: some View {
         HStack(spacing: ClientColumns.spacing) {
+            Text("状态")
+                .frame(width: ClientColumns.state, alignment: .leading)
             Text("客户端")
                 .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear
@@ -279,8 +281,6 @@ private struct ClientTableHeader: View {
                 .frame(width: ClientColumns.used, alignment: .trailing)
             Text("配额")
                 .frame(width: ClientColumns.quota, alignment: .trailing)
-            Text("状态")
-                .frame(width: ClientColumns.state, alignment: .leading)
             Color.clear
                 .frame(width: ClientColumns.copy, height: 1)
         }
@@ -332,9 +332,14 @@ struct ClientRow: View {
 
     var body: some View {
         HStack(spacing: ClientColumns.spacing) {
-            // Name first, no initial avatar: a grey circle holding "杜" twice and
-            // "C" once said nothing the name beside it didn't, and pushed every
-            // name 40pt in from the table edge.
+            // Status leads the row, dot and word together, so who is online reads
+            // down one column beside the names. At the far right it sat a whole
+            // window's width away from the name it belonged to.
+            StatusPill(title: client.state.title, tint: client.state.swiftColor)
+                .frame(width: ClientColumns.state, alignment: .leading)
+
+            // No initial avatar: a grey circle holding "杜" twice and "C" once
+            // said nothing the name beside it didn't.
             VStack(alignment: .leading, spacing: 2) {
                 Text(client.name)
                     .font(.system(size: 13, weight: .medium))
@@ -358,9 +363,6 @@ struct ClientRow: View {
 
             quotaCell
                 .frame(width: ClientColumns.quota, alignment: .trailing)
-
-            StatusPill(title: client.state.title, tint: client.state.swiftColor)
-                .frame(width: ClientColumns.state, alignment: .leading)
 
             Button {
                 let text = client.email ?? client.name
