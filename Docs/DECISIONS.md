@@ -40,6 +40,12 @@ let rep = NSBitmapImageRep(data: NSImage(contentsOfFile: path)!.tiffRepresentati
 - **凭据只走辅助程序**。主程序不直接碰钥匙串；`ReleaseAssets/` 里的辅助程序是冻结件，摘要被三处锁定（见 `STRUCTURE.md`）。
 - **3X-UI 写操作不在真实面板上试**，除非使用者明确同意；用 `Tests/http_fixture.py` 的 v3 夹具。面板升级后先对照上游源码重新核对接口（见 `STRUCTURE.md`「3X-UI 写操作」）。
 - 提交信息用英文，正文说明「为什么」而不只是「改了什么」。
+- **必须用 macOS 26 SDK 的产物标记构建**。`Package.swift` 给主目标加了
+  `-Xlinker -platform_version -Xlinker macos -Xlinker 15.0 -Xlinker 27.0`：
+  不加的话 SwiftPM 链接出来的产物把 `LC_BUILD_VERSION.sdk` 记成 15.0，而编译实际用的是
+  27.0 SDK，系统据此按**旧设计语言**绘制窗口按钮、窗口圆角、侧栏开关等系统控件——表现为
+  红绿灯是扁平实色、没有渐变高光，窗口圆角偏小。加了之后记录为 `minos 15.0 / sdk 27.0`，
+  既拿到新外观又保留 macOS 15 兼容。**升级 Xcode 大版本后要同步改这里的 `27.0`。**
 
 ## 踩过的坑
 

@@ -13,7 +13,14 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Bandwagon",
-            path: "Sources/Bandwagon"
+            path: "Sources/Bandwagon",
+            // 实验：SwiftPM 链接出来的产物把 LC_BUILD_VERSION.sdk 记成了 15.0，
+            // 而编译实际用的是 27.0 SDK。macOS 26 按这个字段判定新旧设计语言，
+            // 记录成 15.0 会让系统按旧外观绘制窗口按钮等系统控件。
+            linkerSettings: [
+                .unsafeFlags(["-Xlinker", "-platform_version", "-Xlinker", "macos",
+                              "-Xlinker", "15.0", "-Xlinker", "27.0"])
+            ]
         ),
         // 声明在这里是为了让清单与磁盘上的内容一致，`swift build` 能覆盖整个工程。
         //
