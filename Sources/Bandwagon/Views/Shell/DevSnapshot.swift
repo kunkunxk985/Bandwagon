@@ -3,11 +3,19 @@ import SwiftUI
 
 /// Development aid: renders every page of the window to PNG so UI changes can be
 /// checked without Screen Recording permission (an app may always draw its own
-/// views). Inert unless `BANDWAGON_SNAPSHOT_DIR` is set at launch:
+/// views). Inert unless `BANDWAGON_SNAPSHOT_DIR` is set at launch.
 ///
-///     open --env BANDWAGON_SNAPSHOT_DIR=/tmp/shots ~/Desktop/Bandwagon.app
+/// `open --env` does **not** pass the variable through (checked on macOS 26: the app
+/// launches, but `directory` stays nil and nothing is written). Set the environment on
+/// the binary directly, then activate the app so the window is actually on screen —
+/// the captures go through `cacheDisplay`, which needs a visible window:
 ///
-/// Optionally `BANDWAGON_SNAPSHOT_APPEARANCE=dark` renders in dark mode.
+///     BANDWAGON_SNAPSHOT_DIR=/tmp/shots \
+///       ~/Desktop/Bandwagon.app/Contents/MacOS/Bandwagon >/dev/null 2>&1 &
+///     sleep 5 && open ~/Desktop/Bandwagon.app
+///
+/// Optionally `BANDWAGON_SNAPSHOT_APPEARANCE=dark` renders in dark mode, and
+/// `BANDWAGON_SNAPSHOT_WIDTH=1800` widens the window first.
 @MainActor
 enum DevSnapshot {
     static let directory: URL? = ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_DIR"]

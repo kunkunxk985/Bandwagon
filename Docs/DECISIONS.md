@@ -48,3 +48,4 @@ let rep = NSBitmapImageRep(data: NSImage(contentsOfFile: path)!.tiffRepresentati
 - **把窗口高度设到接近屏幕高度会让窗口进入原生全屏**，之后通过辅助功能设置尺寸和位置全部「返回成功但被忽略」。需要检查并清除 `AXFullScreen`。
 - **裸 `swiftc` 编译含 `@Observable` 的文件会报 `ObservationMacros ... malformed response`**：外部宏需要 `-plugin-path`，SwiftPM 会自动注入、裸调不会。`scripts/test.sh` 已处理。
 - **`grep "\.env"` 会误报** `ProcessInfo.processInfo.environment` 和 SwiftUI 的 `.environment(model)`，要看具体命中行。
+- **`open --env` 不会把环境变量传给应用**（macOS 26 实测：应用正常启动，但 `DevSnapshot.directory` 仍为 nil，一张图都不出）。`DevSnapshot` 的正确用法是先用环境变量直接启动二进制，再 `open` 一次把窗口激活——它靠 `cacheDisplay` 截图，必须有可见窗口，后台启动时 `isVisible` 为假，只会产出 `menubar.png`（那张走 `ImageRenderer`，不需要窗口）。完整命令见 `Sources/Bandwagon/Views/Shell/DevSnapshot.swift` 的文档注释。
