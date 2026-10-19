@@ -47,12 +47,10 @@ struct ContentView: View {
                 // switch deserves.
                 .transition(.opacity)
             }
-            // A solid bar in the canvas colour: pages scroll beneath it instead of
-            // their text running into the toolbar's.
-            .toolbarBackground(Theme.canvas, for: .windowToolbar)
-            .toolbarBackground(.visible, for: .windowToolbar)
-            // Each page draws its own large title; the toolbar keeps only the
-            // freshness label and refresh.
+            // No painted toolbar background: the system material is left in place so the
+            // window buttons sit on the sidebar's surface. Painting the canvas colour
+            // here produced an opaque strip across the top with a hard seam where the
+            // sidebar started, and left the buttons on flat colour instead of material.
             .toolbar(removing: .title)
             .toolbar {
                 RefreshToolbar(model: model)
