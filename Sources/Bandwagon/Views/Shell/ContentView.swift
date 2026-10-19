@@ -187,7 +187,11 @@ private struct RefreshToolbar: ToolbarContent {
             ToolbarSpacer(.flexible)
         }
         ToolbarItem(placement: .automatic) {
-            HStack(spacing: 10) {
+            // The glass capsule the system draws around a toolbar item is sized to its
+            // content, so the breathing room has to come from padding in here — there
+            // is no outer knob for it. Horizontal only: the height was already right,
+            // and padding vertically just made the capsule look puffy.
+            HStack(spacing: 12) {
                 if let fetchedAt = model.overview.fetchedAt {
                     // Ticks, so the age stays honest while the window sits
                     // open, and falls back to a date once it is a day old.
@@ -211,6 +215,7 @@ private struct RefreshToolbar: ToolbarContent {
                 .disabled(model.loading)
                 .help("刷新 (⌘R)")
             }
+            .padding(.horizontal, 14)
         }
     }
 }
