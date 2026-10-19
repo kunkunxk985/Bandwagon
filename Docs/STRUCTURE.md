@@ -58,12 +58,16 @@ Bandwagon/
 | `MenuBarPanel.swift` | 菜单栏图标（符号随预测变化 + 已用百分比）与下拉面板：用量环、预测结论、在线数、需要注意的客户端、打开主窗口 / 退出 |
 | `DevSnapshot.swift` | 开发辅助：设置 `BANDWAGON_SNAPSHOT_DIR` 启动时把四个页面（含滚到底部的长页）、菜单栏面板、首个客户端的详情弹窗渲染成 PNG 后退出。不设该变量时完全不生效 |
 
-`Pages/`（四个页面）
+`Pages/`（四个页面，以及只属于某一页的区块）
+
+判定标准：**文件级**归属。体量大、语义明确属于某一页的组件放这里；通用原件（图标/色点 + 值 + 标签这类）不论当前用了几处，都留在 `Components/`。
 
 | 文件 | 职责 |
 | --- | --- |
 | `OverviewView.swift` | 总览：页头（主机、运行状态、在线数）、用量 hero、近 7 天流量、用量最高的客户端、服务器 |
+| `MiniTrafficCard.swift` | 总览专属：「近 7 天流量」柱状卡，图表高度随卡片伸展 |
 | `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
+| `TrafficHistoryChart.swift` | VPS 专属：流量趋势图（Swift Charts）与汇总指标 |
 | `ClientsView.swift` | 客户端：统计条、筛选与搜索、带固定表头的客户端表格（点表头排序，再点切换方向） |
 | `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ 底部保存栏（⌘S） |
 | `ClientDetailSheet.swift` | 客户端详情弹窗：用量、订阅链接与二维码、启用开关、配额与到期编辑、重置流量。每个写操作先确认、完成后刷新 |
@@ -72,10 +76,9 @@ Bandwagon/
 
 | 文件 | 职责 |
 | --- | --- |
-| `Components.swift` | `ForecastStrip`（结论句 + `ForecastTimeline`：今天到重置日的时间轴，标出预计用尽日与无流量天数）、`CardDivider`、`SummaryTile`、`UsageBar`、`UsageTint`、`UsageRing`（随用量与预测变色）、`StatusPill`、`InfoCell`、`HeroChip` |
+| `Components.swift` | 通用原件集合：`ForecastStrip`（结论句 + `ForecastTimeline`：今天到重置日的时间轴，标出预计用尽日与无流量天数）、`CardDivider`、`SummaryTile`、`UsageBar`、`UsageTint`、`UsageRing`（随用量与预测变色）、`StatusPill`、`InfoCell`、`HeroChip`，以及 `usageLabel` / `usageFraction` / `appendSpecRow` |
 | `StatusViews.swift` | 状态呈现：`StatusCard`（整页）、`StatusBanner`（有数据时的内联提示）、`CenterWhenShort` |
-| `MiniTrafficCard.swift` | 总览的「近 7 天流量」柱状卡 |
-| `TrafficHistoryChart.swift` | VPS 的流量趋势图（Swift Charts）与汇总指标 |
+| `BandwagonFailureBanner.swift` | 总览与 VPS 共用的刷新失败提示条。两页曾各有一份逐字相同的私有实现 |
 | `RomanCredentialField.swift` | 强制凭据输入走罗马输入源，避免中文输入法吞掉 ASCII 字符 |
 
 `DesignSystem/`（设计令牌与基础构件）

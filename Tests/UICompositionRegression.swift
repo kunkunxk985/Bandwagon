@@ -5,6 +5,7 @@ struct UICompositionRegression {
     static func main() throws {
         let theme = try source("Sources/Bandwagon/Views/DesignSystem/Theme.swift")
         let statusViews = try source("Sources/Bandwagon/Views/Components/StatusViews.swift")
+        let failureBanner = try source("Sources/Bandwagon/Views/Components/BandwagonFailureBanner.swift")
         let modelPresentation = try source("Sources/Bandwagon/Views/DesignSystem/ModelPresentation.swift")
         let settings = try source("Sources/Bandwagon/Views/Pages/SettingsView.swift")
         let overview = try source("Sources/Bandwagon/Views/Pages/OverviewView.swift")
@@ -76,7 +77,7 @@ struct UICompositionRegression {
             "Sidebar must not spend space on decorative version microcopy"
         )
 
-        let trafficChart = try source("Sources/Bandwagon/Views/Components/TrafficHistoryChart.swift")
+        let trafficChart = try source("Sources/Bandwagon/Views/Pages/TrafficHistoryChart.swift")
         require(
             trafficChart.contains("ForEach(visibleBuckets)") &&
             !trafficChart.contains("ForEach(Array(visibleBuckets.enumerated()), id: \\.offset)"),
@@ -136,7 +137,7 @@ struct UICompositionRegression {
             overview.contains(".accessibilityLabel(copied ? \"已复制 \\(client.name) 的邮箱\""),
             "Copy buttons must name their client instead of repeating one identical VoiceOver label"
         )
-        let miniTraffic = try source("Sources/Bandwagon/Views/Components/MiniTrafficCard.swift")
+        let miniTraffic = try source("Sources/Bandwagon/Views/Pages/MiniTrafficCard.swift")
         let chartData = try source("Sources/Bandwagon/Models/TrafficChartData.swift")
         require(
             miniTraffic.contains("legend(\"下载\"") &&
@@ -209,10 +210,11 @@ struct UICompositionRegression {
             statusViews.contains("struct StatusBanner: View") &&
             modelPresentation.contains("var staleTitle: String") &&
             modelPresentation.contains("数据可能已过期") &&
-            overview.contains("bwhBanner(") &&
-            vps.contains("bwhBanner(") &&
-            overview.contains("failure.staleTitle") &&
-            vps.contains("failure.staleTitle"),
+            failureBanner.contains("failure.staleTitle") &&
+            overview.contains("BandwagonFailureBanner(") &&
+            vps.contains("BandwagonFailureBanner(") &&
+            !overview.contains("private func bwhBanner") &&
+            !vps.contains("private func bwhBanner"),
             "A failed refresh must degrade to a banner, worded as stale, instead of replacing the dashboard"
         )
         require(

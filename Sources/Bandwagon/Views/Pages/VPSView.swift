@@ -50,7 +50,7 @@ struct VPSView: View {
                     // Keep the last good numbers on screen; a failure is a banner,
                     // not a reason to blank the page.
                     if let error = bwh?.error {
-                        bwhBanner(error)
+                        BandwagonFailureBanner(error: error, selectedTab: $selectedTab)
                     }
                     heroCard
                     systemCard
@@ -74,18 +74,6 @@ struct VPSView: View {
                     )
                 }
             }
-    }
-
-    private func bwhBanner(_ error: String) -> some View {
-        let failure = ServiceFailure(service: "Bandwagon", error: error, needsSettings: model.bwhNeedsSettings)
-        return StatusBanner(
-            title: failure.staleTitle,
-            message: failure.message,
-            icon: failure.icon,
-            tint: Theme.warning,
-            actionTitle: failure.actionTitle,
-            action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
-        )
     }
 
     // MARK: - 用量概览

@@ -85,7 +85,7 @@ struct OverviewView: View {
             // replacing the whole dashboard with an error page.
             VStack(alignment: .leading, spacing: 12) {
                 if let error = bwh?.error {
-                    bwhBanner(error)
+                    BandwagonFailureBanner(error: error, selectedTab: $selectedTab)
                 }
                 heroCard
             }
@@ -108,18 +108,6 @@ struct OverviewView: View {
                 tint: .secondary
             )
         }
-    }
-
-    private func bwhBanner(_ error: String) -> some View {
-        let failure = ServiceFailure(service: "Bandwagon", error: error, needsSettings: model.bwhNeedsSettings)
-        return StatusBanner(
-            title: failure.staleTitle,
-            message: failure.message,
-            icon: failure.icon,
-            tint: Theme.warning,
-            actionTitle: failure.actionTitle,
-            action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
-        )
     }
 
     private var heroCard: some View {
