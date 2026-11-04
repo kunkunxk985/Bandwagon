@@ -17,6 +17,7 @@ struct ClientDetailSheet: View {
     @State private var errorMessage: String?
     @State private var notice: String?
     @State private var pending: PendingAction?
+    @State private var pendingEnable: Bool?
 
     @State private var editing = false
     @State private var form = LimitsForm()
@@ -50,13 +51,15 @@ struct ClientDetailSheet: View {
         .background(Theme.surface)
         .confirmationDialog(
             pending?.title ?? "",
-            isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
+            isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil; pendingEnable = nil } }),
             presenting: pending
         ) { action in
             Button(action.confirm, role: action.destructive ? .destructive : nil) {
                 run(action)
             }
-            Button("取消", role: .cancel) {}
+            Button("取消", role: .cancel) {
+                pendingEnable = nil
+            }
         } message: { action in
             Text(action.message)
         }
@@ -219,12 +222,6 @@ struct ClientDetailSheet: View {
                             Label(linkCopied ? "已复制" : "复制链接", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
                         }
                         .controlSize(.small)
-                        if links.count == 1, current.format == .standard {
-                            Text("面板没有开启 Clash 订阅。在 3X-UI 的「面板设置 → 订阅」里打开 Clash 后，这里会多出一个 Clash 链接。")
-                                .font(.system(size: 11.5))
-                                .foregroundStyle(.tertiary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
                     }
                 }
                 .onChange(of: linkFormat) { linkCopied = false }
@@ -259,8 +256,11 @@ struct ClientDetailSheet: View {
 
             actionRow(title: "启用", detail: "停用后该客户端立即无法连接，数据与配额保留。") {
                 Toggle("启用", isOn: Binding(
-                    get: { client.enable != false },
-                    set: { newValue in askToggle(client, enable: newValue) }
+                    get: { pendingEnable ?? (client.enable != false) },
+                    set: { newValue in
+                        pendingEnable = client.enable != false
+                        askToggle(client, enable: newValue)
+                    }
                 ))
                 .labelsHidden()
                 .toggleStyle(.switch)
@@ -447,6 +447,7 @@ struct ClientDetailSheet: View {
                 errorMessage = XUIError.safeMessage(error)
             }
             working = false
+            pendingEnable = nil
         }
     }
 

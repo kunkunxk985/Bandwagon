@@ -200,7 +200,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("菜单栏")
                     .font(.system(size: 14, weight: .semibold))
-                Text("在菜单栏显示套餐用量与超额预测；关闭主窗口后仍会按间隔刷新")
+                Text("在系统菜单栏显示套餐用量与预测")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
             }
@@ -228,8 +228,8 @@ struct SettingsView: View {
 
     private var refreshHint: String {
         draft.refreshSeconds == 0
-            ? "只在手动刷新时重新读取面板"
-            : "每 \(refreshLabel(draft.refreshSeconds))重新读取；切回窗口时数据过期也会刷新"
+            ? "只在手动刷新时重新读取数据"
+            : "每 \(refreshLabel(draft.refreshSeconds))自动重新读取"
     }
 
     private func inlineError(_ message: String) -> some View {

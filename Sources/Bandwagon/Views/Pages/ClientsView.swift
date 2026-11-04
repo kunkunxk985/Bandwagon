@@ -49,10 +49,7 @@ struct ClientsView: View {
         return xui.clients
     }
 
-    private var headerSubtitle: String? {
-        guard let clients = loadedClients, !clients.isEmpty else { return nil }
-        return "3X-UI 面板上的 \(clients.count) 个客户端，按用量与配额风险排列"
-    }
+    private var headerSubtitle: String? { nil }
 
     // MARK: - 汇总与筛选
 

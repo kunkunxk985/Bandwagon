@@ -33,7 +33,7 @@ struct TrafficForecast: Equatable {
         switch verdict {
         case .over:
             guard daysUntilExhausted > 0.5 else { return "套餐流量已用尽" }
-            return "按最近 7 天速度，约 \(Self.dayText(daysUntilExhausted)) 后用尽；距重置还有 \(Self.dayText(daysLeft))"
+            return "按最近 7 天速度，约 \(Self.dayText(daysUntilExhausted))后用尽；距重置还有 \(Self.dayText(daysLeft))"
         case .tight:
             return "按最近 7 天速度，刚好能撑到重置"
         case .safe:

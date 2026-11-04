@@ -54,7 +54,7 @@ struct UsagePolicyRegression {
             email: "probe@example.com",
             comment: nil,
             inbound: nil,
-            `protocol`: nil,
+            protocol: nil,
             used: 1,
             up: nil,
             down: nil,
