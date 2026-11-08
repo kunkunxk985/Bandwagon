@@ -13,6 +13,17 @@ struct AppSettings: Equatable, Sendable {
     var xuiPassword = ""
     var xuiTwoFactor = ""
 
+    /// Automatically zeroes all 3X-UI clients' traffic at the exact Bandwagon
+    /// server traffic reset timestamp (`bwh.resetAt`) and keeps 3X-UI built-in
+    /// traffic reset set to "never".
+    var syncClientResetWithServer = true
+    /// Current cycle's Bandwagon `resetAt` (epoch seconds) awaiting automatic reset.
+    var pendingServerResetAt = 0
+    /// Last `resetAt` (epoch seconds) for which all 3X-UI clients were automatically reset.
+    var lastExecutedServerResetAt = 0
+    /// Epoch seconds when 3X-UI clients' built-in reset policy was last verified as "never".
+    var normalizedXuiResetPolicyAt = 0
+
     static let defaultRefreshSeconds = 300
     /// 0 means "only refresh when I ask". Anything above re-reads the panel on a timer.
     static let refreshChoices = [0, 60, 300, 900, 1800]
@@ -96,6 +107,18 @@ enum SettingsStore {
         if let stored = object["REFRESH_SECONDS"] {
             settings.refreshSeconds = max(0, JSONValue.int(stored))
         }
+        if let storedSync = object["SYNC_CLIENT_RESET_WITH_SERVER"] {
+            settings.syncClientResetWithServer = JSONValue.bool(storedSync, default: true)
+        }
+        if let storedPending = object["PENDING_SERVER_RESET_AT"] {
+            settings.pendingServerResetAt = max(0, JSONValue.int(storedPending))
+        }
+        if let storedExecuted = object["LAST_EXECUTED_SERVER_RESET_AT"] {
+            settings.lastExecutedServerResetAt = max(0, JSONValue.int(storedExecuted))
+        }
+        if let storedNormalized = object["NORMALIZED_XUI_RESET_POLICY_AT"] {
+            settings.normalizedXuiResetPolicyAt = max(0, JSONValue.int(storedNormalized))
+        }
 
         if let credentials = KeychainCredentialStore.load() {
             credentials.apply(to: &settings)
@@ -123,6 +146,11 @@ enum SettingsStore {
         return writeObject(nonSecretObject(for: settings, merging: loadObject()))
     }
 
+    @discardableResult
+    static func savePreferences(_ settings: AppSettings) -> Bool {
+        writeObject(nonSecretObject(for: settings, merging: loadObject()))
+    }
+
     private static func loadObject() -> [String: Any] {
         // If the one-time move failed, the old file is still the truth.
         let source = FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : legacyFileURL
@@ -142,6 +170,10 @@ enum SettingsStore {
         object["BWH_API_BASE"] = settings.bwhApiBase
         object["XUI_BASE_URL"] = settings.xuiBaseUrl
         object["REFRESH_SECONDS"] = settings.refreshSeconds
+        object["SYNC_CLIENT_RESET_WITH_SERVER"] = settings.syncClientResetWithServer
+        object["PENDING_SERVER_RESET_AT"] = settings.pendingServerResetAt
+        object["LAST_EXECUTED_SERVER_RESET_AT"] = settings.lastExecutedServerResetAt
+        object["NORMALIZED_XUI_RESET_POLICY_AT"] = settings.normalizedXuiResetPolicyAt
         for key in secretKeys + retiredKeys {
             object.removeValue(forKey: key)
         }

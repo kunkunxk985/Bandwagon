@@ -220,4 +220,10 @@ enum ByteFormat {
         let seconds = resetAt > 1_000_000_000_000 ? Double(resetAt) / 1000 : Double(resetAt)
         return DateFormats.string("M月d日", Date(timeIntervalSince1970: seconds))
     }
+
+    static func resetDateTime(_ resetAt: Int?) -> String? {
+        guard let resetAt, resetAt > 0 else { return nil }
+        let seconds = resetAt > 1_000_000_000_000 ? Double(resetAt) / 1000 : Double(resetAt)
+        return DateFormats.string("M月d日 HH:mm", Date(timeIntervalSince1970: seconds))
+    }
 }

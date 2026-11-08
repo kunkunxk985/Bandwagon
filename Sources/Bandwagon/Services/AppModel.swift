@@ -26,11 +26,17 @@ final class AppModel {
     /// The client whose detail sheet is open. Lives here, not in a view, so the
     /// overview, the clients page and the menu bar can all open the same sheet.
     var inspectedClientID: String?
+    /// Status of syncing 3X-UI client traffic resets with the Bandwagon server cycle.
+    var resetSyncWorking = false
+    var resetSyncMessage: String?
     /// The panel's subscription addresses; nil until asked once this session.
     private(set) var subscriptionBases: SubscriptionBases?
     private var refreshTask: Task<Void, Never>?
     private var started = false
     private var autoRefreshTask: Task<Void, Never>?
+    private var resetSyncTimerTask: Task<Void, Never>?
+    private var scheduledResetTarget = 0
+    private var resetPolicyCheckInFlight = false
     private var restoreTask: Task<AppSettings, Never>?
     private var settingsRestored = false
 
@@ -139,6 +145,9 @@ final class AppModel {
         if (snapshot.bwhReady || snapshot.xuiReady), bwhFresh, xuiFresh {
             overview.fetchedAt = Date().timeIntervalSince1970
         }
+        if settingsRestored {
+            await coordinateServerResetSync()
+        }
     }
 
     private func refreshXUI(_ snapshot: AppSettings) async {
@@ -240,5 +249,152 @@ final class AppModel {
         await load()
         startAutoRefresh()
         return error == nil
+    }
+
+    // MARK: - Server-Synced Client Traffic Reset
+
+    func setSyncClientResetWithServer(_ enabled: Bool) {
+        guard settings.syncClientResetWithServer != enabled else { return }
+        settings.syncClientResetWithServer = enabled
+        if enabled {
+            // Re-verify 3X-UI built-in reset policy immediately when turned on.
+            settings.normalizedXuiResetPolicyAt = 0
+            resetSyncMessage = nil
+        } else {
+            resetSyncTimerTask?.cancel()
+            resetSyncTimerTask = nil
+            scheduledResetTarget = 0
+            resetSyncMessage = nil
+        }
+        if settingsRestored {
+            let snapshot = settings
+            Task.detached(priority: .utility) {
+                _ = SettingsStore.savePreferences(snapshot)
+            }
+            if enabled {
+                Task { await self.coordinateServerResetSync() }
+            }
+        }
+    }
+
+    func coordinateServerResetSync() async {
+        guard settingsRestored else { return }
+        guard settings.syncClientResetWithServer else {
+            resetSyncTimerTask?.cancel()
+            resetSyncTimerTask = nil
+            scheduledResetTarget = 0
+            return
+        }
+
+        let nowSec = Int(Date().timeIntervalSince1970)
+        if let clients = overview.xui?.clients, !clients.isEmpty, overview.xui?.error == nil {
+            let needsPolicySync = settings.normalizedXuiResetPolicyAt == 0 ||
+                (nowSec - settings.normalizedXuiResetPolicyAt >= 86_400)
+            if needsPolicySync, !resetPolicyCheckInFlight {
+                resetPolicyCheckInFlight = true
+                resetSyncWorking = true
+                do {
+                    let result = try await XUIClient.normalizeBuiltInTrafficResetToNever(settings, clients: clients)
+                    settings.normalizedXuiResetPolicyAt = Int(Date().timeIntervalSince1970)
+                    let snapshot = settings
+                    Task.detached(priority: .utility) {
+                        _ = SettingsStore.savePreferences(snapshot)
+                    }
+                    if result.updated > 0 {
+                        resetSyncMessage = "已将 \(result.updated) 个客户端的面板内置重置改为「不自动重置」"
+                    }
+                } catch {
+                    resetSyncMessage = "同步面板重置策略未完成：\(XUIError.safeMessage(error))"
+                }
+                resetSyncWorking = false
+                resetPolicyCheckInFlight = false
+            }
+        }
+
+        let rawResetAt = overview.bwh?.resetAt ?? 0
+        let serverResetSec = rawResetAt > 1_000_000_000_000 ? rawResetAt / 1000 : rawResetAt
+        let pending = settings.pendingServerResetAt
+
+        let exactTimeReached = pending > 0 &&
+            nowSec >= pending &&
+            settings.lastExecutedServerResetAt < pending
+        let cycleRolledOver = pending > 0 &&
+            serverResetSec > pending + 3600 &&
+            nowSec >= pending - 300 &&
+            settings.lastExecutedServerResetAt < pending
+
+        if (exactTimeReached || cycleRolledOver),
+           let clients = overview.xui?.clients,
+           !clients.isEmpty,
+           !resetSyncWorking {
+            resetSyncWorking = true
+            do {
+                let count = try await XUIClient.resetAllClientsTraffic(settings, clients: clients)
+                settings.lastExecutedServerResetAt = pending
+                if serverResetSec > nowSec {
+                    settings.pendingServerResetAt = serverResetSec
+                }
+                let snapshot = settings
+                Task.detached(priority: .utility) {
+                    _ = SettingsStore.savePreferences(snapshot)
+                }
+                resetSyncMessage = "已按服务器重置时间自动清零 \(count) 个客户端流量"
+                await refreshXUI(settings)
+            } catch {
+                resetSyncMessage = "到点自动清零未完成：\(XUIError.safeMessage(error))"
+            }
+            resetSyncWorking = false
+        }
+
+        if serverResetSec > nowSec, settings.pendingServerResetAt != serverResetSec {
+            settings.pendingServerResetAt = serverResetSec
+            let snapshot = settings
+            Task.detached(priority: .utility) {
+                _ = SettingsStore.savePreferences(snapshot)
+            }
+        }
+
+        if settings.pendingServerResetAt > nowSec,
+           settings.lastExecutedServerResetAt < settings.pendingServerResetAt {
+            scheduleExactResetTimer(targetResetAt: settings.pendingServerResetAt)
+        } else {
+            resetSyncTimerTask?.cancel()
+            resetSyncTimerTask = nil
+            scheduledResetTarget = 0
+        }
+    }
+
+    private func scheduleExactResetTimer(targetResetAt: Int) {
+        guard settingsRestored, settings.syncClientResetWithServer, targetResetAt > 0 else {
+            resetSyncTimerTask?.cancel()
+            resetSyncTimerTask = nil
+            scheduledResetTarget = 0
+            return
+        }
+        if scheduledResetTarget == targetResetAt, resetSyncTimerTask != nil {
+            return
+        }
+        resetSyncTimerTask?.cancel()
+        scheduledResetTarget = targetResetAt
+        resetSyncTimerTask = Task { [weak self] in
+            while !Task.isCancelled {
+                let now = Date().timeIntervalSince1970
+                let remaining = Double(targetResetAt) - now
+                if remaining <= 0 { break }
+                // Re-check wall clock every 5 minutes when far away so macOS sleep
+                // pauses on the monotonic clock do not delay wake-up detection.
+                let step = min(remaining, 300)
+                do {
+                    try await Task.sleep(for: .seconds(max(0.5, step)))
+                } catch {
+                    return
+                }
+            }
+            guard !Task.isCancelled, let self else { return }
+            self.scheduledResetTarget = 0
+            self.resetSyncTimerTask = nil
+            await self.coordinateServerResetSync()
+            await self.load()
+        }
     }
 }

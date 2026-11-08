@@ -72,6 +72,78 @@ enum XUIClient {
         }
     }
 
+    /// Zeroes all clients' traffic counters in one authenticated session, preserving
+    /// disabled state for any client that was switched off prior to the reset.
+    @discardableResult
+    static func resetAllClientsTraffic(_ settings: AppSettings, clients: [Client]) async throws -> Int {
+        var seen = Set<String>()
+        var emails: [String] = []
+        var disabledEmails: [String] = []
+        for client in clients {
+            guard let email = client.email, !email.isEmpty, seen.insert(email).inserted else { continue }
+            emails.append(email)
+            if client.enable == false {
+                disabledEmails.append(email)
+            }
+        }
+        guard !emails.isEmpty else { return 0 }
+        return try await withConnection(settings) { base, session, csrf in
+            for email in emails {
+                _ = try await request(
+                    "POST", base: base, path: "/panel/api/clients/resetTraffic/" + pathComponent(email),
+                    settings: settings, session: session, csrf: csrf
+                )
+            }
+            if !disabledEmails.isEmpty {
+                _ = try? await request(
+                    "POST", base: base, path: "/panel/api/clients/bulkDisable",
+                    settings: settings, session: session, csrf: csrf,
+                    json: ["emails": disabledEmails]
+                )
+            }
+            return emails.count
+        }
+    }
+
+    /// Ensures every client on the panel has its built-in 3X-UI reset policy set to
+    /// `trafficReset = "never"` and `reset = 0`, so Bandwagon.app alone controls
+    /// traffic resets on the exact Bandwagon server reset timestamp (`HH:mm`).
+    static func normalizeBuiltInTrafficResetToNever(
+        _ settings: AppSettings,
+        clients: [Client]
+    ) async throws -> (checked: Int, updated: Int) {
+        var seen = Set<String>()
+        let emails = clients.compactMap(\.email).filter { !$0.isEmpty && seen.insert($0).inserted }
+        guard !emails.isEmpty else { return (0, 0) }
+        return try await withConnection(settings) { base, session, csrf in
+            var checked = 0
+            var updated = 0
+            for email in emails {
+                let raw = try await request(
+                    "GET", base: base, path: "/panel/api/clients/get/" + pathComponent(email),
+                    settings: settings, session: session, csrf: csrf
+                )
+                let record = JSONValue.object(JSONValue.object(raw)["client"])
+                guard !record.isEmpty, JSONValue.string(record["email"]) == email else { continue }
+                checked += 1
+                let trafficReset = JSONValue.string(record["trafficReset"])
+                let resetDays = JSONValue.int(record["reset"])
+                let needsUpdate = (!trafficReset.isEmpty && trafficReset != "never") || resetDays != 0
+                if needsUpdate {
+                    var payload = clientPayload(fromRecord: record)
+                    payload["trafficReset"] = "never"
+                    payload["reset"] = 0
+                    _ = try await request(
+                        "POST", base: base, path: "/panel/api/clients/update/" + pathComponent(email),
+                        settings: settings, session: session, csrf: csrf, json: payload
+                    )
+                    updated += 1
+                }
+            }
+            return (checked, updated)
+        }
+    }
+
     /// The panel's subscription addresses, to which a client's `subId` is
     /// appended: the standard link list and the Clash YAML, each nil when that
     /// format is switched off on the panel.

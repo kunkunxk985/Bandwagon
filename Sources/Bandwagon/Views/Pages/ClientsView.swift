@@ -75,6 +75,9 @@ struct ClientsView: View {
                     StatDivider(height: 40)
                     SummaryTile(title: "总用量", value: ByteFormat.string(totalUsed(clients)))
                 }
+                CardDivider()
+                    .padding(.vertical, 14)
+                serverResetSyncBar
             }
 
             HStack(spacing: 12) {
@@ -134,6 +137,54 @@ struct ClientsView: View {
         clients.reduce(0) { partial, client in
             let (result, overflow) = partial.addingReportingOverflow(client.used ?? 0)
             return overflow ? Int.max : result
+        }
+    }
+
+    private var serverResetSyncBar: some View {
+        let enabled = model.settings.syncClientResetWithServer
+        let resetAt = model.overview.bwh?.resetAt ?? (model.settings.pendingServerResetAt > 0 ? model.settings.pendingServerResetAt : nil)
+        let resetDateTimeText = ByteFormat.resetDateTime(resetAt)
+
+        return HStack(spacing: 10) {
+            Image(systemName: "clock.arrow.2.circlepath")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(enabled ? Theme.accent : .secondary)
+
+            Text("流量重置与服务器同步")
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(.primary)
+
+            if enabled, let resetDateTimeText {
+                Text("下次清零 \(resetDateTimeText)")
+                    .font(Theme.number(11.5, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Theme.accent.opacity(0.12), in: Capsule())
+            }
+
+            if let message = model.resetSyncMessage, !message.isEmpty {
+                Text(message)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 12)
+
+            if model.resetSyncWorking {
+                ProgressView()
+                    .controlSize(.small)
+            }
+
+            Toggle("流量重置与服务器同步", isOn: Binding(
+                get: { model.settings.syncClientResetWithServer },
+                set: { model.setSyncClientResetWithServer($0) }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(model.resetSyncWorking)
         }
     }
 

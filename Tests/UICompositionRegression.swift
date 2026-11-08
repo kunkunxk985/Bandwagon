@@ -295,6 +295,17 @@ struct UICompositionRegression {
             "Formatters must be cached, not rebuilt per row per frame"
         )
 
+        let xuiClient = try source("Sources/Bandwagon/Services/XUIClient.swift")
+        let appModel = try source("Sources/Bandwagon/Services/AppModel.swift")
+        require(
+            clients.contains("serverResetSyncBar") &&
+            clients.contains("流量重置与服务器同步") &&
+            xuiClient.contains("func resetAllClientsTraffic(") &&
+            xuiClient.contains("func normalizeBuiltInTrafficResetToNever(") &&
+            appModel.contains("func coordinateServerResetSync()"),
+            "Clients page and AppModel must sync per-client traffic reset with the Bandwagon server reset timestamp"
+        )
+
         print("PASS unified cards, optional actions, flat settings, error navigation, quota composition, stable chart marks, shared monitoring components, refresh cadence, overrun verdicts, stale-data banners, ring tint, reduce motion, and cached formatters")
     }
 
