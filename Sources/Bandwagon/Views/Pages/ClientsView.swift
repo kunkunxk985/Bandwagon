@@ -37,6 +37,12 @@ struct ClientsView: View {
                     .pageHeaderInsets()
                 if let clients = loadedClients, !clients.isEmpty {
                     header(clients)
+                } else if model.settings.xuiReady && (model.overview.bwh?.resetAt != nil || model.settings.pendingServerResetAt > 0) {
+                    Panel(padding: 18) {
+                        serverResetSyncBar
+                    }
+                    .padding(.horizontal, Theme.pagePadding)
+                    .padding(.bottom, 14)
                 }
                 listContent
             }

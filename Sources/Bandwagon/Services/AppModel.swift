@@ -37,6 +37,7 @@ final class AppModel {
     private var resetSyncTimerTask: Task<Void, Never>?
     private var scheduledResetTarget = 0
     private var resetPolicyCheckInFlight = false
+    private var attemptedStartForResetAt = 0
     private var restoreTask: Task<AppSettings, Never>?
     private var settingsRestored = false
 
@@ -323,30 +324,50 @@ final class AppModel {
             nowSec >= pending - 300 &&
             settings.lastExecutedServerResetAt < pending
 
-        if (exactTimeReached || cycleRolledOver),
-           let clients = overview.xui?.clients,
-           !clients.isEmpty,
-           !resetSyncWorking {
-            resetSyncWorking = true
-            do {
-                let count = try await XUIClient.resetAllClientsTraffic(settings, clients: clients)
-                settings.lastExecutedServerResetAt = pending
-                if serverResetSec > nowSec {
-                    settings.pendingServerResetAt = serverResetSec
-                }
-                let snapshot = settings
-                Task.detached(priority: .utility) {
-                    _ = SettingsStore.savePreferences(snapshot)
-                }
-                resetSyncMessage = "已按服务器重置时间自动清零 \(count) 个客户端流量"
-                await refreshXUI(settings)
-            } catch {
-                resetSyncMessage = "到点自动清零未完成：\(XUIError.safeMessage(error))"
+        if (exactTimeReached || cycleRolledOver), !resetSyncWorking {
+            let statusLower = (overview.bwh?.status ?? "").lowercased()
+            let isStopped = statusLower.contains("stop") || statusLower.contains("offline")
+            let quotaAvailable = (overview.bwh?.usedPercent ?? 0) < 95 || serverResetSec > pending
+            if isStopped, quotaAvailable, settings.bwhReady, attemptedStartForResetAt != pending {
+                attemptedStartForResetAt = pending
+                resetSyncMessage = "已到达流量重置时间，正在请求开机启动服务器…"
+                try? await BWHClient.start(settings)
             }
-            resetSyncWorking = false
+
+            if let clients = overview.xui?.clients, !clients.isEmpty, overview.xui?.error == nil {
+                resetSyncWorking = true
+                do {
+                    let count = try await XUIClient.resetAllClientsTraffic(settings, clients: clients)
+                    settings.lastExecutedServerResetAt = pending
+                    if serverResetSec > nowSec {
+                        settings.pendingServerResetAt = serverResetSec
+                    }
+                    let snapshot = settings
+                    Task.detached(priority: .utility) {
+                        _ = SettingsStore.savePreferences(snapshot)
+                    }
+                    resetSyncMessage = "已按服务器重置时间自动清零 \(count) 个客户端流量"
+                    await refreshXUI(settings)
+                } catch {
+                    resetSyncMessage = "到点自动清零未完成（稍后自动重试）：\(XUIError.safeMessage(error))"
+                }
+                resetSyncWorking = false
+            } else {
+                resetSyncMessage = "已到达重置时间，等待服务器开机及 3X-UI 恢复连接后自动清零…"
+            }
         }
 
-        if serverResetSec > nowSec, settings.pendingServerResetAt != serverResetSec {
+        // Only advance pendingServerResetAt to the new billing cycle once any due reset
+        // for the previous cycle has actually completed on 3X-UI. Otherwise, if the VPS
+        // was stopped and takes a few minutes to boot after resetAt, the new cycle's
+        // timestamp would overwrite pendingServerResetAt before 3X-UI comes back online.
+        let dueResetStillPending = settings.pendingServerResetAt > 0 &&
+            nowSec >= settings.pendingServerResetAt &&
+            settings.lastExecutedServerResetAt < settings.pendingServerResetAt
+
+        if !dueResetStillPending,
+           serverResetSec > nowSec,
+           settings.pendingServerResetAt != serverResetSec {
             settings.pendingServerResetAt = serverResetSec
             let snapshot = settings
             Task.detached(priority: .utility) {
@@ -354,8 +375,11 @@ final class AppModel {
             }
         }
 
-        if settings.pendingServerResetAt > nowSec,
-           settings.lastExecutedServerResetAt < settings.pendingServerResetAt {
+        if dueResetStillPending {
+            // Poll every 15 seconds while waiting for a booting VPS / 3X-UI panel to come online.
+            scheduleExactResetTimer(targetResetAt: nowSec + 15)
+        } else if settings.pendingServerResetAt > nowSec,
+                  settings.lastExecutedServerResetAt < settings.pendingServerResetAt {
             scheduleExactResetTimer(targetResetAt: settings.pendingServerResetAt)
         } else {
             resetSyncTimerTask?.cancel()
@@ -393,8 +417,8 @@ final class AppModel {
             guard !Task.isCancelled, let self else { return }
             self.scheduledResetTarget = 0
             self.resetSyncTimerTask = nil
-            await self.coordinateServerResetSync()
             await self.load()
+            await self.coordinateServerResetSync()
         }
     }
 }

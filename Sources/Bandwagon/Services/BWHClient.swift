@@ -94,6 +94,11 @@ enum BWHClient {
         return (overview, history)
     }
 
+    /// Boots a stopped VE via KiwiVM `start` once the bandwidth reset timestamp is reached.
+    static func start(_ settings: AppSettings) async throws {
+        _ = try await call("start", settings: settings, timeout: 25)
+    }
+
     /// KiwiVM reports used disk only from `getLiveServiceInfo`, and the shape differs by
     /// hypervisor: KVM exposes `ve_used_disk_space_b`, OpenVZ nests the figures under
     /// `vz_quota`. Only the KVM field is parsed. Guessing at the OpenVZ inner keys would
