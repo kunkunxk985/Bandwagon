@@ -152,7 +152,7 @@ struct ClientChanges: Equatable, Sendable {
     var isEmpty: Bool { enable == nil && totalBytes == nil && expiryTime == nil }
 }
 
-struct HistoryPoint: Codable, Hashable {
+struct HistoryPoint: Codable, Hashable, Sendable {
     var t: Int?
     var inbound: Int?
     var out: Int?

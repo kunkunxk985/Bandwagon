@@ -9,8 +9,8 @@ import Foundation
 /// The daily average intentionally matches the mini card's "日均" figure: it is the
 /// same seven-day window including the partial current day. That makes the two
 /// numbers agree, at the cost of a slight optimistic bias before the day is over.
-struct TrafficForecast: Equatable {
-    enum Verdict: String {
+struct TrafficForecast: Equatable, Sendable {
+    enum Verdict: String, Sendable {
         /// Comfortably on track to finish the cycle inside the quota.
         case safe
         /// Projected to only just reach the reset.

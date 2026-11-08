@@ -96,6 +96,25 @@ struct ClientsView: View {
                     TextField("搜索名称或邮箱", text: $query)
                         .textFieldStyle(.plain)
                         .font(.system(size: 12.5))
+                        .onKeyPress(.escape) {
+                            if !query.isEmpty {
+                                query = ""
+                                return .handled
+                            }
+                            return .ignored
+                        }
+                    if !query.isEmpty {
+                        Button {
+                            query = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("清空搜索")
+                        .accessibilityLabel("清空搜索")
+                    }
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)

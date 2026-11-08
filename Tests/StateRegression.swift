@@ -14,6 +14,17 @@ import Foundation
      // Expected: credentials must never be sent over public cleartext HTTP.
    }
 
+   guard let norm1 = try? XUIClient.normalizedBaseURLString(from: "https://example.com:2053/panel"),
+         norm1 == "https://example.com:2053",
+         let norm2 = try? XUIClient.normalizedBaseURLString(from: "https://example.com:2053/panel/inbounds/"),
+         norm2 == "https://example.com:2053",
+         let norm3 = try? XUIClient.normalizedBaseURLString(from: "https://example.com:2053/custom/panel/"),
+         norm3 == "https://example.com:2053/custom" else {
+     print("FAIL panel BaseURL normalization must strip /panel and subroutes")
+     exit(1)
+   }
+   print("PASS 3X-UI base URL normalization strips redundant /panel and subpaths")
+
    let model = AppModel()
    model.settings = AppSettings()
    model.settings.xuiBaseUrl = "http://127.0.0.1:1"

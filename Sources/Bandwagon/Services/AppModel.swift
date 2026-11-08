@@ -61,14 +61,22 @@ final class AppModel {
     func startAutoRefresh() {
         guard settingsRestored, autoRefreshTask == nil else { return }
         autoRefreshTask = Task { [weak self] in
+            var consecutiveFailures = 0
             while !Task.isCancelled {
                 guard let self else { return }
                 // Nothing configured, or polling switched off: stop rather than spin.
                 guard self.settings.bwhReady || self.settings.xuiReady else { return }
                 let seconds = self.settings.refreshSeconds
                 guard seconds > 0 else { return }
+                let delay: Double
+                if consecutiveFailures > 0 {
+                    let backoff = Double(seconds) * pow(1.5, Double(min(consecutiveFailures, 4)))
+                    delay = min(max(Double(seconds), backoff), 300)
+                } else {
+                    delay = Double(seconds)
+                }
                 do {
-                    try await Task.sleep(for: .seconds(Double(seconds)))
+                    try await Task.sleep(for: .seconds(delay))
                 } catch {
                     return
                 }
@@ -76,6 +84,11 @@ final class AppModel {
                 // A refresh already in flight covers this tick.
                 if self.loading { continue }
                 await self.load()
+                if self.error != nil {
+                    consecutiveFailures += 1
+                } else {
+                    consecutiveFailures = 0
+                }
             }
         }
     }
@@ -152,12 +165,15 @@ final class AppModel {
             let (bwh, history) = try await BWHClient.fetch(snapshot)
             overview.bwh = bwh
             overview.bwhHistory = history
-            forecast = TrafficForecast.make(
-                points: history,
-                usedBytes: bwh.usedBytes,
-                quotaBytes: bwh.quotaBytes,
-                resetAt: bwh.resetAt
-            )
+            let forecast = await Task.detached(priority: .utility) {
+                TrafficForecast.make(
+                    points: history,
+                    usedBytes: bwh.usedBytes,
+                    quotaBytes: bwh.quotaBytes,
+                    resetAt: bwh.resetAt
+                )
+            }.value
+            self.forecast = forecast
         } catch {
             if overview.bwh == nil { overview.bwh = BWHOverview(configured: true) }
             var message = BWHError.safeMessage(error)

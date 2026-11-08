@@ -58,6 +58,22 @@ struct ContentView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .background(WindowChrome())
+        .background {
+            // macOS HIG standard keyboard shortcuts for tab navigation
+            Group {
+                Button("总览") { switchTab(to: .overview) }
+                    .keyboardShortcut("1", modifiers: .command)
+                Button("VPS") { switchTab(to: .vps) }
+                    .keyboardShortcut("2", modifiers: .command)
+                Button("客户端") { switchTab(to: .clients) }
+                    .keyboardShortcut("3", modifiers: .command)
+                Button("设置") { switchTab(to: .settings) }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
+            .frame(width: 0, height: 0)
+            .opacity(0)
+            .accessibilityHidden(true)
+        }
         .sheet(isPresented: Binding(
             get: { model.inspectedClientID != nil },
             set: { if !$0 { model.inspectedClientID = nil } }
@@ -73,6 +89,12 @@ struct ContentView: View {
             }
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: tab)
+    }
+
+    private func switchTab(to target: Tab) {
+        withAnimation(reduceMotion ? nil : .interactiveSpring(response: 0.18, dampingFraction: 0.9)) {
+            tab = target
+        }
     }
 
     static func updatedLabel(_ timestamp: Double, now: Date) -> String {

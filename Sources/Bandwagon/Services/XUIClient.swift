@@ -137,6 +137,21 @@ enum XUIClient {
 
     // MARK: - Session
 
+    /// Normalizes the base URL for 3X-UI requests, stripping common web-browser path suffixes
+    /// (such as `/panel`, `/panel/inbounds`) so API requests always target the root properly.
+    static func normalizedBaseURLString(from rawURLString: String) throws -> String {
+        let baseURL = try SecureURLPolicy.baseURL(from: rawURLString)
+        var base = baseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        if base.hasSuffix("/panel/inbounds") {
+            base = String(base.dropLast(15)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        } else if base.hasSuffix("/panel/settings") {
+            base = String(base.dropLast(15)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        } else if base.hasSuffix("/panel") {
+            base = String(base.dropLast(6)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        }
+        return base
+    }
+
     /// One authenticated session per call: log in (unless an API token is set),
     /// run `body`, tear the session down.
     private static func withConnection<T>(
@@ -145,8 +160,7 @@ enum XUIClient {
     ) async throws -> T {
         let session = makeSession()
         defer { session.invalidateAndCancel() }
-        let baseURL = try SecureURLPolicy.baseURL(from: settings.xuiBaseUrl)
-        let base = baseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let base = try normalizedBaseURLString(from: settings.xuiBaseUrl)
         var csrf: String?
         if settings.xuiApiToken.isEmpty {
             csrf = try await login(base: base, settings: settings, session: session)

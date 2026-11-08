@@ -546,6 +546,9 @@ struct ClientDetailSheet: View {
 struct QRCodeView: View {
     let text: String
 
+    private static let context = CIContext(options: [.useSoftwareRenderer: false])
+    private static let cache = NSCache<NSString, NSImage>()
+
     var body: some View {
         Group {
             if let image = Self.image(for: text) {
@@ -567,12 +570,18 @@ struct QRCodeView: View {
     }
 
     private static func image(for text: String) -> NSImage? {
+        let key = text as NSString
+        if let cached = cache.object(forKey: key) {
+            return cached
+        }
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(text.utf8)
         filter.correctionLevel = "M"
         guard let output = filter.outputImage,
-              let cgImage = CIContext().createCGImage(output, from: output.extent) else { return nil }
-        return NSImage(cgImage: cgImage, size: NSSize(width: output.extent.width, height: output.extent.height))
+              let cgImage = context.createCGImage(output, from: output.extent) else { return nil }
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: output.extent.width, height: output.extent.height))
+        cache.setObject(image, forKey: key)
+        return image
     }
 }
 
