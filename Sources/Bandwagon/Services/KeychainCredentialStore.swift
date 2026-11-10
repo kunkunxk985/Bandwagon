@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import LocalAuthentication
 import Security
 
@@ -36,9 +37,38 @@ enum KeychainCredentialStore {
         Bundle.main.bundleURL.pathExtension == "app"
     }
 
+    @discardableResult
+    private static func ensureHelperInstalled() -> Bool {
+        let fm = FileManager.default
+        if fm.isExecutableFile(atPath: helperURL.path) {
+            return true
+        }
+        guard let bundleHelper = Bundle.main.url(forResource: "BandwagonCredentialBridge", withExtension: nil),
+              let helperData = try? Data(contentsOf: bundleHelper) else {
+            return false
+        }
+        let digest = SHA256.hash(data: helperData).map { String(format: "%02x", $0) }.joined()
+        guard digest == helperSHA256 else { return false }
+
+        let dir = helperURL.deletingLastPathComponent()
+        do {
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            let tempURL = dir.appendingPathComponent(".BandwagonCredentialBridge.new.\(UUID().uuidString)")
+            try helperData.write(to: tempURL, options: .atomic)
+            try fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: tempURL.path)
+            _ = try? fm.removeItem(at: helperURL)
+            try fm.moveItem(at: tempURL, to: helperURL)
+            try fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: helperURL.path)
+            return true
+        } catch {
+            return false
+        }
+    }
+
     static func load() -> StoredCredentials? {
-        guard isActualApp,
-              let result = CredentialBridgeClient.perform(
+        guard isActualApp else { return nil }
+        ensureHelperInstalled()
+        guard let result = CredentialBridgeClient.perform(
                 "load", at: helperURL, expectedSHA256: helperSHA256, timeoutSeconds: 20
               ) else { return nil }
         if result.status == "ok", let data = result.credentials {
@@ -61,6 +91,7 @@ enum KeychainCredentialStore {
               let data = try? JSONEncoder().encode(StoredCredentials(settings: settings)) else {
             return false
         }
+        ensureHelperInstalled()
         return CredentialBridgeClient.perform(
             "save", credentials: data, at: helperURL,
             expectedSHA256: helperSHA256, timeoutSeconds: 20

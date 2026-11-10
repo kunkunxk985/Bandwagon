@@ -46,6 +46,8 @@ enum SettingsStore {
     /// keep every existing key, so without this they would ride along forever.
     static let retiredKeys = ["REFRESH_INTERVAL", "THEME"]
 
+    private static let backupDefaultsKey = "BandwagonNonSecretSettingsBackup"
+
     private static var supportDirectory: URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support", isDirectory: true)
@@ -154,11 +156,17 @@ enum SettingsStore {
     private static func loadObject() -> [String: Any] {
         // If the one-time move failed, the old file is still the truth.
         let source = FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : legacyFileURL
-        guard let data = try? Data(contentsOf: source),
-              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return [:]
+        if let data = try? Data(contentsOf: source),
+           let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           !object.isEmpty {
+            UserDefaults.standard.set(object, forKey: backupDefaultsKey)
+            return object
         }
-        return object
+        if let backup = UserDefaults.standard.dictionary(forKey: backupDefaultsKey), !backup.isEmpty {
+            _ = writeObject(backup)
+            return backup
+        }
+        return [:]
     }
 
     private static func nonSecretObject(
@@ -181,6 +189,7 @@ enum SettingsStore {
     }
 
     private static func writeObject(_ object: [String: Any]) -> Bool {
+        UserDefaults.standard.set(object, forKey: backupDefaultsKey)
         let directory = fileURL.deletingLastPathComponent()
         do {
             try FileManager.default.createDirectory(

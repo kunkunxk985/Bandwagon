@@ -25,6 +25,8 @@ mkdir -p "$STAGE/Contents/MacOS" "$STAGE/Contents/Resources"
 cp "$BIN" "$STAGE/Contents/MacOS/Bandwagon"
 chmod +x "$STAGE/Contents/MacOS/Bandwagon"
 printf 'APPL????' > "$STAGE/Contents/PkgInfo"
+cp -p "$ROOT/ReleaseAssets/BandwagonCredentialBridge-v1" "$STAGE/Contents/Resources/BandwagonCredentialBridge"
+chmod 700 "$STAGE/Contents/Resources/BandwagonCredentialBridge"
 
 if [[ -d "$ICONSET" ]]; then
   iconutil -c icns "$ICONSET" -o "$ICNS"
@@ -73,6 +75,10 @@ xattr -cr "$STAGE" 2>/dev/null || true
 codesign --force --deep --sign "$SIGNER" "$STAGE"
 codesign --verify --deep --strict "$STAGE"
 [[ -f "$STAGE/Contents/Resources/AppIcon.icns" ]] || { printf 'AppIcon.icns missing\n' >&2; exit 1; }
+[[ -f "$STAGE/Contents/Resources/BandwagonCredentialBridge" ]] || { printf 'Embedded BandwagonCredentialBridge missing\n' >&2; exit 1; }
 rm -rf "$APP"
 mv "$STAGE" "$APP"
-echo "Built: $APP (signed with $SIGNER)"
+SYSTEM_APP="/Applications/Bandwagon.app"
+rm -rf "$SYSTEM_APP"
+cp -R "$APP" "$SYSTEM_APP"
+echo "Built: $APP and installed to $SYSTEM_APP (signed with $SIGNER)"
