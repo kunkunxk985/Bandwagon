@@ -9,6 +9,10 @@ macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超
 
 纯 SwiftUI，无第三方依赖，无后台服务。
 
+## 下载（免本地编译）
+
+在 [GitHub Releases](https://github.com/kunkunxk985/Bandwagon/releases) 取最新的 `Bandwagon-*-macOS.zip`，解压后把 `Bandwagon.app` 放进「应用程序」。首次若被拦截，请右键 **打开**。安装包为 CI 临时签名，未经 Apple 公证。
+
 ## 构建与运行
 
 ```bash

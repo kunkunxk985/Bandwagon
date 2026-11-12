@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version without v prefix
+        required: true
+        default: "3.0.0"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package Bandwagon.app
+        env:
+          BANDWAGON_CI_RELEASE: "1"
+          BANDWAGON_SIGNING_IDENTITY: "-"
+          BANDWAGON_APP_OUTPUT: ${{ runner.temp }}/Bandwagon/Bandwagon.app
+        run: |
+          mkdir -p "$(dirname "$BANDWAGON_APP_OUTPUT")"
+          ./scripts/package-app.sh
+          codesign --verify --deep --strict "$BANDWAGON_APP_OUTPUT"
+
+      - name: Create zip
+        id: zip
+        env:
+          BANDWAGON_APP_OUTPUT: ${{ runner.temp }}/Bandwagon/Bandwagon.app
+        run: |
+          VERSION="${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}"
+          VERSION="${VERSION#v}"
+          ZIP="${{ runner.temp }}/Bandwagon-${VERSION}-macOS.zip"
+          ditto -c -k --keepParent "$BANDWAGON_APP_OUTPUT" "$ZIP"
+          echo "path=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+          name: Bandwagon ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+          generate_release_notes: true
+          files: ${{ steps.zip.outputs.path }}
+          body: |
+            macOS 15+，Apple Silicon（`arm64`）构建。
+
+            1. 下载 `Bandwagon-*-macOS.zip` 并解压。
+            2. 将 `Bandwagon.app` 拖入「应用程序」。
+            3. 首次打开若被拦截：右键应用 → **打开**（本包使用临时签名，未经公证）。
+            4. 首次运行后在设置里填写 VEID、API Key 与 3X-UI 信息；凭据会写入本机钥匙串。

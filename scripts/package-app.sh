@@ -5,7 +5,8 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT_DIR/scripts/xcode-env.sh"
 xcode_env
 ROOT="$ROOT_DIR"
-APP="$HOME/Desktop/Bandwagon.app"
+CI_RELEASE="${BANDWAGON_CI_RELEASE:-0}"
+APP="${BANDWAGON_APP_OUTPUT:-$HOME/Desktop/Bandwagon.app}"
 ICONSET="$ROOT/packaging/icon.iconset"
 PACKAGING_DIR="$ROOT/.build/packaging"
 STAGE="$PACKAGING_DIR/Bandwagon.app"
@@ -16,7 +17,11 @@ cleanup() { rm -rf "$PACKAGING_DIR"; }
 trap cleanup EXIT
 
 cd "$ROOT"
-bash "$ROOT/scripts/verify-credential-bridge.sh"
+if [[ "$CI_RELEASE" == 1 ]]; then
+  bash "$ROOT/scripts/verify-credential-bridge.sh" "$ROOT/ReleaseAssets/BandwagonCredentialBridge-v1"
+else
+  bash "$ROOT/scripts/verify-credential-bridge.sh"
+fi
 swift build -c release --disable-sandbox
 BIN="$(swift build -c release --disable-sandbox --show-bin-path)/Bandwagon"
 
@@ -78,7 +83,11 @@ codesign --verify --deep --strict "$STAGE"
 [[ -f "$STAGE/Contents/Resources/BandwagonCredentialBridge" ]] || { printf 'Embedded BandwagonCredentialBridge missing\n' >&2; exit 1; }
 rm -rf "$APP"
 mv "$STAGE" "$APP"
-SYSTEM_APP="/Applications/Bandwagon.app"
-rm -rf "$SYSTEM_APP"
-cp -R "$APP" "$SYSTEM_APP"
-echo "Built: $APP and installed to $SYSTEM_APP (signed with $SIGNER)"
+if [[ "$CI_RELEASE" == 1 ]]; then
+  echo "Built: $APP (signed with $SIGNER)"
+else
+  SYSTEM_APP="/Applications/Bandwagon.app"
+  rm -rf "$SYSTEM_APP"
+  cp -R "$APP" "$SYSTEM_APP"
+  echo "Built: $APP and installed to $SYSTEM_APP (signed with $SIGNER)"
+fi
