@@ -21,10 +21,17 @@ struct VPSView: View {
                 pageContent
                     .padding(.horizontal, Theme.pagePadding)
                     .padding(.bottom, Theme.pagePadding)
-                    .modifier(CenterWhenShort(enabled: bwh?.usedBytes == nil, reserving: Theme.pageHeaderHeight))
+                    .modifier(CenterWhenShort(enabled: bwh?.usedBytes == nil && !showsLoadingSkeleton, reserving: Theme.pageHeaderHeight))
             }
         }
         .navigationTitle("VPS")
+    }
+
+    private var showsLoadingSkeleton: Bool {
+        model.settings.bwhReady &&
+        model.bwhLoading &&
+        bwh?.usedBytes == nil &&
+        bwh?.error == nil
     }
 
     private var headerSubtitle: String? {
@@ -65,6 +72,8 @@ struct VPSView: View {
                         action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                         actionTitle: failure.actionTitle
                     )
+                } else if showsLoadingSkeleton {
+                    VPSLoadingSkeleton()
                 } else {
                     StatusCard(
                         title: "正在读取 Bandwagon",

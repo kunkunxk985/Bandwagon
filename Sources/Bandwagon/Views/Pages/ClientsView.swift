@@ -205,14 +205,7 @@ struct ClientsView: View {
     @ViewBuilder
     private var listContent: some View {
         if model.overview.xui == nil && model.xuiLoading {
-            StatusCard(
-                title: "正在连接 3X-UI",
-                message: "请稍候，正在读取客户端列表…",
-                icon: "antenna.radiowaves.left.and.right",
-                tint: .secondary
-            )
-            .padding(.horizontal, Theme.pagePadding)
-            .modifier(CenterWhenShort(enabled: true, reserving: Theme.pageHeaderHeight))
+            ClientsLoadingSkeleton()
         } else if let error = model.overview.xui?.error {
             let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
             StatusCard(

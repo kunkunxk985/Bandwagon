@@ -58,6 +58,10 @@ final class AppModel {
         guard !started else { return }
         started = true
         await restoreSettings()
+        if let cached = await Task.detached(priority: .utility) { OverviewCacheStore.load() }.value {
+            overview = cached
+            await recomputeForecastFromOverview()
+        }
         await load()
         startAutoRefresh()
     }
@@ -145,6 +149,10 @@ final class AppModel {
         let xuiFresh = !snapshot.xuiReady || overview.xui?.error == nil
         if (snapshot.bwhReady || snapshot.xuiReady), bwhFresh, xuiFresh {
             overview.fetchedAt = Date().timeIntervalSince1970
+            let toCache = overview
+            Task.detached(priority: .utility) {
+                _ = OverviewCacheStore.save(toCache)
+            }
         }
         if settingsRestored {
             await coordinateServerResetSync()
@@ -164,6 +172,21 @@ final class AppModel {
             overview.xui?.error = XUIError.safeMessage(error)
             xuiNeedsSettings = XUIError.needsSettings(error)
         }
+    }
+
+    private func recomputeForecastFromOverview() async {
+        guard let bwh = overview.bwh, let history = overview.bwhHistory else {
+            forecast = nil
+            return
+        }
+        forecast = await Task.detached(priority: .utility) {
+            TrafficForecast.make(
+                points: history,
+                usedBytes: bwh.usedBytes,
+                quotaBytes: bwh.quotaBytes,
+                resetAt: bwh.resetAt
+            )
+        }.value
     }
 
     private func refreshBWH(_ snapshot: AppSettings) async {
