@@ -125,6 +125,7 @@ Bandwagon/
 
 | 文件 | 用途 |
 | --- | --- |
+| `xcode-env.sh` | 各构建脚本共用：解析 `DEVELOPER_DIR`（环境变量、`xcode-select`、默认 Xcode.app）并导出 macOS SDK |
 | `make-icon.sh` | 由 `packaging/MakeIcon.swift` 重新生成全部图标尺寸 |
 | `package-app.sh` | 构建 release、组装 `.app`、生成图标、签名、装到 `~/Desktop`。构建前会先校验辅助程序 |
 | `test.sh` | 离线回归套件，逐个编译运行 `Tests/` 下的用例，最后跑凭据辅助程序验证 |

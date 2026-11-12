@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+# shellcheck source=xcode-env.sh
+source "$ROOT/scripts/xcode-env.sh"
+xcode_env
 INSTALL_DIR="$HOME/Library/Application Support/Bandwagon"
 INSTALLED="$INSTALL_DIR/BandwagonCredentialBridge"
 OUT="$(mktemp -d)"
