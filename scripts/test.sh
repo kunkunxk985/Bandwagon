@@ -46,12 +46,6 @@ python3 Tests/http_fixture.py "$OUT/http"
 "$OUT/forecast-regression"
 
 "$SWIFTC" "${ARGS[@]}" -parse-as-library \
-  Sources/Bandwagon/Services/*.swift \
-  Sources/Bandwagon/Models/*.swift \
-  Tests/SettingsMigrationRegression.swift -o "$OUT/settings-migration-regression"
-"$OUT/settings-migration-regression"
-
-"$SWIFTC" "${ARGS[@]}" -parse-as-library \
   Sources/Bandwagon/Services/ProxyDiagnosis.swift \
   Sources/Bandwagon/Services/BWHClient.swift \
   Sources/Bandwagon/Services/JSONValue.swift \

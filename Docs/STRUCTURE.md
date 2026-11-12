@@ -174,6 +174,6 @@ v2 的 `/panel/api/inbounds/updateClient`、`resetClientTraffic` 和 `/panel/set
 - **失败呈现逻辑抄了三份**：`OverviewView` 与 `ClientsView` 各有 4 个逐字相同的函数，`VPSView` 内联了同一套判断，而且三页对同一个失败的中文措辞还不一致。已收敛到 `ServiceFailure`，三页共用。
 - **死代码**：`SettingsPayload`、`SettingsSaveResponse`、`refreshInterval`、`ColorToken`、`ClientState.color`、`overview.demo` 已删。
 - **图标不可再生**：曾同时被 `.gitignore` 排除且生成脚本已删。已去掉排除项并纳入版本控制；2026-10-18 换成新图标时补上了生成源 `packaging/MakeIcon.swift` 与 `scripts/make-icon.sh`，现在可以随时重新生成。
-- **目录整理**（2026-10-18）：Python 时代为并存而加的 `swift/` 一层已去掉，工程提到仓库根目录；`packaging/macos/` 压成 `packaging/`；根目录的设计文档并入 `Docs/DESIGN.md` 并改写成 macOS 的说法；删掉了已经跑不起来的手动排查脚本（`DevTools/`、`Tests/LiveFetch.swift`，它们在签名应用之外读不到钥匙串里的凭据）、v2 时代的排查记录，以及一批没人用的代码；设置文件从旧名字 `WagongDeck/` 迁到 `Bandwagon/`。
+- **目录整理**（2026-10-18）：Python 时代为并存而加的 `swift/` 一层已去掉，工程提到仓库根目录；`packaging/macos/` 压成 `packaging/`；根目录的设计文档并入 `Docs/DESIGN.md` 并改写成 macOS 的说法；删掉了已经跑不起来的手动排查脚本（`DevTools/`、`Tests/LiveFetch.swift`，它们在签名应用之外读不到钥匙串里的凭据）、v2 时代的排查记录，以及一批没人用的代码；设置文件统一到 `Bandwagon/`。
 
 

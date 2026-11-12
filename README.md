@@ -39,8 +39,6 @@ open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.ap
 | 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/Bandwagon/settings.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
 
-旧版本把设置放在 `~/Library/Application Support/WagongDeck/`，启动时会自动搬过来。
-
 ## 目录结构
 
 ```

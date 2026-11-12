@@ -58,39 +58,7 @@ enum SettingsStore {
         supportDirectory.appendingPathComponent("Bandwagon/settings.json")
     }
 
-    /// Where builds before the rename kept it.
-    private static var legacyFileURL: URL {
-        supportDirectory.appendingPathComponent("WagongDeck/settings.json")
-    }
-
-    /// Moves settings out of the pre-rename folder, once: only when the new file
-    /// does not exist yet and the old one does. The old folder is removed if the
-    /// move leaves it empty. Returns whether anything moved.
-    @discardableResult
-    static func migrateLegacyFile(from legacy: URL, to current: URL, fileManager: FileManager = .default) -> Bool {
-        guard !fileManager.fileExists(atPath: current.path),
-              fileManager.fileExists(atPath: legacy.path) else { return false }
-        do {
-            try fileManager.createDirectory(
-                at: current.deletingLastPathComponent(),
-                withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o700]
-            )
-            try fileManager.moveItem(at: legacy, to: current)
-            try fileManager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: current.path)
-        } catch {
-            return false
-        }
-        let oldFolder = legacy.deletingLastPathComponent()
-        if let remaining = try? fileManager.contentsOfDirectory(atPath: oldFolder.path),
-           remaining.allSatisfy({ $0 == ".DS_Store" }) {
-            try? fileManager.removeItem(at: oldFolder)
-        }
-        return true
-    }
-
     static func load() -> AppSettings {
-        migrateLegacyFile(from: legacyFileURL, to: fileURL)
         var settings = AppSettings()
         var object = loadObject()
         // Drop retired keys once, touching nothing else in the file.
@@ -154,9 +122,7 @@ enum SettingsStore {
     }
 
     private static func loadObject() -> [String: Any] {
-        // If the one-time move failed, the old file is still the truth.
-        let source = FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : legacyFileURL
-        if let data = try? Data(contentsOf: source),
+        if let data = try? Data(contentsOf: fileURL),
            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            !object.isEmpty {
             UserDefaults.standard.set(object, forKey: backupDefaultsKey)
