@@ -205,9 +205,6 @@ private struct RefreshToolbar: ToolbarContent {
     let model: AppModel
 
     var body: some ToolbarContent {
-        if #available(macOS 26.0, *) {
-            ToolbarSpacer(.flexible)
-        }
         ToolbarItem(placement: .automatic) {
             // The glass capsule the system draws around a toolbar item is sized to its
             // content, so the breathing room has to come from padding in here — there
