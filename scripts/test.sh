@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.."
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-export PATH="$DEVELOPER_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH"
-export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
+# shellcheck source=xcode-env.sh
+source "$ROOT_DIR/scripts/xcode-env.sh"
+xcode_env
 SWIFTC="$(xcrun --find swiftc)"
-[[ -d "$SDKROOT" ]] || { printf 'Active Xcode macOS SDK missing\n' >&2; exit 1; }
 OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT
 ARGS=(-swift-version 6 -sdk "$SDKROOT" -target arm64-apple-macosx15.0)

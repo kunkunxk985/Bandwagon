@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
-export PATH="$DEVELOPER_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH"
-export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
-[[ -d "$SDKROOT" ]] || { printf 'Active Xcode macOS SDK missing\n' >&2; exit 1; }
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=xcode-env.sh
+source "$ROOT_DIR/scripts/xcode-env.sh"
+xcode_env
+ROOT="$ROOT_DIR"
 APP="$HOME/Desktop/Bandwagon.app"
 ICONSET="$ROOT/packaging/icon.iconset"
 PACKAGING_DIR="$ROOT/.build/packaging"

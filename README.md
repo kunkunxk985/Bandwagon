@@ -16,7 +16,7 @@ macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超
 open ~/Desktop/Bandwagon.app
 ```
 
-需要 Xcode（脚本显式使用 `/Applications/Xcode.app` 的工具链和 macOS SDK，不用 CLT SDK）。
+需要完整 Xcode 的 macOS SDK（脚本通过 `xcode-select` 或环境变量 `DEVELOPER_DIR` 解析工具链，默认再尝试 `/Applications/Xcode.app`）。仅 Command Line Tools 的 SDK 往往过旧，打包出的系统控件样式可能不对。
 
 ```bash
 ./scripts/test.sh           # 离线回归测试
