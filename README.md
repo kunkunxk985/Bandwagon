@@ -11,7 +11,7 @@ macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超
 
 ## 下载（免本地编译）
 
-在 [GitHub Releases](https://github.com/kunkunxk985/Bandwagon/releases) 取最新的 `Bandwagon-*-macOS.zip`，解压后把 `Bandwagon.app` 放进「应用程序」。首次若被拦截，请右键 **打开**。安装包为 CI 临时签名，未经 Apple 公证。
+在 [GitHub Releases](https://github.com/kunkunxk985/Bandwagon/releases) 下载最新的 `Bandwagon-*-macOS.dmg`（或 zip）。打开 DMG 后把应用拖进「应用程序」。首次若被拦截，请右键 **打开**。安装包为 CI 临时签名，未经 Apple 公证。
 
 ## 构建与运行
 

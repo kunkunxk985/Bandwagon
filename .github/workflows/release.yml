@@ -30,16 +30,19 @@ jobs:
           ./scripts/package-app.sh
           codesign --verify --deep --strict "$BANDWAGON_APP_OUTPUT"
 
-      - name: Create zip
-        id: zip
+      - name: Create zip and DMG
+        id: artifacts
         env:
           BANDWAGON_APP_OUTPUT: ${{ runner.temp }}/Bandwagon/Bandwagon.app
         run: |
           VERSION="${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}"
           VERSION="${VERSION#v}"
           ZIP="${{ runner.temp }}/Bandwagon-${VERSION}-macOS.zip"
+          DMG="${{ runner.temp }}/Bandwagon-${VERSION}-macOS.dmg"
           ditto -c -k --keepParent "$BANDWAGON_APP_OUTPUT" "$ZIP"
-          echo "path=$ZIP" >> "$GITHUB_OUTPUT"
+          bash ./scripts/package-dmg.sh "$BANDWAGON_APP_OUTPUT" "$DMG"
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "dmg=$DMG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub Release
@@ -48,11 +51,12 @@ jobs:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
           name: Bandwagon ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
           generate_release_notes: true
-          files: ${{ steps.zip.outputs.path }}
+          files: |
+            ${{ steps.artifacts.outputs.zip }}
+            ${{ steps.artifacts.outputs.dmg }}
           body: |
             macOS 15+，Apple Silicon（`arm64`）构建。
 
-            1. 下载 `Bandwagon-*-macOS.zip` 并解压。
-            2. 将 `Bandwagon.app` 拖入「应用程序」。
-            3. 首次打开若被拦截：右键应用 → **打开**（本包使用临时签名，未经公证）。
-            4. 首次运行后在设置里填写 VEID、API Key 与 3X-UI 信息；凭据会写入本机钥匙串。
+            **推荐**：下载 `Bandwagon-*-macOS.dmg`，打开后把 Bandwagon 拖到「应用程序」文件夹。
+
+            也可使用 zip 解压后手动安装。首次若被拦截：右键应用 → **打开**（临时签名，未经公证）。首次运行后在设置里填写 VEID、API Key 与 3X-UI 信息。
