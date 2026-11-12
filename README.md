@@ -1,4 +1,4 @@
-# Bandwagon 瓦工台
+# Bandwagon
 
 macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超额、VPS 是否健康、哪个 3X-UI 客户端需要处理**。
 
