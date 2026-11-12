@@ -26,16 +26,24 @@ struct OverviewView: View {
                 }
                 .padding(.horizontal, Theme.pagePadding)
                 .padding(.bottom, Theme.pagePadding)
-                .modifier(CenterWhenShort(enabled: !hasAnyData, reserving: Theme.pageHeaderHeight))
+                .modifier(CenterWhenShort(enabled: !pageHasSubstance, reserving: Theme.pageHeaderHeight))
             }
         }
         .navigationTitle("总览")
     }
 
-    /// True once either service has reported something, even stale data. Until then
-    /// the page is nothing but state cards, which belong centred rather than scrolled.
-    private var hasAnyData: Bool {
-        model.overview.bwh != nil || model.overview.xui != nil
+    /// True once the page has real data or an in-layout loading skeleton — not a lone
+    /// centred status card.
+    private var pageHasSubstance: Bool {
+        if showsBandwagonSkeleton { return true }
+        return model.overview.bwh != nil || model.overview.xui != nil
+    }
+
+    private var showsBandwagonSkeleton: Bool {
+        model.settings.bwhReady &&
+        model.bwhLoading &&
+        model.overview.bwh?.usedBytes == nil &&
+        model.overview.bwh?.error == nil
     }
 
     // MARK: - 页头
@@ -100,6 +108,8 @@ struct OverviewView: View {
                 action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                 actionTitle: failure.actionTitle
             )
+        } else if showsBandwagonSkeleton {
+            OverviewLoadingSkeleton()
         } else {
             StatusCard(
                 title: "正在读取 Bandwagon",
@@ -158,13 +168,6 @@ struct OverviewView: View {
                 tint: Theme.warning,
                 action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
                 actionTitle: failure.actionTitle
-            )
-        } else if xui == nil && !bwhHeroVisible && model.xuiLoading {
-            StatusCard(
-                title: "正在连接 3X-UI",
-                message: "正在读取客户端与在线状态…",
-                icon: "antenna.radiowaves.left.and.right",
-                tint: .secondary
             )
         }
     }

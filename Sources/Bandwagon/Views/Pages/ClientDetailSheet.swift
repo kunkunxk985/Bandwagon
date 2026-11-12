@@ -176,13 +176,7 @@ struct ClientDetailSheet: View {
             sectionTitle("订阅")
             switch link {
             case .loading:
-                HStack(spacing: 8) {
-                    ProgressView().controlSize(.small)
-                    Text("正在读取面板的订阅设置…")
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(height: 40)
+                SubscriptionLinkSkeleton()
             case .unavailable(let reason):
                 Text(reason)
                     .font(.system(size: 12.5))

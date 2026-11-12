@@ -14,9 +14,9 @@ set -euo pipefail
 #   build-credential-bridge.sh v2 --update-pin    同时改写三处摘要锁定
 #
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
-[[ -d "$SDKROOT" ]] || { printf 'Active Xcode macOS SDK missing\n' >&2; exit 1; }
+# shellcheck source=xcode-env.sh
+source "$ROOT/scripts/xcode-env.sh"
+xcode_env
 
 SIGNER="${BANDWAGON_SIGNING_IDENTITY:-Bandwagon Local Code Signing}"
 IDENTIFIER="com.kun.bandwagon.credential-bridge"

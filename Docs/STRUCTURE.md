@@ -37,6 +37,7 @@ Bandwagon/
 | 文件 | 职责 |
 | --- | --- |
 | `AppModel.swift` | `@Observable` 全局状态。后台加载设置、并发拉取两个数据源、保留上次成功数据、按间隔轮询、保存设置 |
+| `OverviewCacheStore.swift` | 上次成功的 `OverviewResponse` 写入 `Application Support/Bandwagon/cache.json`；启动时先读入再后台刷新 |
 | `BWHClient.swift` | 搬瓦工 KiwiVM API（套餐、用量、重置日、流量历史） |
 | `XUIClient.swift` | 3X-UI 面板客户端。Cookie 会话、CSRF、表单登录、2FA、API Token；读取客户端列表；写操作（启用/停用、改配额与到期、重置流量）与订阅地址。写操作按 **3X-UI v3** 的 `/panel/api/clients/*` 接口实现，见下方「3X-UI 写操作」 |
 | `XUIError.swift` | 把底层错误翻译成不含敏感信息的用户可读文案，并标记是否需要改设置 |
@@ -86,6 +87,7 @@ Bandwagon/
 | 文件 | 职责 |
 | --- | --- |
 | `Theme.swift` | 设计令牌（颜色含深浅两套值、圆角、间距、字号）与基础构件：`Panel`、`PanelHeader`、`PanelLink`、`PageHeader`、`BrandMark`（应用标志）、`RingMeter`、`UsageHero`、`StatDivider` |
+| `LoadingSkeleton.swift` | 加载占位：与真页同形的灰块骨架（用量环、客户端表、VPS 规格、订阅区），轻 pulse，遵守 Reduce Motion |
 | `ModelPresentation.swift` | 模型类型的展示规则：健康色/文案、预测结论色/图标、`ClientState` 配色，以及 `ServiceFailure`（三页共用的失败呈现与恢复动作） |
 
 **视觉语言**（2026-10-16 起）：精致数据面板。中性画布 + 白色面板，只用 1px 细边框区分层级，不用毛玻璃、渐变和阴影；层级靠字号与字重（大号等宽数字 + 小号次要标签）；每页有页内大标题，工具栏只留更新时间与刷新；状态用圆点 + 文字，不用彩色胶囊。新增 UI 一律从 `Theme` 取色与尺寸，不在页面里写死颜色。
@@ -123,6 +125,7 @@ Bandwagon/
 
 | 文件 | 用途 |
 | --- | --- |
+| `xcode-env.sh` | 各构建脚本共用：解析 `DEVELOPER_DIR`（环境变量、`xcode-select`、默认 Xcode.app）并导出 macOS SDK |
 | `make-icon.sh` | 由 `packaging/MakeIcon.swift` 重新生成全部图标尺寸 |
 | `package-app.sh` | 构建 release、组装 `.app`、生成图标、签名、装到 `~/Desktop`。构建前会先校验辅助程序 |
 | `test.sh` | 离线回归套件，逐个编译运行 `Tests/` 下的用例，最后跑凭据辅助程序验证 |
