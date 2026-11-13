@@ -21,6 +21,10 @@ struct SettingsView: View {
         !draft.bwhVeid.isEmpty && draft.bwhApiKey.isEmpty
     }
 
+    private var xuiNeedsCredentialsHint: Bool {
+        !draft.xuiBaseUrl.isEmpty && (draft.xuiUsername.isEmpty || draft.xuiPassword.isEmpty)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
@@ -73,8 +77,16 @@ struct SettingsView: View {
                             secret("密码", text: $draft.xuiPassword)
                         }
 
-                        secret("API Token", text: $draft.xuiApiToken)
-                        secret("当前双重验证码（如启用）", text: $draft.xuiTwoFactor)
+                        Text("使用面板 Web 登录的用户名与密码；不在此填写 API Token 或双重验证码。")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if xuiNeedsCredentialsHint {
+                            Text("填写用户名与密码后点保存")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                        }
                         if isDirty {
                             sectionSaveButton
                         }
@@ -203,6 +215,8 @@ struct SettingsView: View {
         guard !saving else { return }
         saving = true
         Task {
+            draft.xuiApiToken = ""
+            draft.xuiTwoFactor = ""
             let didSave = await model.saveSettings(draft)
             saving = false
             saveFailed = !didSave

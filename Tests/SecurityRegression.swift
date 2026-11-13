@@ -92,8 +92,12 @@ struct SecurityRegression {
             settings.contains("if !settings.xuiTwoFactor.isEmpty") &&
             settings.contains("object.removeValue(forKey: \"XUI_TWO_FACTOR\")") &&
             settings.contains("for key in secretKeys") &&
-            appModel.contains("settings.xuiTwoFactor = \"\""),
-            "one-time 2FA codes must not be reloaded from disk or reused after a refresh attempt"
+            appModel.contains("settings.xuiTwoFactor = \"\"") &&
+            !settingsView.contains("API Token") &&
+            !settingsView.contains("双重验证") &&
+            settings.contains("var xuiReady: Bool { !xuiBaseUrl.isEmpty && !xuiUsername.isEmpty && !xuiPassword.isEmpty }") &&
+            settingsView.contains("draft.xuiApiToken = \"\""),
+            "one-time 2FA codes must not be reloaded from disk or reused after a refresh attempt; 3X-UI settings UI is panel login only"
         )
 
         require(
