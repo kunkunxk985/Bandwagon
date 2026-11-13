@@ -38,8 +38,9 @@ struct UICompositionRegression {
             settings.contains("field(\"面板地址\"") &&
             settings.contains("credential(\"用户名\"") &&
             settings.contains("secret(\"密码\"") &&
-            !settings.contains("API Token") &&
-            !settings.contains("双重验证"),
+            !settings.contains("$draft.xuiApiToken") &&
+            !settings.contains("$draft.xuiTwoFactor") &&
+            settings.contains("不在此填写 API Token"),
             "Settings must expose exactly two independent sibling sections"
         )
         require(
