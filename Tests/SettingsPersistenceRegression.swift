@@ -37,8 +37,11 @@ struct SettingsPersistenceRegression {
         )
         require(
             settings.contains("SettingsLoadResult") &&
-            settings.contains("credentialAccessWarning"),
-            "settings load must surface credential-bridge failures without clearing non-secret prefs"
+            settings.contains("credentialAccessWarning") &&
+            settings.contains("jsonSecretsEmpty") &&
+            settings.contains("persistenceObject") &&
+            settings.contains("object[\"BWH_API_KEY\"] = settings.bwhApiKey"),
+            "settings load must prefer settings.json secrets and surface keychain gaps without blocking saves"
         )
 
         pass("settings persistence paths and helper upgrade policy")

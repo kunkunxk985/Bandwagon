@@ -81,6 +81,18 @@ enum SettingsStore {
         if !bwhBase.isEmpty { settings.bwhApiBase = bwhBase }
         settings.xuiBaseUrl = JSONValue.string(object["XUI_BASE_URL"])
 
+        settings.bwhApiKey = JSONValue.string(object["BWH_API_KEY"])
+        settings.xuiApiToken = JSONValue.string(object["XUI_API_TOKEN"])
+        settings.xuiUsername = JSONValue.string(object["XUI_USERNAME"])
+        settings.xuiPassword = JSONValue.string(object["XUI_PASSWORD"])
+
+        var strippedEphemeralSecrets = false
+        for key in secretKeys where key == "XUI_TWO_FACTOR" || key == "XUI_VERIFY_SSL" {
+            if object.removeValue(forKey: key) != nil {
+                strippedEphemeralSecrets = true
+            }
+        }
+
         // A stored 0 means "polling off", so presence of the key is what matters —
         // reading it as a plain Int would silently restore the default interval.
         if let stored = object["REFRESH_SECONDS"] {
@@ -101,27 +113,29 @@ enum SettingsStore {
 
         var credentialAccessWarning: String?
         let credentialLoad = KeychainCredentialStore.load()
-        if let credentials = credentialLoad.credentials {
+        if jsonSecretsEmpty(settings), let credentials = credentialLoad.credentials {
             credentials.apply(to: &settings)
-        } else {
-            settings.bwhApiKey = JSONValue.string(object["BWH_API_KEY"])
-            settings.xuiApiToken = JSONValue.string(object["XUI_API_TOKEN"])
-            settings.xuiUsername = JSONValue.string(object["XUI_USERNAME"])
-            settings.xuiPassword = JSONValue.string(object["XUI_PASSWORD"])
+            _ = writeObject(persistenceObject(for: settings, merging: object))
+        } else if jsonSecretsEmpty(settings),
+                  let warning = credentialLoad.warning,
+                  settingsLookPreviouslyConfigured(settings, object: object) {
+            credentialAccessWarning = warning
+        }
 
-            let hasLegacyCredentials = !settings.bwhApiKey.isEmpty ||
-                !settings.xuiApiToken.isEmpty ||
-                !settings.xuiUsername.isEmpty ||
-                !settings.xuiPassword.isEmpty
-            if hasLegacyCredentials, KeychainCredentialStore.save(settings) {
-                _ = writeObject(nonSecretObject(for: settings, merging: object))
-            } else if let warning = credentialLoad.warning,
-                      settingsLookPreviouslyConfigured(settings, object: object) {
-                credentialAccessWarning = warning
-            }
+        if strippedEphemeralSecrets, !jsonSecretsEmpty(settings) {
+            _ = writeObject(persistenceObject(for: settings, merging: object))
+        } else if strippedEphemeralSecrets {
+            _ = writeObject(object)
         }
 
         return SettingsLoadResult(settings: settings, credentialAccessWarning: credentialAccessWarning)
+    }
+
+    private static func jsonSecretsEmpty(_ settings: AppSettings) -> Bool {
+        settings.bwhApiKey.isEmpty &&
+            settings.xuiApiToken.isEmpty &&
+            settings.xuiUsername.isEmpty &&
+            settings.xuiPassword.isEmpty
     }
 
     private static func settingsLookPreviouslyConfigured(_ settings: AppSettings, object: [String: Any]) -> Bool {
@@ -133,13 +147,14 @@ enum SettingsStore {
 
     @discardableResult
     static func save(_ settings: AppSettings) -> Bool {
-        guard KeychainCredentialStore.save(settings) else { return false }
-        return writeObject(nonSecretObject(for: settings, merging: loadObject()))
+        guard writeObject(persistenceObject(for: settings, merging: loadObject())) else { return false }
+        _ = KeychainCredentialStore.save(settings)
+        return true
     }
 
     @discardableResult
     static func savePreferences(_ settings: AppSettings) -> Bool {
-        writeObject(nonSecretObject(for: settings, merging: loadObject()))
+        writeObject(persistenceObject(for: settings, merging: loadObject()))
     }
 
     private static func loadObject() -> [String: Any] {
@@ -156,20 +171,29 @@ enum SettingsStore {
         return [:]
     }
 
-    private static func nonSecretObject(
+    private static func persistenceObject(
         for settings: AppSettings,
         merging existing: [String: Any]
     ) -> [String: Any] {
         var object = existing
         object["BWH_VEID"] = settings.bwhVeid
         object["BWH_API_BASE"] = settings.bwhApiBase
+        object["BWH_API_KEY"] = settings.bwhApiKey
         object["XUI_BASE_URL"] = settings.xuiBaseUrl
+        object["XUI_API_TOKEN"] = settings.xuiApiToken
+        object["XUI_USERNAME"] = settings.xuiUsername
+        object["XUI_PASSWORD"] = settings.xuiPassword
         object["REFRESH_SECONDS"] = settings.refreshSeconds
         object["SYNC_CLIENT_RESET_WITH_SERVER"] = settings.syncClientResetWithServer
         object["PENDING_SERVER_RESET_AT"] = settings.pendingServerResetAt
         object["LAST_EXECUTED_SERVER_RESET_AT"] = settings.lastExecutedServerResetAt
         object["NORMALIZED_XUI_RESET_POLICY_AT"] = settings.normalizedXuiResetPolicyAt
-        for key in secretKeys + retiredKeys {
+        if !settings.xuiTwoFactor.isEmpty {
+            object["XUI_TWO_FACTOR"] = settings.xuiTwoFactor
+        } else {
+            object.removeValue(forKey: "XUI_TWO_FACTOR")
+        }
+        for key in retiredKeys + ["XUI_VERIFY_SSL"] {
             object.removeValue(forKey: key)
         }
         return object

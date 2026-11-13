@@ -41,8 +41,8 @@ open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.ap
 
 | 内容 | 位置 |
 | --- | --- |
-| 凭据（API Key、面板账号密码） | 登录钥匙串，经独立的凭据辅助程序读写 |
-| 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/Bandwagon/settings.json` |
+| 设置与凭据（VEID、API Key、面板地址与账号等） | `~/Library/Application Support/Bandwagon/settings.json`（目录 700、文件 600） |
+| 钥匙串（可选副本） | 登录钥匙串，经独立的凭据辅助程序尽力同步 |
 | 上次成功数据快照 | `~/Library/Application Support/Bandwagon/cache.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
 
