@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var bwhOpen = false
     @State private var xuiOpen = false
+    @State private var advancedOpen = false
     @State private var draft = AppSettings()
     @State private var saved = false
     @State private var saveFailed = false
@@ -17,19 +18,11 @@ struct SettingsView: View {
 
     private var isDirty: Bool { draft != model.settings }
 
-    private var bwhNeedsApiKeyHint: Bool {
-        !draft.bwhVeid.isEmpty && draft.bwhApiKey.isEmpty
-    }
-
-    private var xuiNeedsCredentialsHint: Bool {
-        !draft.xuiBaseUrl.isEmpty && (draft.xuiUsername.isEmpty || draft.xuiPassword.isEmpty)
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    PageHeader(title: "设置", subtitle: "连接两个数据源。凭据与设置一并写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）；钥匙串写入为尽力而为。")
+                    PageHeader(title: "设置", subtitle: "日常维护连接与偏好。凭据写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）。")
                         .padding(.bottom, 6)
 
                     if let error = model.error {
@@ -44,22 +37,18 @@ struct SettingsView: View {
                         unsavedChangesBanner
                     }
 
+                    blockHeading("连接")
+
                     settingsSection("Bandwagon",
                         icon: "server.rack",
                         isOpen: $bwhOpen,
                         configured: draft.bwhReady
                     ) {
-                        field("VEID", text: $draft.bwhVeid)
-                        secret("API Key", text: $draft.bwhApiKey)
-                        field("API 地址", text: $draft.bwhApiBase)
-                        if bwhNeedsApiKeyHint {
-                            Text("填写 API Key 后点保存")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
-                        if isDirty {
-                            sectionSaveButton
-                        }
+                        ConnectionFields.bandwagon(
+                            draft: $draft,
+                            showApiKeyHint: true,
+                            inlineSave: nil
+                        )
                     }
 
                     settingsSection("3X-UI",
@@ -67,34 +56,30 @@ struct SettingsView: View {
                         isOpen: $xuiOpen,
                         configured: draft.xuiReady
                     ) {
-                        field("面板地址", text: $draft.xuiBaseUrl)
-
-                        LazyVGrid(
-                            columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())],
-                            spacing: 12
-                        ) {
-                            credential("用户名", text: $draft.xuiUsername)
-                            secret("密码", text: $draft.xuiPassword)
-                        }
-
-                        Text("使用面板 Web 登录的用户名与密码；不在此填写 API Token 或双重验证码。")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        if xuiNeedsCredentialsHint {
-                            Text("填写用户名与密码后点保存")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
-                        if isDirty {
-                            sectionSaveButton
-                        }
+                        ConnectionFields.xui(
+                            draft: $draft,
+                            showCredentialHint: true,
+                            inlineSave: nil
+                        )
                     }
+
+                    blockHeading("偏好")
 
                     refreshCard
                     menuBarCard
-                    softwareUpdateCard
+
+                    settingsSection("高级",
+                        icon: "slider.horizontal.3",
+                        isOpen: $advancedOpen,
+                        configured: true,
+                        hideStatusPill: true
+                    ) {
+                        trafficResetSyncRow
+                        CardDivider()
+                            .padding(.vertical, 4)
+                        softwareUpdateCard
+                        openConfigFolderRow
+                    }
                 }
                 .padding(.horizontal, Theme.pagePadding)
                 .padding(.top, 4)
@@ -111,6 +96,15 @@ struct SettingsView: View {
             guard !isDirty else { return }
             draft = latest
         }
+    }
+
+    private func blockHeading(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .textCase(.none)
+            .padding(.top, 6)
+            .padding(.leading, 2)
     }
 
     private var unsavedChangesBanner: some View {
@@ -131,24 +125,6 @@ struct SettingsView: View {
                 .strokeBorder(Theme.accent.opacity(0.28), lineWidth: 1)
         )
         .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
-    }
-
-    private var sectionSaveButton: some View {
-        Button(action: performSave) {
-            HStack(spacing: 8) {
-                if saving {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Text(saving ? "连接中…" : "保存并连接")
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(Theme.accent)
-        .controlSize(.large)
-        .disabled(saving)
-        .padding(.top, 4)
     }
 
     private var saveBar: some View {
@@ -201,7 +177,7 @@ struct SettingsView: View {
                     ProgressView()
                         .controlSize(.small)
                 }
-                Text(saving ? "连接中…" : "保存并刷新")
+                Text(saving ? "连接中…" : "保存并连接")
             }
         }
         .buttonStyle(.borderedProminent)
@@ -236,6 +212,7 @@ struct SettingsView: View {
         icon: String,
         isOpen: Binding<Bool>,
         configured: Bool,
+        hideStatusPill: Bool = false,
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -253,10 +230,12 @@ struct SettingsView: View {
 
                     Spacer()
 
-                    StatusPill(
-                        title: configured ? "已配置" : "未配置",
-                        tint: configured ? Theme.success : .secondary
-                    )
+                    if !hideStatusPill {
+                        StatusPill(
+                            title: configured ? "已配置" : "未配置",
+                            tint: configured ? Theme.success : .secondary
+                        )
+                    }
 
                     Image(systemName: "chevron.down")
                         .font(.system(size: 11, weight: .semibold))
@@ -282,8 +261,6 @@ struct SettingsView: View {
         .panelSurface()
     }
 
-    /// App-wide preference, deliberately not a third collapsible credentials
-    /// section — the two sections above are about connecting, this is about cadence.
     private var refreshCard: some View {
         HStack(spacing: 12) {
             SettingsIcon(systemName: "arrow.triangle.2.circlepath")
@@ -310,8 +287,6 @@ struct SettingsView: View {
         .panelSurface()
     }
 
-    /// Takes effect at once rather than on save: it is about this Mac, not about
-    /// the connections the save button commits.
     private var menuBarCard: some View {
         HStack(spacing: 12) {
             SettingsIcon(systemName: "menubar.rectangle")
@@ -332,6 +307,54 @@ struct SettingsView: View {
         }
         .padding(18)
         .panelSurface()
+    }
+
+    private var trafficResetSyncRow: some View {
+        HStack(spacing: 12) {
+            SettingsIcon(systemName: "clock.arrow.2.circlepath")
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("流量重置与服务器同步")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("在搬瓦工流量周期重置时，自动清零所有 3X-UI 客户端用量，并将面板内置重置设为「从不」。")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 12)
+
+            Toggle("流量重置与服务器同步", isOn: $draft.syncClientResetWithServer)
+                .labelsHidden()
+                .toggleStyle(.switch)
+        }
+    }
+
+    private var openConfigFolderRow: some View {
+        Button {
+            NSWorkspace.shared.open(SettingsStore.configDirectoryURL)
+        } label: {
+            HStack(spacing: 12) {
+                SettingsIcon(systemName: "folder")
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("打开配置文件夹")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.primary)
+                    Text("~/Library/Application Support/Bandwagon/")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.up.forward")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var softwareUpdateCard: some View {
@@ -386,8 +409,6 @@ struct SettingsView: View {
                 fallbackUpdateActions
             }
         }
-        .padding(18)
-        .panelSurface()
     }
 
     @ViewBuilder
@@ -507,37 +528,6 @@ struct SettingsView: View {
         }
         .padding(14)
         .background(Theme.warning.opacity(0.09), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
-    }
-
-    private func field(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-            TextField(title, text: text)
-                .textFieldStyle(.roundedBorder)
-                .frame(minHeight: 34)
-        }
-    }
-
-    private func credential(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-            RomanCredentialField(title, text: text)
-                .frame(minHeight: 34)
-        }
-    }
-
-    private func secret(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-            RomanCredentialField(title, text: text, isSecure: true)
-                .frame(minHeight: 34)
-        }
     }
 }
 

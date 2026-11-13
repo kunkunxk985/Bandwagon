@@ -7,6 +7,7 @@ struct SecurityRegression {
         let client = try source("Sources/Bandwagon/Services/XUIClient.swift")
         let settings = try source("Sources/Bandwagon/Services/SettingsStore.swift")
         let settingsView = try source("Sources/Bandwagon/Views/Pages/SettingsView.swift")
+        let connectionFields = try source("Sources/Bandwagon/Views/Pages/ConnectionFields.swift")
         let appModel = try source("Sources/Bandwagon/Services/AppModel.swift")
         let app = try source("Sources/Bandwagon/BandwagonApp.swift")
         let packageScript = try source("scripts/package-app.sh")
@@ -95,7 +96,9 @@ struct SecurityRegression {
             appModel.contains("settings.xuiTwoFactor = \"\"") &&
             !settingsView.contains("$draft.xuiApiToken") &&
             !settingsView.contains("$draft.xuiTwoFactor") &&
-            settingsView.contains("不在此填写 API Token") &&
+            !connectionFields.contains("$draft.xuiApiToken") &&
+            !connectionFields.contains("$draft.xuiTwoFactor") &&
+            connectionFields.contains("不在此填写 API Token") &&
             settings.contains("var xuiReady: Bool { !xuiBaseUrl.isEmpty && !xuiUsername.isEmpty && !xuiPassword.isEmpty }") &&
             settingsView.contains("draft.xuiApiToken = \"\""),
             "one-time 2FA codes must not be reloaded from disk or reused after a refresh attempt; 3X-UI settings UI is panel login only"
@@ -110,11 +113,12 @@ struct SecurityRegression {
             "Settings UI must not report success when secure persistence fails"
         )
 
+        let appRoot = try source("Sources/Bandwagon/Views/Shell/AppRootView.swift")
         require(
             appModel.contains("var settings = AppSettings()") &&
             appModel.contains("func restoreSettings() async") &&
             appModel.contains("Task.detached") &&
-            app.contains(".task { await model.start() }") &&
+            (appRoot.contains(".task { await model.start() }") || app.contains(".task { await model.start() }")) &&
             !app.contains("await model.restoreSettings()") &&
             appModel.contains("func start() async") &&
             (appModel.range(of: "await restoreSettings()")?.lowerBound ?? appModel.endIndex) <

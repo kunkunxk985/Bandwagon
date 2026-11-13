@@ -62,9 +62,21 @@ enum SettingsStore {
     }
 
     /// Lives beside the credential helper, in the app's own folder.
+    static var configDirectoryURL: URL {
+        supportDirectory.appendingPathComponent(applicationSupportBandwagon, isDirectory: true)
+    }
+
     private static var fileURL: URL {
-        supportDirectory
-            .appendingPathComponent("\(applicationSupportBandwagon)/\(settingsFileName)")
+        configDirectoryURL.appendingPathComponent(settingsFileName)
+    }
+
+    /// True when settings.json (or its backup) already names a connection, even if
+    /// secrets are still empty — used to skip first-launch wizard for upgraders.
+    static func hasPersistedConnectionHints() -> Bool {
+        let object = loadObject()
+        return !JSONValue.string(object["BWH_VEID"]).isEmpty ||
+            !JSONValue.string(object["XUI_BASE_URL"]).isEmpty ||
+            !JSONValue.string(object["BWH_API_KEY"]).isEmpty
     }
 
     static func load() -> SettingsLoadResult {
