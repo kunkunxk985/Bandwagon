@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -10,6 +11,18 @@ struct SettingsView: View {
     @State private var saveFailed = false
     @State private var saving = false
     @AppStorage(MenuBarPreference.key) private var showMenuBar = true
+    @State private var updatePhase: SoftwareUpdatePhase = .idle
+    @State private var pendingUpdate: ReleaseUpdateInfo?
+    @State private var downloadingUpdate = false
+
+    private enum SoftwareUpdatePhase: Equatable {
+        case idle
+        case checking
+        case upToDate
+        case updateAvailable
+        case githubFallback
+        case error(String)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -53,6 +66,7 @@ struct SettingsView: View {
 
                     refreshCard
                     menuBarCard
+                    softwareUpdateCard
                 }
                 .padding(.horizontal, Theme.pagePadding)
                 .padding(.top, 4)
@@ -220,6 +234,134 @@ struct SettingsView: View {
         }
         .padding(18)
         .panelSurface()
+    }
+
+    private var softwareUpdateCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                SettingsIcon(systemName: "arrow.down.circle")
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("软件更新")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("当前版本 \(ReleaseUpdateClient.installedVersion)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                    Text(updateStatusText)
+                        .font(.system(size: 12))
+                        .foregroundStyle(updateStatusColor)
+                }
+
+                Spacer(minLength: 12)
+
+                if updatePhase == .checking || downloadingUpdate {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Button("检查更新", action: checkForUpdate)
+                        .buttonStyle(.bordered)
+                        .disabled(downloadingUpdate)
+                }
+            }
+
+            if case .updateAvailable = updatePhase, let info = pendingUpdate {
+                HStack(spacing: 12) {
+                    Text("新版本 \(info.version)")
+                        .font(.system(size: 12, weight: .medium))
+                    Spacer()
+                    Button(downloadingUpdate ? "下载中…" : "下载更新包") {
+                        downloadUpdate(info)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Theme.accent)
+                    .disabled(downloadingUpdate)
+                }
+            }
+
+            if updatePhase == .githubFallback {
+                Button("在浏览器中打开 Releases") {
+                    NSWorkspace.shared.open(ReleaseUpdateClient.latestReleasePage)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(18)
+        .panelSurface()
+    }
+
+    private var updateStatusText: String {
+        switch updatePhase {
+        case .idle:
+            return "尚未检查 GitHub 上的最新发布。"
+        case .checking:
+            return "正在检查更新…"
+        case .upToDate:
+            return "已是最新版本。"
+        case .updateAvailable:
+            return "发现新版本，可下载安装包。"
+        case .githubFallback:
+            return "无法连接 GitHub，请浏览器打开 Releases"
+        case .error(let message):
+            return message
+        }
+    }
+
+    private var updateStatusColor: Color {
+        switch updatePhase {
+        case .upToDate:
+            return Theme.success
+        case .updateAvailable:
+            return Theme.accent
+        case .githubFallback, .error:
+            return Theme.warning
+        default:
+            return .secondary
+        }
+    }
+
+    private func checkForUpdate() {
+        guard updatePhase != .checking, !downloadingUpdate else { return }
+        updatePhase = .checking
+        pendingUpdate = nil
+        Task {
+            do {
+                let outcome = try await ReleaseUpdateClient.checkForUpdate()
+                switch outcome {
+                case .upToDate:
+                    updatePhase = .upToDate
+                case .updateAvailable(let info):
+                    pendingUpdate = info
+                    updatePhase = .updateAvailable
+                }
+            } catch let error as ReleaseUpdateError {
+                if case .githubUnavailable = error {
+                    updatePhase = .githubFallback
+                } else {
+                    updatePhase = .error(error.localizedDescription)
+                }
+            } catch {
+                updatePhase = .error(error.localizedDescription)
+            }
+        }
+    }
+
+    private func downloadUpdate(_ info: ReleaseUpdateInfo) {
+        guard !downloadingUpdate else { return }
+        downloadingUpdate = true
+        Task {
+            defer { downloadingUpdate = false }
+            do {
+                let fileURL = try await ReleaseUpdateClient.downloadRelease(
+                    dmgURL: info.dmgDownloadURL,
+                    version: info.version
+                )
+                NSWorkspace.shared.activateFileViewerSelecting([fileURL])
+                updatePhase = .upToDate
+                pendingUpdate = nil
+            } catch {
+                updatePhase = .error(error.localizedDescription)
+            }
+        }
     }
 
     private func refreshLabel(_ seconds: Int) -> String {
