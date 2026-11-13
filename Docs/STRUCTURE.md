@@ -44,7 +44,7 @@ Bandwagon/
 | `ProxyDiagnosis.swift` | 搬瓦工连不上时判断是不是本地代理 fake-ip（解析结果落在 `198.18.0.0/15`），是则给出明确提示。见 `Docs/TROUBLESHOOTING.md` |
 | `SecureURLPolicy.swift` | 面板地址校验（仅 HTTPS 或环回 HTTP）与 TLS 校验策略 |
 | `JSONValue.swift` | JSON 值的安全强制转换，避免 `as?` 满天飞 |
-| `SettingsStore.swift` | `settings.json` 的读写。凭据不入文件，只存 VEID、地址、刷新间隔 |
+| `SettingsStore.swift` | `settings.json` 的读写（含凭据；目录 700、文件 600）。钥匙串经 `KeychainCredentialStore` 尽力同步 |
 | `KeychainCredentialStore.swift` | 凭据读写入口。BWH / 3X-UI 经辅助程序钥匙串。应用更新时若内嵌辅助程序摘要与 pin 一致，会**替换** `Application Support` 里过期的 `BandwagonCredentialBridge`，避免读不出钥匙串。v2→v3 一次性迁移仍在首次启动触发 |
 | `CredentialBridgeClient.swift` | 与辅助程序的 IPC 客户端。发请求前校验辅助程序文件的 SHA-256 与签名，并校验**正在运行的子进程**身份 |
 | `ReleaseUpdateClient.swift` | 通过公开 GitHub Releases API 对比 `CFBundleShortVersionString` 检测新版本，并将 `Bandwagon-*-macOS.dmg` 下载到 `~/Downloads` |

@@ -47,12 +47,12 @@ struct SecurityRegression {
         )
 
         require(
-            settings.contains("KeychainCredentialStore.save") &&
-            !settings.contains("current[\"BWH_API_KEY\"] =") &&
-            !settings.contains("current[\"XUI_API_TOKEN\"] =") &&
-            !settings.contains("current[\"XUI_USERNAME\"] =") &&
-            !settings.contains("current[\"XUI_PASSWORD\"] ="),
-            "long-lived credentials must be written to Keychain rather than plaintext JSON"
+            settings.contains("object[\"BWH_API_KEY\"] = settings.bwhApiKey") &&
+            settings.contains("object[\"XUI_API_TOKEN\"] = settings.xuiApiToken") &&
+            settings.contains("guard writeObject(persistenceObject") &&
+            settings.contains("_ = KeychainCredentialStore.save(settings)") &&
+            !settings.contains("guard KeychainCredentialStore.save(settings) else { return false }"),
+            "long-lived credentials must persist in settings.json; Keychain save is best-effort"
         )
         require(
             helper.contains("com.kun.bandwagon.credentials.v3") &&
@@ -89,9 +89,11 @@ struct SecurityRegression {
             !settings.contains("settings.xuiTwoFactor =") &&
             !settings.contains("current[\"XUI_TWO_FACTOR\"] =") &&
             settings.contains("\"XUI_TWO_FACTOR\",") &&
+            settings.contains("if !settings.xuiTwoFactor.isEmpty") &&
+            settings.contains("object.removeValue(forKey: \"XUI_TWO_FACTOR\")") &&
             settings.contains("for key in secretKeys") &&
             appModel.contains("settings.xuiTwoFactor = \"\""),
-            "one-time 2FA codes must not be persisted or reused after a refresh attempt"
+            "one-time 2FA codes must not be reloaded from disk or reused after a refresh attempt"
         )
 
         require(
@@ -126,7 +128,7 @@ struct SecurityRegression {
             "disk usage and run state must be read from getLiveServiceInfo, not getServiceInfo"
         )
 
-        print("PASS transport, Keychain persistence, TLS verification, ephemeral 2FA policies, and KiwiVM endpoint selection")
+        print("PASS transport, settings.json credential persistence, TLS verification, ephemeral 2FA policies, and KiwiVM endpoint selection")
     }
 
     private static func source(_ path: String) throws -> String {

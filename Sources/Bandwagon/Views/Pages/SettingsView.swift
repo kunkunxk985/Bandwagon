@@ -28,7 +28,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    PageHeader(title: "设置", subtitle: "连接两个数据源。凭据只保存在钥匙串，不写入设置文件。")
+                    PageHeader(title: "设置", subtitle: "连接两个数据源。凭据与设置一并写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）；钥匙串写入为尽力而为。")
                         .padding(.bottom, 6)
 
                     if let error = model.error {
@@ -88,7 +88,7 @@ struct SettingsView: View {
     private var saveBar: some View {
         HStack(spacing: 12) {
             if saveFailed {
-                Label("凭据未写入钥匙串，请把应用放进「应用程序」后重试", systemImage: "exclamationmark.triangle.fill")
+                Label("设置未能写入 settings.json，请检查 ~/Library/Application Support/Bandwagon/ 权限后重试", systemImage: "exclamationmark.triangle.fill")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.warning)
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))

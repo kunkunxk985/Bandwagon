@@ -7,6 +7,6 @@
 __pycache__/
 *.pyc
 
-# Credentials never live in the repo: secrets are in the login keychain, and the
-# non-sensitive settings in ~/Library/Application Support/Bandwagon/settings.json.
+# Secrets never live in the repo: local settings (including credentials) are in
+# ~/Library/Application Support/Bandwagon/settings.json on the user's Mac.
 .env
