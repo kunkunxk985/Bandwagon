@@ -10,13 +10,10 @@ struct BandwagonApp: App {
 
     var body: some Scene {
         WindowGroup(id: Self.mainWindowID) {
-            ContentView()
+            AppRootView()
                 .environment(model)
                 .frame(minWidth: 1040, minHeight: 680)
                 .background(WindowChrome())
-                // Shared with the menu bar item: whichever appears first starts the
-                // app, and the other finds it already running.
-                .task { await model.start() }
                 .onChange(of: scenePhase) { _, phase in
                     switch phase {
                     case .active:

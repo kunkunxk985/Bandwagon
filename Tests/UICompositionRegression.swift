@@ -12,6 +12,9 @@ struct UICompositionRegression {
         let clients = try source("Sources/Bandwagon/Views/Pages/ClientsView.swift")
         let settingsStore = try source("Sources/Bandwagon/Services/SettingsStore.swift")
         let app = try source("Sources/Bandwagon/BandwagonApp.swift")
+        let appRoot = try source("Sources/Bandwagon/Views/Shell/AppRootView.swift")
+        let onboarding = try source("Sources/Bandwagon/Views/Pages/ConnectionOnboardingView.swift")
+        let launchOnboarding = try source("Sources/Bandwagon/Services/LaunchOnboarding.swift")
 
         require(
             theme.contains("VStack(alignment: .leading, spacing: 0) {\n            content"),
@@ -31,16 +34,22 @@ struct UICompositionRegression {
             !settings.contains("xuiAdvancedOpen"),
             "Settings must not use nested accordion state"
         )
+        let connectionFields = try source("Sources/Bandwagon/Views/Pages/ConnectionFields.swift")
         require(
-            occurrences(of: "settingsSection(\"", in: settings) == 2 &&
+            occurrences(of: "settingsSection(\"", in: settings) == 3 &&
             settings.contains("settingsSection(\"Bandwagon\"") &&
             settings.contains("settingsSection(\"3X-UI\"") &&
-            settings.contains("field(\"面板地址\"") &&
-            settings.contains("credential(\"用户名\"") &&
-            settings.contains("secret(\"密码\"") &&
+            settings.contains("settingsSection(\"高级\"") &&
+            settings.contains("blockHeading(\"连接\")") &&
+            settings.contains("blockHeading(\"偏好\")") &&
+            connectionFields.contains("labeledField(\"面板地址\"") &&
+            connectionFields.contains("labeledCredential(\"用户名\"") &&
+            connectionFields.contains("labeledSecret(\"密码\"") &&
+            settings.contains("ConnectionFields.bandwagon") &&
+            settings.contains("ConnectionFields.xui") &&
             !settings.contains("API Token") &&
             !settings.contains("双重验证"),
-            "Settings must expose exactly two independent sibling sections"
+            "Settings must group connection, preferences, and advanced sections with shared connection fields"
         )
         require(
             !overview.contains("action: {},") && !clients.contains("action: {},"),
@@ -186,14 +195,28 @@ struct UICompositionRegression {
             app.contains("model.startAutoRefresh()") &&
             app.contains("model.refreshIfStale()") &&
             app.contains("model.stopAutoRefresh()") &&
-            app.contains("keyboardShortcut(\"r\", modifiers: .command)"),
-            "The app must poll on a timer, top up on activation, and expose a refresh shortcut"
+            app.contains("keyboardShortcut(\"r\", modifiers: .command)") &&
+            appRoot.contains(".task { await model.start() }"),
+            "The app must poll on a timer, top up on activation, expose a refresh shortcut, and start from the shell"
         )
         require(
             settings.contains("refreshCard") &&
             settings.contains("$draft.refreshSeconds") &&
-            !settings.contains("settingsSection(\"刷新\""),
-            "Refresh cadence must be adjustable from Settings without a third credentials section"
+            !settings.contains("settingsSection(\"刷新\"") &&
+            settings.contains("保存并连接") &&
+            !settings.contains("保存并刷新") &&
+            settings.contains("openConfigFolderRow") &&
+            settings.contains("trafficResetSyncRow"),
+            "Refresh cadence and advanced prefs must live on Settings; saves must read 保存并连接"
+        )
+        require(
+            app.contains("AppRootView()") &&
+            appRoot.contains("ConnectionOnboardingView") &&
+            appRoot.contains("LaunchOnboarding.shouldShowWizard") &&
+            onboarding.contains("跳过") &&
+            launchOnboarding.contains("BandwagonHasLaunchedBefore") &&
+            clients.contains("title: \"未配置\""),
+            "First launch must use a one-time full-screen wizard; Clients must nudge unconfigured 3X-UI to Settings"
         )
         require(
             settings.contains("private var isDirty: Bool { draft != model.settings }") &&

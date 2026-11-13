@@ -221,8 +221,8 @@ struct ClientsView: View {
         } else if let clients = model.overview.xui?.clients {
             if clients.isEmpty {
                 StatusCard(
-                    title: model.settings.xuiReady ? "暂无客户端" : "尚未配置 3X-UI",
-                    message: model.settings.xuiReady ? "面板已连接，返回的客户端列表为空" : "请在设置中配置 3X-UI 面板地址",
+                    title: model.settings.xuiReady ? "暂无客户端" : "未配置",
+                    message: model.settings.xuiReady ? "面板已连接，返回的客户端列表为空" : "请在设置中填写 3X-UI 面板地址与账号",
                     icon: "person.2.fill",
                     tint: .secondary,
                     action: { selectedTab = .settings },
@@ -254,8 +254,8 @@ struct ClientsView: View {
             }
         } else {
             StatusCard(
-                title: "尚未配置 3X-UI",
-                message: "请在设置中配置 3X-UI 面板地址",
+                title: "未配置",
+                message: "请在设置中填写 3X-UI 面板地址与账号",
                 icon: "person.2.fill",
                 tint: .secondary,
                 action: { selectedTab = .settings },

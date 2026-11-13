@@ -109,11 +109,12 @@ struct SecurityRegression {
             "Settings UI must not report success when secure persistence fails"
         )
 
+        let appRoot = try source("Sources/Bandwagon/Views/Shell/AppRootView.swift")
         require(
             appModel.contains("var settings = AppSettings()") &&
             appModel.contains("func restoreSettings() async") &&
             appModel.contains("Task.detached") &&
-            app.contains(".task { await model.start() }") &&
+            (appRoot.contains(".task { await model.start() }") || app.contains(".task { await model.start() }")) &&
             !app.contains("await model.restoreSettings()") &&
             appModel.contains("func start() async") &&
             (appModel.range(of: "await restoreSettings()")?.lowerBound ?? appModel.endIndex) <
