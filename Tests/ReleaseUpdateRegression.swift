@@ -26,7 +26,32 @@ struct ReleaseUpdateRegression {
               !SemverVersion.isVersion("2.9.9", newerThan: "3.0.0") else {
             fail("isVersion must mirror compare")
         }
-        pass("release-update semver")
+
+        var request = URLRequest(url: URL(string: "https://api.github.com/test")!)
+        ReleaseUpdateClient.applyGitHubAuth(to: &request, token: "")
+        guard request.value(forHTTPHeaderField: "Accept") == "application/vnd.github+json",
+              request.value(forHTTPHeaderField: "User-Agent") == "Bandwagon",
+              request.value(forHTTPHeaderField: "Authorization") == nil else {
+            fail("anonymous GitHub requests must set Accept and User-Agent only")
+        }
+
+        ReleaseUpdateClient.applyGitHubAuth(to: &request, token: "pat-fixture")
+        guard request.value(forHTTPHeaderField: "Authorization") == "Bearer pat-fixture" else {
+            fail("GitHub token must be sent as Authorization Bearer")
+        }
+
+        guard ReleaseUpdateError.privateRepoNeedsToken.errorDescription ==
+                "私有仓库需在设置中填写 GitHub 令牌。" else {
+            fail("privateRepoNeedsToken message must guide settings token field")
+        }
+        guard ReleaseUpdateClient.authFailure(token: "") == .privateRepoNeedsToken else {
+            fail("empty token auth failure must be privateRepoNeedsToken")
+        }
+        guard case .downloadFailed = ReleaseUpdateClient.authFailure(token: "x") else {
+            fail("non-empty token auth failure must describe invalid token")
+        }
+
+        pass("release-update semver and GitHub auth helpers")
     }
 
     private static func pass(_ name: String) {

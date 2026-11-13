@@ -24,6 +24,43 @@ struct StoredCredentials: Codable, Equatable {
     }
 }
 
+private enum GithubUpdateTokenStore {
+    private static var fileURL: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/Bandwagon/.github-update-token", isDirectory: false)
+    }
+
+    static func load() -> String {
+        guard let data = try? Data(contentsOf: fileURL),
+              let text = String(data: data, encoding: .utf8) else { return "" }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    @discardableResult
+    static func save(_ token: String) -> Bool {
+        let directory = fileURL.deletingLastPathComponent()
+        let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        do {
+            try FileManager.default.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700]
+            )
+            if trimmed.isEmpty {
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    try FileManager.default.removeItem(at: fileURL)
+                }
+                return true
+            }
+            try Data(trimmed.utf8).write(to: fileURL, options: .atomic)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: fileURL.path)
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
 enum KeychainCredentialStore {
     // This digest pins the separately installed, unchanged helper release. It
     // must be replaced with its verified signed binary digest before packaging.
@@ -85,6 +122,11 @@ enum KeychainCredentialStore {
         return try? JSONDecoder().decode(StoredCredentials.self, from: data)
     }
 
+    static func loadGithubUpdateToken() -> String {
+        guard isActualApp else { return "" }
+        return GithubUpdateTokenStore.load()
+    }
+
     @discardableResult
     static func save(_ settings: AppSettings) -> Bool {
         guard isActualApp,
@@ -92,10 +134,11 @@ enum KeychainCredentialStore {
             return false
         }
         ensureHelperInstalled()
-        return CredentialBridgeClient.perform(
+        guard CredentialBridgeClient.perform(
             "save", credentials: data, at: helperURL,
             expectedSHA256: helperSHA256, timeoutSeconds: 20
-        )?.status == "ok"
+        )?.status == "ok" else { return false }
+        return GithubUpdateTokenStore.save(settings.githubUpdateToken)
     }
 }
 

@@ -12,6 +12,8 @@ struct AppSettings: Equatable, Sendable {
     var xuiUsername = ""
     var xuiPassword = ""
     var xuiTwoFactor = ""
+    /// GitHub PAT for in-app release checks/downloads (private repo). Stored in Keychain stack, not settings.json.
+    var githubUpdateToken = ""
 
     /// Automatically zeroes all 3X-UI clients' traffic at the exact Bandwagon
     /// server traffic reset timestamp (`bwh.resetAt`) and keeps 3X-UI built-in
@@ -40,6 +42,7 @@ enum SettingsStore {
         "XUI_PASSWORD",
         "XUI_TWO_FACTOR",
         "XUI_VERIFY_SSL",
+        "GITHUB_UPDATE_TOKEN",
     ]
 
     /// Keys the old web build wrote and nothing reads any more. Merging writes
@@ -92,6 +95,7 @@ enum SettingsStore {
 
         if let credentials = KeychainCredentialStore.load() {
             credentials.apply(to: &settings)
+            settings.githubUpdateToken = KeychainCredentialStore.loadGithubUpdateToken()
         } else {
             settings.bwhApiKey = JSONValue.string(object["BWH_API_KEY"])
             settings.xuiApiToken = JSONValue.string(object["XUI_API_TOKEN"])
