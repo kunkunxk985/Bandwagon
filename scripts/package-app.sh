@@ -52,7 +52,7 @@ cat > "$STAGE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleVersion</key>
     <string>6</string>
     <key>CFBundleShortVersionString</key>
-    <string>3.0.5</string>
+    <string>3.0.6</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleExecutable</key>
