@@ -40,15 +40,9 @@ struct ReleaseUpdateRegression {
             fail("GitHub token must be sent as Authorization Bearer")
         }
 
-        guard ReleaseUpdateError.privateRepoNeedsToken.errorDescription ==
-                "私有仓库需在设置中填写 GitHub 令牌。" else {
-            fail("privateRepoNeedsToken message must guide settings token field")
-        }
-        guard ReleaseUpdateClient.authFailure(token: "") == .privateRepoNeedsToken else {
-            fail("empty token auth failure must be privateRepoNeedsToken")
-        }
-        guard case .downloadFailed = ReleaseUpdateClient.authFailure(token: "x") else {
-            fail("non-empty token auth failure must describe invalid token")
+        guard case .downloadFailed(let message) = ReleaseUpdateClient.httpAccessFailure(statusCode: 403),
+              message.contains("403") else {
+            fail("http access failure must describe status without mentioning settings token")
         }
 
         pass("release-update semver and GitHub auth helpers")

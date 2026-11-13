@@ -41,10 +41,9 @@ struct SecurityRegression {
         )
 
         require(
-            settings.contains("GITHUB_UPDATE_TOKEN") &&
-            settings.contains("githubUpdateToken") &&
-            !settings.contains("current[\"GITHUB_UPDATE_TOKEN\"] ="),
-            "GitHub update token must be treated as a secret and stripped from settings.json"
+            !settings.contains("GITHUB_UPDATE_TOKEN") &&
+            !settings.contains("githubUpdateToken"),
+            "in-app updates use the public GitHub API; no PAT field in settings"
         )
 
         require(

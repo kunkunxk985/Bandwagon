@@ -268,11 +268,6 @@ struct SettingsView: View {
                 }
             }
 
-            secret("GitHub 更新令牌", text: $draft.githubUpdateToken)
-            Text("私有仓库需 Personal Access Token：classic 勾选 repo，或 fine-grained 对本仓库只读。")
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
             Text("用新版本覆盖「应用程序」里的 Bandwagon 即可升级；VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
@@ -348,9 +343,7 @@ struct SettingsView: View {
         pendingUpdate = nil
         Task {
             do {
-                let outcome = try await ReleaseUpdateClient.checkForUpdate(
-                    githubToken: draft.githubUpdateToken
-                )
+                let outcome = try await ReleaseUpdateClient.checkForUpdate()
                 switch outcome {
                 case .upToDate:
                     updatePhase = .upToDate
@@ -374,8 +367,7 @@ struct SettingsView: View {
             do {
                 let fileURL = try await ReleaseUpdateClient.downloadRelease(
                     dmgURL: info.dmgDownloadURL,
-                    version: info.version,
-                    githubToken: draft.githubUpdateToken
+                    version: info.version
                 )
                 downloadedDMG = fileURL
                 NSWorkspace.shared.activateFileViewerSelecting([fileURL])

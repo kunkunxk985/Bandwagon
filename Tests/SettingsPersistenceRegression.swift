@@ -21,8 +21,8 @@ struct SettingsPersistenceRegression {
             "overview cache must share the same Application Support folder"
         )
         require(
-            settings.contains(".github-update-token") || keychain.contains(".github-update-token"),
-            "GitHub update token sidecar must live beside settings"
+            !settings.contains(".github-update-token") && !keychain.contains(".github-update-token"),
+            "GitHub update token sidecar removed for public releases"
         )
         require(
             helper.contains("com.kun.bandwagon.credentials.v3") &&
