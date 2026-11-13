@@ -148,7 +148,7 @@ enum SettingsStore {
     @discardableResult
     static func save(_ settings: AppSettings) -> Bool {
         guard writeObject(persistenceObject(for: settings, merging: loadObject())) else { return false }
-        guard KeychainCredentialStore.save(settings) else { return false }
+        _ = KeychainCredentialStore.save(settings)
         return true
     }
 
