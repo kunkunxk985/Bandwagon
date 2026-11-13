@@ -13,7 +13,7 @@ macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超
 
 在 [GitHub Releases](https://github.com/kunkunxk985/Bandwagon/releases) 下载最新的 `Bandwagon-*-macOS.dmg`（或 zip）。打开 DMG 后把应用拖进「应用程序」。首次若被拦截，请右键 **打开**。安装包为 CI 临时签名，未经 Apple 公证。
 
-已安装的应用可在 **设置 → 软件更新** 中点 **检查更新**，并在应用内把最新发布的 DMG 下载到「下载」文件夹（公开 GitHub Releases，无需令牌）。
+已安装到 **「应用程序」** 的 Bandwagon 可在 **设置 → 软件更新** 中 **检查更新**，再点 **安装更新并重启** 完成应用内升级（公开 GitHub Releases，无需令牌）。若未安装在「应用程序」，可改用失败时的 **手动下载安装包**。
 
 ## 构建与运行
 

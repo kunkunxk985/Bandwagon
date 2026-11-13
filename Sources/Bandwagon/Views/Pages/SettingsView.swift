@@ -11,18 +11,9 @@ struct SettingsView: View {
     @State private var saveFailed = false
     @State private var saving = false
     @AppStorage(MenuBarPreference.key) private var showMenuBar = true
-    @State private var updatePhase: SoftwareUpdatePhase = .idle
-    @State private var pendingUpdate: ReleaseUpdateInfo?
-    @State private var downloadingUpdate = false
-    @State private var downloadedDMG: URL?
-
-    private enum SoftwareUpdatePhase: Equatable {
-        case idle
-        case checking
-        case upToDate
-        case updateAvailable
-        case error(String)
-    }
+    @ObservedObject private var updateCenter = AppUpdateCenter.shared
+    @State private var manualFallbackDMG: URL?
+    @State private var manualFallbackBusy = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -258,118 +249,128 @@ struct SettingsView: View {
 
                 Spacer(minLength: 12)
 
-                if updatePhase == .checking || downloadingUpdate {
+                if updateCenter.isBusy {
                     ProgressView()
                         .controlSize(.small)
+                } else if case .available = updateCenter.phase {
+                    Button(updatePrimaryTitle, action: { updateCenter.checkOrInstall() })
+                        .buttonStyle(.borderedProminent)
+                        .tint(Theme.accent)
                 } else {
-                    Button("检查更新", action: checkForUpdate)
+                    Button(updatePrimaryTitle, action: { updateCenter.checkOrInstall() })
                         .buttonStyle(.bordered)
-                        .disabled(downloadingUpdate)
                 }
             }
 
-            if case .updateAvailable = updatePhase, let info = pendingUpdate {
-                HStack(spacing: 12) {
-                    Text("新版本 \(info.version)")
-                        .font(.system(size: 12, weight: .medium))
-                    Spacer()
-                    Button(downloadingUpdate ? "下载中…" : "下载更新包") {
-                        downloadUpdate(info)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.accent)
-                    .disabled(downloadingUpdate)
-                }
+            if !AppUpdateInstaller.isRunningFromApplications(Bundle.main.bundleURL) {
+                Text("应用内更新需要已将 Bandwagon 安装在「应用程序」文件夹。从 DMG 直接运行时可手动下载安装包。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("应用内更新会下载发布包、替换「应用程序」里的 Bandwagon 并自动重新打开。VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
-            if let dmg = downloadedDMG {
-                HStack(spacing: 12) {
-                    Text("安装包已下载")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button("在访达中显示") {
-                        NSWorkspace.shared.activateFileViewerSelecting([dmg])
-                    }
-                    .buttonStyle(.bordered)
-                    Button("打开安装包") {
-                        NSWorkspace.shared.open(dmg)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.accent)
-                }
+            if case .available(let version, _) = updateCenter.phase {
+                Text("新版本 \(version)")
+                    .font(.system(size: 12, weight: .medium))
+            }
+
+            if case .failed = updateCenter.phase {
+                fallbackUpdateActions
             }
         }
         .padding(18)
         .panelSurface()
     }
 
+    @ViewBuilder
+    private var fallbackUpdateActions: some View {
+        HStack(spacing: 12) {
+            if manualFallbackBusy {
+                ProgressView()
+                    .controlSize(.small)
+            }
+            Spacer()
+            if let dmg = manualFallbackDMG {
+                Button("在访达中显示") {
+                    NSWorkspace.shared.activateFileViewerSelecting([dmg])
+                }
+                .buttonStyle(.bordered)
+            } else if let info = updateCenter.fallbackUpdate {
+                Button(manualFallbackBusy ? "下载中…" : "手动下载安装包") {
+                    downloadFallbackDMG(info)
+                }
+                .buttonStyle(.bordered)
+                .disabled(manualFallbackBusy)
+            }
+        }
+    }
+
+    private var updatePrimaryTitle: String {
+        switch updateCenter.phase {
+        case .available:
+            return "安装更新并重启"
+        case .checking:
+            return "正在检查…"
+        case .downloading:
+            return "正在下载…"
+        case .installing:
+            return "正在安装…"
+        case .idle, .upToDate, .failed:
+            return "检查更新"
+        }
+    }
+
     private var updateStatusText: String {
-        switch updatePhase {
+        switch updateCenter.phase {
         case .idle:
             return "尚未检查 GitHub 上的最新发布。"
         case .checking:
             return "正在检查更新…"
         case .upToDate:
             return "已是最新版本。"
-        case .updateAvailable:
-            return "发现新版本，可下载安装包。"
-        case .error(let message):
+        case .available:
+            return "发现新版本，可一键安装。"
+        case .downloading:
+            return "正在下载…"
+        case .installing:
+            return "正在安装…"
+        case .failed(let message):
             return message
         }
     }
 
     private var updateStatusColor: Color {
-        switch updatePhase {
+        switch updateCenter.phase {
         case .upToDate:
             return Theme.success
-        case .updateAvailable:
+        case .available, .downloading, .installing:
             return Theme.accent
-        case .error:
+        case .failed:
             return Theme.warning
         default:
             return .secondary
         }
     }
 
-    private func checkForUpdate() {
-        guard updatePhase != .checking, !downloadingUpdate else { return }
-        updatePhase = .checking
-        pendingUpdate = nil
+    private func downloadFallbackDMG(_ info: ReleaseUpdateInfo) {
+        guard !manualFallbackBusy else { return }
+        manualFallbackBusy = true
         Task {
-            do {
-                let outcome = try await ReleaseUpdateClient.checkForUpdate()
-                switch outcome {
-                case .upToDate:
-                    updatePhase = .upToDate
-                case .updateAvailable(let info):
-                    pendingUpdate = info
-                    updatePhase = .updateAvailable
-                }
-            } catch let error as ReleaseUpdateError {
-                updatePhase = .error(error.localizedDescription)
-            } catch {
-                updatePhase = .error(error.localizedDescription)
-            }
-        }
-    }
-
-    private func downloadUpdate(_ info: ReleaseUpdateInfo) {
-        guard !downloadingUpdate else { return }
-        downloadingUpdate = true
-        Task {
-            defer { downloadingUpdate = false }
+            defer { manualFallbackBusy = false }
             do {
                 let fileURL = try await ReleaseUpdateClient.downloadRelease(
                     dmgURL: info.dmgDownloadURL,
                     version: info.version
                 )
-                downloadedDMG = fileURL
+                manualFallbackDMG = fileURL
                 NSWorkspace.shared.activateFileViewerSelecting([fileURL])
-                updatePhase = .upToDate
-                pendingUpdate = nil
             } catch {
-                updatePhase = .error(error.localizedDescription)
+                // Optional fallback; main error line stays visible.
             }
         }
     }

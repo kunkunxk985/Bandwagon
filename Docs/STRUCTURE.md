@@ -47,7 +47,8 @@ Bandwagon/
 | `SettingsStore.swift` | `settings.json` 的读写（含凭据；目录 700、文件 600）。钥匙串经 `KeychainCredentialStore` 尽力同步 |
 | `KeychainCredentialStore.swift` | 凭据读写入口。BWH / 3X-UI 经辅助程序钥匙串。应用更新时若内嵌辅助程序摘要与 pin 一致，会**替换** `Application Support` 里过期的 `BandwagonCredentialBridge`，避免读不出钥匙串。v2→v3 一次性迁移仍在首次启动触发 |
 | `CredentialBridgeClient.swift` | 与辅助程序的 IPC 客户端。发请求前校验辅助程序文件的 SHA-256 与签名，并校验**正在运行的子进程**身份 |
-| `ReleaseUpdateClient.swift` | 通过公开 GitHub Releases API 对比 `CFBundleShortVersionString` 检测新版本，并将 `Bandwagon-*-macOS.dmg` 下载到 `~/Downloads` |
+| `ReleaseUpdateClient.swift` | 通过公开 GitHub Releases API 对比 `CFBundleShortVersionString` 检测新版本；`downloadRelease` 仍可将 `Bandwagon-*-macOS.dmg` 下载到 `~/Downloads`（失败时手动兜底） |
+| `AppUpdateInstaller.swift` | `AppUpdateCenter` 编排检查/安装 UI 阶段；`AppUpdateInstaller` 下载 DMG、挂载、`ditto` 到暂存目录，退出后以脚本替换 `/Applications/Bandwagon.app` 并重新打开 |
 
 **Views/** —— 按职责分四个子目录
 
@@ -71,7 +72,7 @@ Bandwagon/
 | `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
 | `TrafficHistoryChart.swift` | VPS 专属：流量趋势图（Swift Charts）与汇总指标 |
 | `ClientsView.swift` | 客户端：统计条、筛选与搜索、带固定表头的客户端表格（点表头排序，再点切换方向） |
-| `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ **软件更新**（检查 / 下载 DMG、打开安装包）+ 底部保存栏（⌘S） |
+| `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ **软件更新**（检查 → 安装更新并重启；失败时可手动下载）+ 底部保存栏（⌘S） |
 | `ClientDetailSheet.swift` | 客户端详情弹窗：用量、订阅链接与二维码、启用开关、配额与到期编辑、重置流量。每个写操作先确认、完成后刷新 |
 
 `Components/`（跨页复用的组件）
