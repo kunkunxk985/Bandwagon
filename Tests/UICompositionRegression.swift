@@ -191,6 +191,12 @@ struct UICompositionRegression {
             "Refresh cadence must be adjustable from Settings without a third credentials section"
         )
         require(
+            settings.contains("private var isDirty: Bool { draft != model.settings }") &&
+            settings.contains("有未保存的更改") &&
+            settings.contains("performSave"),
+            "Settings must surface unsaved draft changes and route every save action through one handler"
+        )
+        require(
             settingsStore.contains("if let stored = object[\"REFRESH_SECONDS\"]") &&
             settingsStore.contains("object[\"REFRESH_SECONDS\"] = settings.refreshSeconds"),
             "Polling off must survive a round trip, so the read must key off key presence"

@@ -15,6 +15,12 @@ struct SettingsView: View {
     @State private var manualFallbackDMG: URL?
     @State private var manualFallbackBusy = false
 
+    private var isDirty: Bool { draft != model.settings }
+
+    private var bwhNeedsApiKeyHint: Bool {
+        !draft.bwhVeid.isEmpty && draft.bwhApiKey.isEmpty
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
@@ -30,6 +36,10 @@ struct SettingsView: View {
                         inlineError(warning)
                     }
 
+                    if isDirty {
+                        unsavedChangesBanner
+                    }
+
                     settingsSection("Bandwagon",
                         icon: "server.rack",
                         isOpen: $bwhOpen,
@@ -38,6 +48,14 @@ struct SettingsView: View {
                         field("VEID", text: $draft.bwhVeid)
                         secret("API Key", text: $draft.bwhApiKey)
                         field("API 地址", text: $draft.bwhApiBase)
+                        if bwhNeedsApiKeyHint {
+                            Text("填写 API Key 后点保存")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                        }
+                        if isDirty {
+                            sectionSaveButton
+                        }
                     }
 
                     settingsSection("3X-UI",
@@ -57,6 +75,9 @@ struct SettingsView: View {
 
                         secret("API Token", text: $draft.xuiApiToken)
                         secret("当前双重验证码（如启用）", text: $draft.xuiTwoFactor)
+                        if isDirty {
+                            sectionSaveButton
+                        }
                     }
 
                     refreshCard
@@ -65,7 +86,7 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, Theme.pagePadding)
                 .padding(.top, 4)
-                .padding(.bottom, Theme.pagePadding)
+                .padding(.bottom, isDirty ? 88 : Theme.pagePadding)
                 .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity, alignment: .center)
             }
@@ -74,6 +95,48 @@ struct SettingsView: View {
         }
         .navigationTitle("设置")
         .onAppear { draft = model.settings }
+        .onChange(of: model.settings) { _, latest in
+            guard !isDirty else { return }
+            draft = latest
+        }
+    }
+
+    private var unsavedChangesBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "pencil.circle.fill")
+                .foregroundStyle(Theme.accent)
+            Text("有未保存的更改")
+                .font(.system(size: 13, weight: .medium))
+            Spacer(minLength: 8)
+            Text("⌘S")
+                .font(.system(size: 12, weight: .medium).monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .background(Theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous)
+                .strokeBorder(Theme.accent.opacity(0.28), lineWidth: 1)
+        )
+        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
+    }
+
+    private var sectionSaveButton: some View {
+        Button(action: performSave) {
+            HStack(spacing: 8) {
+                if saving {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Text(saving ? "连接中…" : "保存并连接")
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Theme.accent)
+        .controlSize(.large)
+        .disabled(saving)
+        .padding(.top, 4)
     }
 
     private var saveBar: some View {
@@ -88,44 +151,70 @@ struct SettingsView: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.success)
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            } else if isDirty {
+                Label("有未保存的更改", systemImage: "pencil.circle.fill")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
             }
 
             Spacer()
 
-            Button {
-                guard !saving else { return }
-                saving = true
-                Task {
-                    let didSave = await model.saveSettings(draft)
-                    draft.xuiTwoFactor = ""
-                    saving = false
-                    saveFailed = !didSave
-                    if didSave {
-                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { saved = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { saved = false }
-                        }
-                    }
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    if saving {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text(saving ? "连接中…" : "保存并刷新")
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
-            .controlSize(.large)
-            .disabled(saving)
-            .keyboardShortcut("s", modifiers: .command)
+            savePrimaryButton
         }
         .padding(.horizontal, Theme.pagePadding)
         .padding(.vertical, 12)
         .background(Theme.surface)
         .overlay(alignment: .top) { CardDivider() }
+        .overlay(alignment: .top) {
+            if isDirty {
+                Rectangle()
+                    .fill(Theme.accent.opacity(0.35))
+                    .frame(height: 2)
+            }
+        }
+        .overlay {
+            if isDirty {
+                RoundedRectangle(cornerRadius: 0)
+                    .strokeBorder(Theme.accent.opacity(0.22), lineWidth: 1)
+            }
+        }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: isDirty)
+    }
+
+    private var savePrimaryButton: some View {
+        Button(action: performSave) {
+            HStack(spacing: 8) {
+                if saving {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Text(saving ? "连接中…" : "保存并刷新")
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Theme.accent)
+        .controlSize(.large)
+        .disabled(saving)
+        .keyboardShortcut("s", modifiers: .command)
+    }
+
+    private func performSave() {
+        guard !saving else { return }
+        saving = true
+        Task {
+            let didSave = await model.saveSettings(draft)
+            saving = false
+            saveFailed = !didSave
+            if didSave {
+                draft = model.settings
+                draft.xuiTwoFactor = ""
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { saved = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { saved = false }
+                }
+            }
+        }
     }
 
     private func settingsSection<Content: View>(
