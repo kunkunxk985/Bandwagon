@@ -67,6 +67,7 @@ python3 Tests/http_fixture.py "$OUT/http"
 
 "$SWIFTC" "${ARGS[@]}" -parse-as-library \
   Sources/Bandwagon/Services/ReleaseUpdateClient.swift \
+  Sources/Bandwagon/Services/AppUpdateInstaller.swift \
   Tests/ReleaseUpdateRegression.swift -o "$OUT/release-update-regression"
 "$OUT/release-update-regression"
 

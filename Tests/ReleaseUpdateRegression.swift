@@ -45,6 +45,18 @@ struct ReleaseUpdateRegression {
             fail("http access failure must describe status without mentioning settings token")
         }
 
+        let quoted = AppUpdateInstaller.shellQuote("/tmp/foo'bar")
+        guard quoted == "'/tmp/foo'\\''bar'" else {
+            fail("shellQuote must escape single quotes")
+        }
+
+        let apps = URL(fileURLWithPath: "/Applications/Bandwagon.app")
+        let desktop = URL(fileURLWithPath: "/Users/me/Desktop/Bandwagon.app")
+        guard AppUpdateInstaller.isRunningFromApplications(apps),
+              !AppUpdateInstaller.isRunningFromApplications(desktop) else {
+            fail("in-app update must require /Applications/Bandwagon.app")
+        }
+
         pass("release-update semver and GitHub auth helpers")
     }
 
