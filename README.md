@@ -43,7 +43,11 @@ open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.ap
 | --- | --- |
 | 凭据（API Key、面板账号密码） | 登录钥匙串，经独立的凭据辅助程序读写 |
 | 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/Bandwagon/settings.json` |
+| 上次成功数据快照 | `~/Library/Application Support/Bandwagon/cache.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
+| GitHub 更新令牌 | `~/Library/Application Support/Bandwagon/.github-update-token` |
+
+**升级应用**：用新 DMG 里的 Bandwagon 拖进「应用程序」覆盖旧版本即可；上述 `Application Support/Bandwagon/` 目录会保留。不要把手动的「移到废纸篓」用在 `Application Support` 文件夹本身。
 
 ## 目录结构
 

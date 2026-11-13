@@ -34,7 +34,15 @@ struct AppSettings: Equatable, Sendable {
     var xuiReady: Bool { !xuiBaseUrl.isEmpty && (!xuiApiToken.isEmpty || (!xuiUsername.isEmpty && !xuiPassword.isEmpty)) }
 }
 
+struct SettingsLoadResult: Sendable, Equatable {
+    var settings: AppSettings
+    var credentialAccessWarning: String?
+}
+
 enum SettingsStore {
+    static let applicationSupportBandwagon = "Bandwagon"
+    static let settingsFileName = "settings.json"
+    static let overviewCacheFileName = "cache.json"
     private static let secretKeys = [
         "BWH_API_KEY",
         "XUI_API_TOKEN",
@@ -58,10 +66,11 @@ enum SettingsStore {
 
     /// Lives beside the credential helper, in the app's own folder.
     private static var fileURL: URL {
-        supportDirectory.appendingPathComponent("Bandwagon/settings.json")
+        supportDirectory
+            .appendingPathComponent("\(applicationSupportBandwagon)/\(settingsFileName)")
     }
 
-    static func load() -> AppSettings {
+    static func load() -> SettingsLoadResult {
         var settings = AppSettings()
         var object = loadObject()
         // Drop retired keys once, touching nothing else in the file.
@@ -93,9 +102,9 @@ enum SettingsStore {
             settings.normalizedXuiResetPolicyAt = max(0, JSONValue.int(storedNormalized))
         }
 
+        var credentialAccessWarning: String?
         if let credentials = KeychainCredentialStore.load() {
             credentials.apply(to: &settings)
-            settings.githubUpdateToken = KeychainCredentialStore.loadGithubUpdateToken()
         } else {
             settings.bwhApiKey = JSONValue.string(object["BWH_API_KEY"])
             settings.xuiApiToken = JSONValue.string(object["XUI_API_TOKEN"])
@@ -108,10 +117,21 @@ enum SettingsStore {
                 !settings.xuiPassword.isEmpty
             if hasLegacyCredentials, KeychainCredentialStore.save(settings) {
                 _ = writeObject(nonSecretObject(for: settings, merging: object))
+            } else if let warning = KeychainCredentialStore.consumeLoadWarning(),
+                      settingsLookPreviouslyConfigured(settings, object: object) {
+                credentialAccessWarning = warning
             }
         }
+        settings.githubUpdateToken = KeychainCredentialStore.loadGithubUpdateToken()
 
-        return settings
+        return SettingsLoadResult(settings: settings, credentialAccessWarning: credentialAccessWarning)
+    }
+
+    private static func settingsLookPreviouslyConfigured(_ settings: AppSettings, object: [String: Any]) -> Bool {
+        !settings.bwhVeid.isEmpty ||
+            !settings.xuiBaseUrl.isEmpty ||
+            !JSONValue.string(object["BWH_VEID"]).isEmpty ||
+            !JSONValue.string(object["XUI_BASE_URL"]).isEmpty
     }
 
     @discardableResult

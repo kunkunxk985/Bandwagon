@@ -70,6 +70,10 @@ python3 Tests/http_fixture.py "$OUT/http"
   Tests/ReleaseUpdateRegression.swift -o "$OUT/release-update-regression"
 "$OUT/release-update-regression"
 
+"$SWIFTC" "${ARGS[@]}" -parse-as-library \
+  Tests/SettingsPersistenceRegression.swift -o "$OUT/settings-persistence-regression"
+"$OUT/settings-persistence-regression"
+
 # Credential bridge: wire format, digest pinning, ACL partitions, and the deployed
 # helper's refusal of unsigned callers. This is the chain that keeps stored
 # credentials readable across app re-signing, so it belongs in the default suite.

@@ -15,6 +15,8 @@ final class AppModel {
     var bwhNeedsSettings = false
     var loading: Bool { xuiLoading || bwhLoading }
     var error: String? { overview.xui?.error ?? overview.bwh?.error }
+    /// Shown when settings.json restored but the credential bridge could not read secrets.
+    var credentialAccessWarning: String?
     /// Three missed polls. With polling switched off the bar is much higher, so a
     /// deliberate manual-only setup does not read as broken.
     var isStale: Bool {
@@ -38,7 +40,7 @@ final class AppModel {
     private var scheduledResetTarget = 0
     private var resetPolicyCheckInFlight = false
     private var attemptedStartForResetAt = 0
-    private var restoreTask: Task<AppSettings, Never>?
+    private var restoreTask: Task<SettingsLoadResult, Never>?
     private var settingsRestored = false
 
     func restoreSettings() async {
@@ -47,7 +49,9 @@ final class AppModel {
             restoreTask = Task.detached(priority: .userInitiated) { SettingsStore.load() }
         }
         guard let restoreTask else { return }
-        settings = await restoreTask.value
+        let loaded = await restoreTask.value
+        settings = loaded.settings
+        credentialAccessWarning = loaded.credentialAccessWarning
         settingsRestored = true
         self.restoreTask = nil
     }

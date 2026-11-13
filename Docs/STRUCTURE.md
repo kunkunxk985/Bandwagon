@@ -45,7 +45,7 @@ Bandwagon/
 | `SecureURLPolicy.swift` | 面板地址校验（仅 HTTPS 或环回 HTTP）与 TLS 校验策略 |
 | `JSONValue.swift` | JSON 值的安全强制转换，避免 `as?` 满天飞 |
 | `SettingsStore.swift` | `settings.json` 的读写。凭据不入文件，只存 VEID、地址、刷新间隔 |
-| `KeychainCredentialStore.swift` | 凭据读写入口。BWH / 3X-UI 经辅助程序钥匙串；GitHub 更新令牌写入同目录 `Application Support/Bandwagon/.github-update-token`（0600），并在首次运行时做一次性 v2→v3 迁移 |
+| `KeychainCredentialStore.swift` | 凭据读写入口。BWH / 3X-UI 经辅助程序钥匙串；GitHub 更新令牌写入同目录 `.github-update-token`（0600）。应用更新时若内嵌辅助程序摘要与 pin 一致，会**替换** `Application Support` 里过期的 `BandwagonCredentialBridge`，避免读不出钥匙串。v2→v3 一次性迁移仍在首次启动触发 |
 | `CredentialBridgeClient.swift` | 与辅助程序的 IPC 客户端。发请求前校验辅助程序文件的 SHA-256 与签名，并校验**正在运行的子进程**身份 |
 | `ReleaseUpdateClient.swift` | 通过 GitHub Releases API（`Authorization: Bearer`）对比 `CFBundleShortVersionString` 检测新版本，并将 `Bandwagon-*-macOS.dmg` 下载到 `~/Downloads`；私有仓库在未填令牌时提示设置 GitHub PAT |
 

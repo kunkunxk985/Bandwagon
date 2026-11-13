@@ -35,6 +35,10 @@ struct SettingsView: View {
                         inlineError(error)
                     }
 
+                    if let warning = model.credentialAccessWarning {
+                        inlineError(warning)
+                    }
+
                     settingsSection("Bandwagon",
                         icon: "server.rack",
                         isOpen: $bwhOpen,
@@ -266,6 +270,10 @@ struct SettingsView: View {
 
             secret("GitHub 更新令牌", text: $draft.githubUpdateToken)
             Text("私有仓库需 Personal Access Token：classic 勾选 repo，或 fine-grained 对本仓库只读。")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("用新版本覆盖「应用程序」里的 Bandwagon 即可升级；VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
