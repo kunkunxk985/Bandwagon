@@ -4,6 +4,18 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=xcode-env.sh
 source "$ROOT/scripts/xcode-env.sh"
 xcode_env
+SIGNER="${BANDWAGON_SIGNING_IDENTITY:-Bandwagon Local Code Signing}"
+LOGIN_KEYCHAIN="$HOME/Library/Keychains/login.keychain-db"
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+  if [[ ! -f "$LOGIN_KEYCHAIN" ]]; then
+    printf 'Skipping credential bridge tests: login keychain unavailable on CI runner\n'
+    exit 0
+  fi
+  if ! security find-identity -v -p codesigning 2>/dev/null | grep -Fq "$SIGNER"; then
+    printf 'Skipping credential bridge tests: %s not available on CI runner\n' "$SIGNER"
+    exit 0
+  fi
+fi
 INSTALL_DIR="$HOME/Library/Application Support/Bandwagon"
 INSTALLED="$INSTALL_DIR/BandwagonCredentialBridge"
 OUT="$(mktemp -d)"
@@ -21,12 +33,12 @@ export BANDWAGON_BRIDGE_TEST_SERVICE="$SERVICE"
 #    touching the real credential item.
 xcrun swiftc -O -swift-version 6 -D BRIDGE_FIXTURE \
   "$ROOT/Sources/BandwagonCredentialBridge/main.swift" -o "$OUT/BandwagonCredentialBridge"
-codesign --force --sign 'Bandwagon Local Code Signing' \
+codesign --force --sign "$SIGNER" \
   --identifier com.kun.bandwagon.credential-bridge "$OUT/BandwagonCredentialBridge"
 xcrun swiftc -O -swift-version 6 -parse-as-library \
   "$ROOT/Sources/Bandwagon/Services/CredentialBridgeClient.swift" \
   "$ROOT/Tests/CredentialBridgeFixtureRegression.swift" -o "$OUT/BandwagonBridgeFixtureParent"
-codesign --force --sign 'Bandwagon Local Code Signing' \
+codesign --force --sign "$SIGNER" \
   --identifier com.kun.bandwagon "$OUT/BandwagonBridgeFixtureParent"
 DIGEST="$(shasum -a 256 "$OUT/BandwagonCredentialBridge" | cut -d' ' -f1)"
 "$OUT/BandwagonBridgeFixtureParent" "$OUT/BandwagonCredentialBridge" "$DIGEST"
