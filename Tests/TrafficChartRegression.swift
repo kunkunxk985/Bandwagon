@@ -102,13 +102,15 @@ struct TrafficChartRegression {
         }
 
         let cache = TrafficSampleCache()
+        // Same calendar day in UTC and common runner timezones (base+7_200 crossed UTC midnight).
+        let sameDay = 1_704_067_200 // 2024-01-01 00:00:00 UTC
         let originalPoints = [
-            HistoryPoint(t: base, inbound: 10, out: 1),
-            HistoryPoint(t: base + 7_200, inbound: 20, out: 2),
+            HistoryPoint(t: sameDay, inbound: 10, out: 1),
+            HistoryPoint(t: sameDay + 3_600, inbound: 20, out: 2),
         ]
         let changedPoints = [
-            HistoryPoint(t: base, inbound: 10, out: 1),
-            HistoryPoint(t: base + 7_200, inbound: 80, out: 2),
+            HistoryPoint(t: sameDay, inbound: 10, out: 1),
+            HistoryPoint(t: sameDay + 3_600, inbound: 80, out: 2),
         ]
         let originalBuckets = cache.buckets(for: originalPoints, range: .week)
         let changedBuckets = cache.buckets(for: changedPoints, range: .week)

@@ -47,8 +47,9 @@ struct UICompositionRegression {
             connectionFields.contains("labeledSecret(\"密码\"") &&
             settings.contains("ConnectionFields.bandwagon") &&
             settings.contains("ConnectionFields.xui") &&
-            !settings.contains("API Token") &&
-            !settings.contains("双重验证"),
+            !settings.contains("$draft.xuiApiToken") &&
+            !settings.contains("$draft.xuiTwoFactor") &&
+            connectionFields.contains("不在此填写 API Token"),
             "Settings must group connection, preferences, and advanced sections with shared connection fields"
         )
         require(

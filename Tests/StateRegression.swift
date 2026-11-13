@@ -1,6 +1,7 @@
 import Foundation
 @main struct StateRegression {
  @MainActor static func main() async {
+   setenv("BANDWAGON_STATE_REGRESSION", "1", 1)
    guard (try? SecureURLPolicy.baseURL(from: "https://example.com/panel")) != nil,
          (try? SecureURLPolicy.baseURL(from: "http://127.0.0.1:2053")) != nil else {
      print("FAIL HTTPS and loopback HTTP must remain valid")
