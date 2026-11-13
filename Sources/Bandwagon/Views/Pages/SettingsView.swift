@@ -268,11 +268,6 @@ struct SettingsView: View {
                 }
             }
 
-            Text("用新版本覆盖「应用程序」里的 Bandwagon 即可升级；VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
-
             if case .updateAvailable = updatePhase, let info = pendingUpdate {
                 HStack(spacing: 12) {
                     Text("新版本 \(info.version)")
