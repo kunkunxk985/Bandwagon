@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var xuiOpen = false
     @State private var draft = AppSettings()
     @State private var saved = false
+    @State private var saveFailed = false
     @State private var saving = false
     @AppStorage(MenuBarPreference.key) private var showMenuBar = true
 
@@ -68,7 +69,12 @@ struct SettingsView: View {
 
     private var saveBar: some View {
         HStack(spacing: 12) {
-            if saved {
+            if saveFailed {
+                Label("凭据未写入钥匙串，请把应用放进「应用程序」后重试", systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.warning)
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            } else if saved {
                 Label("已保存", systemImage: "checkmark.circle.fill")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.success)
@@ -84,6 +90,7 @@ struct SettingsView: View {
                     let didSave = await model.saveSettings(draft)
                     draft.xuiTwoFactor = ""
                     saving = false
+                    saveFailed = !didSave
                     if didSave {
                         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { saved = true }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {

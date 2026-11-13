@@ -77,8 +77,16 @@ cat > "$STAGE/Contents/Info.plist" << 'PLIST'
 PLIST
 
 xattr -cr "$STAGE" 2>/dev/null || true
-codesign --force --deep --sign "$SIGNER" "$STAGE"
-codesign --verify --deep --strict "$STAGE"
+if [[ "$SIGNER" == "-" ]]; then
+  # Ad-hoc deep signing re-signs the embedded credential helper and breaks its
+  # pinned release digest + certificate; shallow sign the app bundle only.
+  codesign --force --sign "-" --timestamp=none "$STAGE/Contents/MacOS/Bandwagon"
+  codesign --force --sign "-" --timestamp=none "$STAGE"
+  bash "$ROOT/scripts/verify-credential-bridge.sh" "$STAGE/Contents/Resources/BandwagonCredentialBridge"
+else
+  codesign --force --deep --sign "$SIGNER" "$STAGE"
+  codesign --verify --deep --strict "$STAGE"
+fi
 [[ -f "$STAGE/Contents/Resources/AppIcon.icns" ]] || { printf 'AppIcon.icns missing\n' >&2; exit 1; }
 [[ -f "$STAGE/Contents/Resources/BandwagonCredentialBridge" ]] || { printf 'Embedded BandwagonCredentialBridge missing\n' >&2; exit 1; }
 rm -rf "$APP"

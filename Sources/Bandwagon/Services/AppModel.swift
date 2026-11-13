@@ -272,7 +272,9 @@ final class AppModel {
         stopAutoRefresh()
         await load()
         startAutoRefresh()
-        return error == nil
+        // Persistence succeeded; a failed refresh should surface as error banners,
+        // not roll back the saved credentials in the UI.
+        return true
     }
 
     // MARK: - Server-Synced Client Traffic Reset
