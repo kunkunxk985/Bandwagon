@@ -1,6 +1,7 @@
 import Foundation
 @main struct StateRegression {
  @MainActor static func main() async {
+   setenv("BANDWAGON_STATE_REGRESSION", "1", 1)
    guard (try? SecureURLPolicy.baseURL(from: "https://example.com/panel")) != nil,
          (try? SecureURLPolicy.baseURL(from: "http://127.0.0.1:2053")) != nil else {
      print("FAIL HTTPS and loopback HTTP must remain valid")
@@ -40,22 +41,6 @@ import Foundation
    let previous = model.settings
    var changed = previous
    changed.bwhVeid = "fixture-not-persisted"
-   let configDir = FileManager.default.homeDirectoryForCurrentUser
-     .appendingPathComponent("Library/Application Support/Bandwagon", isDirectory: true)
-   var priorPermissions: [FileAttributeKey: Any]?
-   if FileManager.default.fileExists(atPath: configDir.path) {
-     priorPermissions = try? FileManager.default.attributesOfItem(atPath: configDir.path)
-   }
-   defer {
-     if let priorPermissions {
-       try? FileManager.default.setAttributes(priorPermissions, ofItemAtPath: configDir.path)
-     }
-   }
-   // Keychain persistence is best-effort outside Bandwagon.app; block settings.json instead.
-   try? FileManager.default.setAttributes(
-     [.posixPermissions: NSNumber(value: Int16(0o500))],
-     ofItemAtPath: configDir.path
-   )
    let saved = await model.saveSettings(changed)
    guard !saved, model.settings == previous else {
      print("FAIL rejected secure save must leave active settings unchanged")
