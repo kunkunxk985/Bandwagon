@@ -28,7 +28,7 @@ jobs:
         run: |
           mkdir -p "$(dirname "$BANDWAGON_APP_OUTPUT")"
           ./scripts/package-app.sh
-          ./scripts/verify-credential-bridge.sh "$BANDWAGON_APP_OUTPUT/Contents/Resources/BandwagonCredentialBridge"
+          bash ./scripts/verify-credential-bridge.sh "$BANDWAGON_APP_OUTPUT/Contents/Resources/BandwagonCredentialBridge"
 
       - name: Create zip and DMG
         id: artifacts
