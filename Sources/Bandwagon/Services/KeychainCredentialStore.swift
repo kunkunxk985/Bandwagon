@@ -122,58 +122,52 @@ enum KeychainCredentialStore {
         return installHelper(data: helperData)
     }
 
-    private static var lastLoadWarning: String?
-
-    static func consumeLoadWarning() -> String? {
-        defer { lastLoadWarning = nil }
-        return lastLoadWarning
+    struct LoadResult: Sendable, Equatable {
+        var credentials: StoredCredentials?
+        var warning: String?
     }
 
-    static func load() -> StoredCredentials? {
-        lastLoadWarning = nil
-        guard isActualApp else { return nil }
+    static func load() -> LoadResult {
+        guard isActualApp else { return LoadResult() }
         guard ensureHelperInstalled() else {
-            lastLoadWarning =
-                "凭据辅助程序未能安装。请把 Bandwagon 放在「应用程序」文件夹后重新打开；设置文件不会被删除。"
-            return nil
+            return LoadResult(
+                warning: "凭据辅助程序未能安装。请把 Bandwagon 放在「应用程序」文件夹后重新打开；设置文件不会被删除。"
+            )
         }
         guard let result = CredentialBridgeClient.perform(
                 "load", at: helperURL, expectedSHA256: helperSHA256, timeoutSeconds: 20
               ) else {
-            lastLoadWarning =
-                "无法读取钥匙串凭据（辅助程序未通过校验）。若刚更新应用，请重新打开一次；不要删除 ~/Library/Application Support/Bandwagon/。"
-            return nil
+            return LoadResult(
+                warning: "无法读取钥匙串凭据（辅助程序未通过校验）。若刚更新应用，请重新打开一次；不要删除 ~/Library/Application Support/Bandwagon/。"
+            )
         }
-        if result.status == "ok", let data = result.credentials {
-            return try? JSONDecoder().decode(StoredCredentials.self, from: data)
+        if result.status == "ok", let data = result.credentials,
+           let credentials = try? JSONDecoder().decode(StoredCredentials.self, from: data) {
+            return LoadResult(credentials: credentials)
         }
         if result.status == "denied" {
-            lastLoadWarning = "钥匙串拒绝了凭据访问。已保存的数据未被清除，请在系统提示中选择允许后重试。"
-            return nil
+            return LoadResult(warning: "钥匙串拒绝了凭据访问。已保存的数据未被清除，请在系统提示中选择允许后重试。")
         }
         if result.status == "error" {
-            lastLoadWarning = "读取钥匙串凭据时出错。已保留 settings.json 中的非敏感设置。"
-            return nil
+            return LoadResult(warning: "读取钥匙串凭据时出错。已保留 settings.json 中的非敏感设置。")
         }
         // An ordinary read never consults the old item. Request migration only
         // once, on first launch after the window exists; denial is not retried.
         guard result.status == "missing",
               !UserDefaults.standard.bool(forKey: migrationFlag) else {
-            if result.status == "missing" {
-                lastLoadWarning = nil
-            }
-            return nil
+            return LoadResult()
         }
         UserDefaults.standard.set(true, forKey: migrationFlag)
         guard let migrated = CredentialBridgeClient.perform(
             "migrate", at: helperURL, expectedSHA256: helperSHA256, timeoutSeconds: 180
-        ), migrated.status == "ok", let data = migrated.credentials else {
-            if UserDefaults.standard.bool(forKey: migrationFlag) {
-                lastLoadWarning = "未能从旧钥匙串条目迁移凭据。"
-            }
-            return nil
+        ), migrated.status == "ok", let data = migrated.credentials,
+              let credentials = try? JSONDecoder().decode(StoredCredentials.self, from: data) else {
+            let warning = UserDefaults.standard.bool(forKey: migrationFlag)
+                ? "未能从旧钥匙串条目迁移凭据。"
+                : nil
+            return LoadResult(warning: warning)
         }
-        return try? JSONDecoder().decode(StoredCredentials.self, from: data)
+        return LoadResult(credentials: credentials)
     }
 
     static func loadGithubUpdateToken() -> String {

@@ -103,7 +103,8 @@ enum SettingsStore {
         }
 
         var credentialAccessWarning: String?
-        if let credentials = KeychainCredentialStore.load() {
+        let credentialLoad = KeychainCredentialStore.load()
+        if let credentials = credentialLoad.credentials {
             credentials.apply(to: &settings)
         } else {
             settings.bwhApiKey = JSONValue.string(object["BWH_API_KEY"])
@@ -117,7 +118,7 @@ enum SettingsStore {
                 !settings.xuiPassword.isEmpty
             if hasLegacyCredentials, KeychainCredentialStore.save(settings) {
                 _ = writeObject(nonSecretObject(for: settings, merging: object))
-            } else if let warning = KeychainCredentialStore.consumeLoadWarning(),
+            } else if let warning = credentialLoad.warning,
                       settingsLookPreviouslyConfigured(settings, object: object) {
                 credentialAccessWarning = warning
             }
