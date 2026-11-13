@@ -50,9 +50,9 @@ cat > "$STAGE/Contents/Info.plist" << 'PLIST'
     <key>CFBundleIdentifier</key>
     <string>com.kun.bandwagon</string>
     <key>CFBundleVersion</key>
-    <string>8</string>
+    <string>9</string>
     <key>CFBundleShortVersionString</key>
-    <string>3.0.9</string>
+    <string>3.0.10</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleExecutable</key>

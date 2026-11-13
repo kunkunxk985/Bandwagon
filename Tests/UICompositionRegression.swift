@@ -34,7 +34,12 @@ struct UICompositionRegression {
         require(
             occurrences(of: "settingsSection(\"", in: settings) == 2 &&
             settings.contains("settingsSection(\"Bandwagon\"") &&
-            settings.contains("settingsSection(\"3X-UI\""),
+            settings.contains("settingsSection(\"3X-UI\"") &&
+            settings.contains("field(\"面板地址\"") &&
+            settings.contains("credential(\"用户名\"") &&
+            settings.contains("secret(\"密码\"") &&
+            !settings.contains("API Token") &&
+            !settings.contains("双重验证"),
             "Settings must expose exactly two independent sibling sections"
         )
         require(

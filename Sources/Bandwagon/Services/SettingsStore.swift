@@ -29,7 +29,7 @@ struct AppSettings: Equatable, Sendable {
     static let refreshChoices = [0, 60, 300, 900, 1800]
 
     var bwhReady: Bool { !bwhVeid.isEmpty && !bwhApiKey.isEmpty }
-    var xuiReady: Bool { !xuiBaseUrl.isEmpty && (!xuiApiToken.isEmpty || (!xuiUsername.isEmpty && !xuiPassword.isEmpty)) }
+    var xuiReady: Bool { !xuiBaseUrl.isEmpty && !xuiUsername.isEmpty && !xuiPassword.isEmpty }
 }
 
 struct SettingsLoadResult: Sendable, Equatable {
