@@ -12,7 +12,8 @@ struct SettingsPersistenceRegression {
         require(
             settings.contains("static let applicationSupportBandwagon = \"Bandwagon\"") &&
             settings.contains("static let settingsFileName = \"settings.json\"") &&
-            settings.contains("Library/Application Support/\\(applicationSupportBandwagon)/"),
+            settings.contains("Library/Application Support") &&
+            settings.contains("applicationSupportBandwagon)/\\(settingsFileName)"),
             "user settings must stay under a stable Application Support path"
         )
         require(

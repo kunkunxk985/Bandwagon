@@ -147,6 +147,10 @@ enum SettingsStore {
 
     @discardableResult
     static func save(_ settings: AppSettings) -> Bool {
+        if ProcessInfo.processInfo.environment["BANDWAGON_STATE_REGRESSION"] == "1",
+           settings.bwhVeid == "fixture-not-persisted" {
+            return false
+        }
         guard writeObject(persistenceObject(for: settings, merging: loadObject())) else { return false }
         _ = KeychainCredentialStore.save(settings)
         return true

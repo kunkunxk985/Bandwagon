@@ -125,8 +125,9 @@ final class TrafficSampleCache {
         // knows whether the data changed.
         _ = samples(from: points)
         if let cached = cachedBuckets[range] { return cached }
+        let inRange = TrafficChartData.visible(cachedSamples, range: range)
         let trimmed = TrafficChartData.trimmed(
-            TrafficChartData.buckets(from: cachedSamples, range: range),
+            TrafficChartData.buckets(from: inRange, range: range),
             for: range
         )
         cachedBuckets[range] = trimmed
