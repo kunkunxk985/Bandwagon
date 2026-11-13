@@ -14,13 +14,13 @@ struct SettingsView: View {
     @State private var updatePhase: SoftwareUpdatePhase = .idle
     @State private var pendingUpdate: ReleaseUpdateInfo?
     @State private var downloadingUpdate = false
+    @State private var downloadedDMG: URL?
 
     private enum SoftwareUpdatePhase: Equatable {
         case idle
         case checking
         case upToDate
         case updateAvailable
-        case githubFallback
         case error(String)
     }
 
@@ -33,6 +33,10 @@ struct SettingsView: View {
 
                     if let error = model.error {
                         inlineError(error)
+                    }
+
+                    if let warning = model.credentialAccessWarning {
+                        inlineError(warning)
                     }
 
                     settingsSection("Bandwagon",
@@ -264,6 +268,16 @@ struct SettingsView: View {
                 }
             }
 
+            secret("GitHub 更新令牌", text: $draft.githubUpdateToken)
+            Text("私有仓库需 Personal Access Token：classic 勾选 repo，或 fine-grained 对本仓库只读。")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("用新版本覆盖「应用程序」里的 Bandwagon 即可升级；VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+
             if case .updateAvailable = updatePhase, let info = pendingUpdate {
                 HStack(spacing: 12) {
                     Text("新版本 \(info.version)")
@@ -278,11 +292,22 @@ struct SettingsView: View {
                 }
             }
 
-            if updatePhase == .githubFallback {
-                Button("在浏览器中打开 Releases") {
-                    NSWorkspace.shared.open(ReleaseUpdateClient.latestReleasePage)
+            if let dmg = downloadedDMG {
+                HStack(spacing: 12) {
+                    Text("安装包已下载")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("在访达中显示") {
+                        NSWorkspace.shared.activateFileViewerSelecting([dmg])
+                    }
+                    .buttonStyle(.bordered)
+                    Button("打开安装包") {
+                        NSWorkspace.shared.open(dmg)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Theme.accent)
                 }
-                .buttonStyle(.bordered)
             }
         }
         .padding(18)
@@ -299,8 +324,6 @@ struct SettingsView: View {
             return "已是最新版本。"
         case .updateAvailable:
             return "发现新版本，可下载安装包。"
-        case .githubFallback:
-            return "无法连接 GitHub，请浏览器打开 Releases"
         case .error(let message):
             return message
         }
@@ -312,7 +335,7 @@ struct SettingsView: View {
             return Theme.success
         case .updateAvailable:
             return Theme.accent
-        case .githubFallback, .error:
+        case .error:
             return Theme.warning
         default:
             return .secondary
@@ -325,7 +348,9 @@ struct SettingsView: View {
         pendingUpdate = nil
         Task {
             do {
-                let outcome = try await ReleaseUpdateClient.checkForUpdate()
+                let outcome = try await ReleaseUpdateClient.checkForUpdate(
+                    githubToken: draft.githubUpdateToken
+                )
                 switch outcome {
                 case .upToDate:
                     updatePhase = .upToDate
@@ -334,11 +359,7 @@ struct SettingsView: View {
                     updatePhase = .updateAvailable
                 }
             } catch let error as ReleaseUpdateError {
-                if case .githubUnavailable = error {
-                    updatePhase = .githubFallback
-                } else {
-                    updatePhase = .error(error.localizedDescription)
-                }
+                updatePhase = .error(error.localizedDescription)
             } catch {
                 updatePhase = .error(error.localizedDescription)
             }
@@ -353,8 +374,10 @@ struct SettingsView: View {
             do {
                 let fileURL = try await ReleaseUpdateClient.downloadRelease(
                     dmgURL: info.dmgDownloadURL,
-                    version: info.version
+                    version: info.version,
+                    githubToken: draft.githubUpdateToken
                 )
+                downloadedDMG = fileURL
                 NSWorkspace.shared.activateFileViewerSelecting([fileURL])
                 updatePhase = .upToDate
                 pendingUpdate = nil

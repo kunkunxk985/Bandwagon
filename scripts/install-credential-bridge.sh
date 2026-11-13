@@ -39,3 +39,4 @@ bash "$ROOT/scripts/verify-credential-bridge.sh" "$STAGE"
 mv -f "$STAGE" "$INSTALLED"
 bash "$ROOT/scripts/verify-credential-bridge.sh" "$INSTALLED"
 printf 'Installed fixed credential helper without rebuilding or resigning it\n'
+printf 'Note: a packaged Bandwagon.app upgrade also refreshes the helper when its pinned digest differs from the on-disk copy.\n'

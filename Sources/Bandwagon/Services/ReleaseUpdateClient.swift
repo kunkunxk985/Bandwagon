@@ -2,6 +2,7 @@ import Foundation
 
 enum ReleaseUpdateError: LocalizedError {
     case githubUnavailable
+    case privateRepoNeedsToken
     case invalidResponse
     case noDmgAsset
     case downloadFailed(String)
@@ -9,7 +10,9 @@ enum ReleaseUpdateError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .githubUnavailable:
-            return "无法连接 GitHub，请浏览器打开 Releases"
+            return "无法连接 GitHub，请检查网络后重试。"
+        case .privateRepoNeedsToken:
+            return "私有仓库需在设置中填写 GitHub 令牌。"
         case .invalidResponse:
             return "GitHub 返回了无法识别的发布信息。"
         case .noDmgAsset:
@@ -42,8 +45,8 @@ enum ReleaseUpdateClient {
         return trimmed.isEmpty ? "0" : trimmed
     }
 
-    static func checkForUpdate(session: URLSession = .shared) async throws -> CheckOutcome {
-        let release = try await fetchLatestRelease(session: session)
+    static func checkForUpdate(githubToken: String = "", session: URLSession = .shared) async throws -> CheckOutcome {
+        let release = try await fetchLatestRelease(githubToken: githubToken, session: session)
         let version = SemverVersion.normalizeTag(release.tagName)
         guard SemverVersion.isVersion(version, newerThan: installedVersion) else {
             return .upToDate
@@ -55,16 +58,24 @@ enum ReleaseUpdateClient {
         return .updateAvailable(ReleaseUpdateInfo(version: version, dmgDownloadURL: url))
     }
 
-    static func downloadRelease(dmgURL: URL, version: String, session: URLSession = .shared) async throws -> URL {
+    static func downloadRelease(
+        dmgURL: URL,
+        version: String,
+        githubToken: String = "",
+        session: URLSession = .shared
+    ) async throws -> URL {
         let destination = downloadsDirectory()
             .appendingPathComponent("Bandwagon-\(version)-macOS.dmg", isDirectory: false)
 
         var request = URLRequest(url: dmgURL)
-        request.setValue("Bandwagon", forHTTPHeaderField: "User-Agent")
+        applyGitHubAuth(to: &request, token: githubToken)
 
         let (temporaryURL, response) = try await session.download(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw ReleaseUpdateError.downloadFailed("下载失败：服务器未返回有效响应。")
+        }
+        if http.statusCode == 401 || http.statusCode == 403 {
+            throw authFailure(token: githubToken)
         }
         guard (200 ... 299).contains(http.statusCode) else {
             throw ReleaseUpdateError.downloadFailed("下载失败（HTTP \(http.statusCode)）。")
@@ -76,6 +87,21 @@ enum ReleaseUpdateClient {
         }
         try manager.moveItem(at: temporaryURL, to: destination)
         return destination
+    }
+
+    static func applyGitHubAuth(to request: inout URLRequest, token: String) {
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("Bandwagon", forHTTPHeaderField: "User-Agent")
+        let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            request.setValue("Bearer \(trimmed)", forHTTPHeaderField: "Authorization")
+        }
+    }
+
+    static func authFailure(token: String) -> ReleaseUpdateError {
+        token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? .privateRepoNeedsToken
+            : .downloadFailed("GitHub 拒绝了令牌（HTTP 401/403），请检查权限是否包含此仓库的读取访问。")
     }
 
     private struct GitHubRelease: Decodable {
@@ -98,10 +124,9 @@ enum ReleaseUpdateClient {
         }
     }
 
-    private static func fetchLatestRelease(session: URLSession) async throws -> GitHubRelease {
+    private static func fetchLatestRelease(githubToken: String, session: URLSession) async throws -> GitHubRelease {
         var request = URLRequest(url: latestReleaseAPI)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("Bandwagon", forHTTPHeaderField: "User-Agent")
+        applyGitHubAuth(to: &request, token: githubToken)
 
         let data: Data
         let response: URLResponse
@@ -118,10 +143,13 @@ enum ReleaseUpdateClient {
         guard let http = response as? HTTPURLResponse else {
             throw ReleaseUpdateError.invalidResponse
         }
-        if http.statusCode == 401 || http.statusCode == 403 || http.statusCode == 404 {
-            throw ReleaseUpdateError.githubUnavailable
+        if http.statusCode == 401 || http.statusCode == 403 {
+            throw authFailure(token: githubToken)
         }
         guard (200 ... 299).contains(http.statusCode) else {
+            if http.statusCode == 404 {
+                throw authFailure(token: githubToken)
+            }
             throw ReleaseUpdateError.githubUnavailable
         }
         guard let release = try? JSONDecoder().decode(GitHubRelease.self, from: data) else {

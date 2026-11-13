@@ -5,7 +5,9 @@ import Foundation
 enum OverviewCacheStore {
     private static var fileURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/Bandwagon/cache.json")
+            .appendingPathComponent(
+                "Library/Application Support/\(SettingsStore.applicationSupportBandwagon)/\(SettingsStore.overviewCacheFileName)"
+            )
     }
 
     static func load() -> OverviewResponse? {

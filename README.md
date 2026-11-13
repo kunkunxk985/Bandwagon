@@ -13,7 +13,7 @@ macOS 本地客户端，用来看三件事：**搬瓦工套餐流量会不会超
 
 在 [GitHub Releases](https://github.com/kunkunxk985/Bandwagon/releases) 下载最新的 `Bandwagon-*-macOS.dmg`（或 zip）。打开 DMG 后把应用拖进「应用程序」。首次若被拦截，请右键 **打开**。安装包为 CI 临时签名，未经 Apple 公证。
 
-已安装的应用可在 **设置 → 软件更新** 中点 **检查更新**；若有新版本可将 DMG 直接下载到「下载」文件夹（私有仓库下 API 可能不可达，此时界面会引导用浏览器打开 Releases）。
+已安装的应用可在 **设置 → 软件更新** 中填写 **GitHub 更新令牌**（私有仓库必需）、点 **检查更新** 并在应用内下载 DMG 到「下载」文件夹。令牌保存在本机密钥串目录下的受保护文件中，不写入 `settings.json`；classic PAT 需 `repo` 权限，或 fine-grained 对本仓库只读。
 
 ## 构建与运行
 
@@ -43,7 +43,11 @@ open -n --env BANDWAGON_SNAPSHOT_DIR=/tmp/bandwagon-shots ~/Desktop/Bandwagon.ap
 | --- | --- |
 | 凭据（API Key、面板账号密码） | 登录钥匙串，经独立的凭据辅助程序读写 |
 | 非敏感设置（VEID、面板地址、刷新间隔） | `~/Library/Application Support/Bandwagon/settings.json` |
+| 上次成功数据快照 | `~/Library/Application Support/Bandwagon/cache.json` |
 | 凭据辅助程序 | `~/Library/Application Support/Bandwagon/BandwagonCredentialBridge` |
+| GitHub 更新令牌 | `~/Library/Application Support/Bandwagon/.github-update-token` |
+
+**升级应用**：用新 DMG 里的 Bandwagon 拖进「应用程序」覆盖旧版本即可；上述 `Application Support/Bandwagon/` 目录会保留。不要把手动的「移到废纸篓」用在 `Application Support` 文件夹本身。
 
 ## 目录结构
 
