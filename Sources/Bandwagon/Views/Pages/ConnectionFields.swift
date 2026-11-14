@@ -8,7 +8,9 @@ enum ConnectionFields {
         draft: Binding<AppSettings>,
         showApiKeyHint: Bool,
         inlineSave: (() -> Void)? = nil,
-        saving: Bool = false
+        saving: Bool = false,
+        saveButtonTitle: String = "保存并连接",
+        inlineSaveEnabled: Bool = true
     ) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             labeledField("VEID", text: draft.bwhVeid)
@@ -20,7 +22,12 @@ enum ConnectionFields {
                     .foregroundStyle(.secondary)
             }
             if let inlineSave {
-                inlineSaveButton(action: inlineSave, saving: saving)
+                inlineSaveButton(
+                    action: inlineSave,
+                    saving: saving,
+                    title: saveButtonTitle,
+                    enabled: inlineSaveEnabled
+                )
             }
         }
     }
@@ -30,7 +37,9 @@ enum ConnectionFields {
         draft: Binding<AppSettings>,
         showCredentialHint: Bool,
         inlineSave: (() -> Void)? = nil,
-        saving: Bool = false
+        saving: Bool = false,
+        saveButtonTitle: String = "保存并连接",
+        inlineSaveEnabled: Bool = true
     ) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             labeledField("面板地址", text: draft.xuiBaseUrl)
@@ -56,7 +65,12 @@ enum ConnectionFields {
                     .foregroundStyle(.secondary)
             }
             if let inlineSave {
-                inlineSaveButton(action: inlineSave, saving: saving)
+                inlineSaveButton(
+                    action: inlineSave,
+                    saving: saving,
+                    title: saveButtonTitle,
+                    enabled: inlineSaveEnabled
+                )
             }
         }
     }
@@ -92,21 +106,26 @@ enum ConnectionFields {
         }
     }
 
-    private static func inlineSaveButton(action: @escaping () -> Void, saving: Bool) -> some View {
+    private static func inlineSaveButton(
+        action: @escaping () -> Void,
+        saving: Bool,
+        title: String,
+        enabled: Bool
+    ) -> some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 if saving {
                     ProgressView()
                         .controlSize(.small)
                 }
-                Text(saving ? "连接中…" : "保存并连接")
+                Text(saving ? "连接中…" : title)
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
         .tint(Theme.accent)
         .controlSize(.large)
-        .disabled(saving)
+        .disabled(saving || !enabled)
         .padding(.top, 4)
     }
 }

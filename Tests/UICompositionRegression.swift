@@ -226,6 +226,13 @@ struct UICompositionRegression {
             "Settings must surface unsaved draft changes and route every save action through one handler"
         )
         require(
+            settings.contains("inlineSave: performSave") &&
+            settings.contains("saveButtonTitle: \"确认并连接\"") &&
+            !settings.contains("inlineSave: nil") &&
+            connectionFields.contains("saveButtonTitle: String = \"保存并连接\""),
+            "Settings connection cards must expose inline confirm wired to performSave with Settings-specific copy"
+        )
+        require(
             settingsStore.contains("if let stored = object[\"REFRESH_SECONDS\"]") &&
             settingsStore.contains("object[\"REFRESH_SECONDS\"] = settings.refreshSeconds"),
             "Polling off must survive a round trip, so the read must key off key presence"
