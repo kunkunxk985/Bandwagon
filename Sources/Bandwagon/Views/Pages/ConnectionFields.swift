@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Connection fields shared 1:1 between Settings「连接」and the first-launch wizard.
+@MainActor
 enum ConnectionFields {
     @ViewBuilder
     static func bandwagon(
