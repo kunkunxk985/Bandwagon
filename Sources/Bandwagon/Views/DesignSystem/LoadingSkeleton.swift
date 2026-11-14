@@ -206,7 +206,7 @@ struct VPSLoadingSkeleton: View {
             systemSkeleton
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("正在加载 VPS 信息")
+        .accessibilityLabel("正在加载服务器信息")
     }
 
     private var systemSkeleton: some View {

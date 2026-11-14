@@ -135,6 +135,21 @@ struct UICompositionRegression {
             !contentView.contains("Bandwagon v3.0"),
             "Sidebar must not spend space on decorative version microcopy"
         )
+        require(
+            contentView.contains("case .vps: \"服务器\"") &&
+            contentView.contains("Button(\"服务器\")") &&
+            !contentView.contains("\"VPS\"") &&
+            vps.contains("PageHeader(title: \"服务器\"") &&
+            vps.contains(".navigationTitle(\"服务器\")") &&
+            !vps.contains("subtitle:") &&
+            overview.contains("PageHeader(title: \"总览\"") &&
+            !overview.contains("subtitle:") &&
+            overview.contains("PanelLink(title: \"服务器详情\")") &&
+            !overview.contains("VPS") &&
+            skeleton.contains("正在加载服务器信息") &&
+            !skeleton.contains("VPS 信息"),
+            "Server navigation and page titles say 服务器, and 总览 and 服务器 have no host subtitle"
+        )
         let primaryNav = contentView.range(of: "ForEach(Tab.primary)")
         let sidebarSpacer = contentView.range(of: "Spacer()")
         let pinnedSettings = contentView.range(of: "sidebarItem(.settings)")

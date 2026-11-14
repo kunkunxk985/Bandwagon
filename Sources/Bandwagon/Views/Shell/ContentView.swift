@@ -13,7 +13,7 @@ struct ContentView: View {
         var title: String {
             switch self {
             case .overview: "总览"
-            case .vps: "VPS"
+            case .vps: "服务器"
             case .clients: "客户端"
             case .settings: "设置"
             }
@@ -68,7 +68,7 @@ struct ContentView: View {
             Group {
                 Button("总览") { switchTab(to: .overview) }
                     .keyboardShortcut("1", modifiers: .command)
-                Button("VPS") { switchTab(to: .vps) }
+                Button("服务器") { switchTab(to: .vps) }
                     .keyboardShortcut("2", modifiers: .command)
                 Button("客户端") { switchTab(to: .clients) }
                     .keyboardShortcut("3", modifiers: .command)
