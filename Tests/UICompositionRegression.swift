@@ -204,11 +204,15 @@ struct UICompositionRegression {
             settings.contains("refreshCard") &&
             settings.contains("$draft.refreshSeconds") &&
             !settings.contains("settingsSection(\"刷新\"") &&
-            settings.contains("保存并连接") &&
+            !settings.contains("saveBar") &&
+            !settings.contains("保存并连接") &&
+            settings.contains("确认并连接") &&
             !settings.contains("保存并刷新") &&
             settings.contains("openConfigFolderRow") &&
-            settings.contains("trafficResetSyncRow"),
-            "Refresh cadence and advanced prefs must live on Settings; saves must read 保存并连接"
+            settings.contains("trafficResetSyncRow") &&
+            settings.contains("onChange(of: draft.refreshSeconds)") &&
+            settings.contains("onChange(of: draft.syncClientResetWithServer)"),
+            "Refresh and advanced prefs must persist without the global save bar; connections use inline 确认并连接"
         )
         require(
             app.contains("AppRootView()") &&
