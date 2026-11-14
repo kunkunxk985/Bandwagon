@@ -233,6 +233,9 @@ enum UsageRing {
 struct StatusPill: View {
     var title: String
     var tint: Color
+    /// Point size of the word. The clients table passes the shared row size;
+    /// other screens keep this quieter default.
+    var size: CGFloat = 12
 
     var body: some View {
         HStack(spacing: 6) {
@@ -240,7 +243,7 @@ struct StatusPill: View {
                 .fill(tint)
                 .frame(width: 6, height: 6)
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: size, weight: .medium))
                 .foregroundStyle(tint == .secondary ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary))
                 .lineLimit(1)
         }

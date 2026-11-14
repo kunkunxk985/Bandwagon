@@ -288,8 +288,6 @@ private struct ClientTableHeader: View {
             sortable(.recent, alignment: .leading)
             sortable(.usage, alignment: .leading)
             sortable(.quota, alignment: .leading)
-            Text("到期")
-                .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: 1)
         }
@@ -335,6 +333,14 @@ private enum ClientColumns {
     static let inset = CGFloat(ClientColumnShare.inset)
 }
 
+/// One point size for the clients-table row body. Status, name, last online,
+/// the usage figures, and the quota all use it, matching `Theme.body`, so none
+/// of them reads as a stray larger or smaller label. The email under the name
+/// stays smaller; it is a second line, not another column.
+private enum ClientRowTypography {
+    static let size: CGFloat = 13
+}
+
 struct ClientRow: View {
     @Environment(AppModel.self) private var model
     let client: Client
@@ -367,14 +373,14 @@ struct ClientRow: View {
         ClientColumnLayout {
             // Status leads the row, dot and word together, so who is online reads
             // down one column beside the names.
-            StatusPill(title: client.state.title, tint: client.state.swiftColor)
+            StatusPill(title: client.state.title, tint: client.state.swiftColor, size: ClientRowTypography.size)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             // No initial avatar: a grey circle holding "杜" twice and "C" once
             // said nothing the name beside it didn't.
             VStack(alignment: .leading, spacing: 2) {
                 Text(client.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: ClientRowTypography.size, weight: .medium))
                     .lineLimit(1)
                 if let email = client.email, !email.isEmpty, email != client.name {
                     Text(email)
@@ -386,9 +392,8 @@ struct ClientRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(client.lastOnlineText())
-                .font(.system(size: 12.5))
+                .font(Theme.number(ClientRowTypography.size, weight: .medium))
                 .foregroundStyle(client.isConnected ? AnyShapeStyle(ClientState.online.swiftColor) : AnyShapeStyle(.secondary))
-                .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -396,20 +401,12 @@ struct ClientRow: View {
             usageLine
 
             Text(client.quotaLabel)
-                .font(Theme.number(12.5, weight: .medium))
+                .font(Theme.number(ClientRowTypography.size, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .help("配额上限")
-
-            Text(client.expiryLabel())
-                .font(Theme.number(12, weight: .medium))
-                .foregroundStyle(client.expiryWarning == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(ClientState.warn.swiftColor))
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .help("到期时间")
 
             Button {
                 let text = client.email ?? client.name
@@ -457,7 +454,7 @@ struct ClientRow: View {
                 .help("长度＝相对最大用量，颜色＝配额占用风险")
             HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
                 Text(ByteFormat.string(client.used))
-                    .font(Theme.number(13))
+                    .font(Theme.number(ClientRowTypography.size, weight: .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     .layoutPriority(1)
@@ -473,10 +470,10 @@ struct ClientRow: View {
     private func directionMark(_ symbol: String, bytes: Int?, access: String) -> some View {
         HStack(spacing: 2) {
             Text(symbol)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: ClientRowTypography.size, weight: .medium))
                 .foregroundStyle(.secondary)
             Text(ByteFormat.compact(bytes))
-                .font(Theme.number(12, weight: .medium))
+                .font(Theme.number(ClientRowTypography.size, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

@@ -3,7 +3,7 @@ import Foundation
 /// How the clients table divides one row.
 ///
 /// Columns, in order: status, name, last online, usage line (bar + total +
-/// upload + download), quota, expiry, copy.
+/// upload + download), quota, copy.
 ///
 /// `minimum` is the comfortable width. Spare room above that is shared by
 /// `weight`, so a fullscreen window spreads every column instead of leaving an
@@ -28,17 +28,16 @@ enum ClientColumnShare {
 
     static let status = Column(floor: 52, minimum: 56, weight: 0.7)
     static let name = Column(floor: 72, minimum: 108, weight: 1.8)
-    /// `yyyy/MM/dd HH:mm:ss` at 12.5pt. No slack: the timestamp stays whole.
-    static let lastOnline = Column(floor: 148, minimum: 148, weight: 1.3)
-    /// Floor fits the total and the two direction figures with a gap between
-    /// each, plus a little room before the quota. The bar is the slack.
-    static let usage = Column(floor: 220, minimum: 258, weight: 2.8)
-    static let quota = Column(floor: 44, minimum: 48, weight: 0.85)
-    static let expiry = Column(floor: 84, minimum: 92, weight: 1.15)
+    /// `yyyy/MM/dd HH:mm:ss` at 13pt medium. No slack: the timestamp stays whole.
+    static let lastOnline = Column(floor: 160, minimum: 160, weight: 1.3)
+    /// Floor fits the 13pt total and the two direction figures with a gap
+    /// between each, plus a little room before the quota. The bar is the slack.
+    static let usage = Column(floor: 236, minimum: 274, weight: 2.8)
+    static let quota = Column(floor: 48, minimum: 52, weight: 0.85)
     /// The copy control stays a fixed slot. It does not absorb spare width.
     static let copy = Column(floor: 24, minimum: 24, weight: 0)
 
-    static let columns: [Column] = [status, name, lastOnline, usage, quota, expiry, copy]
+    static let columns: [Column] = [status, name, lastOnline, usage, quota, copy]
 
     static var minimumRowWidth: Double {
         columns.reduce(0) { $0 + $1.minimum } + spacing * Double(columns.count - 1)

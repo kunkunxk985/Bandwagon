@@ -3,8 +3,8 @@ import Foundation
 @main
 struct ClientColumnRegression {
     static func main() {
-        guard ClientColumnShare.columns.count == 7 else {
-            fail("the clients table has status, name, last online, usage, quota, expiry, and copy")
+        guard ClientColumnShare.columns.count == 6 else {
+            fail("the clients table has status, name, last online, usage, quota, and copy")
         }
         guard ClientColumnShare.columns.map(\.minimum) == [
             ClientColumnShare.status.minimum,
@@ -12,10 +12,9 @@ struct ClientColumnRegression {
             ClientColumnShare.lastOnline.minimum,
             ClientColumnShare.usage.minimum,
             ClientColumnShare.quota.minimum,
-            ClientColumnShare.expiry.minimum,
             ClientColumnShare.copy.minimum,
         ] else {
-            fail("column order must stay status, name, last online, usage, quota, expiry, copy")
+            fail("column order must stay status, name, last online, usage, quota, copy")
         }
         for column in ClientColumnShare.columns where column.floor > column.minimum || column.weight < 0 {
             fail("a column floor must sit at or below its minimum")
@@ -51,13 +50,13 @@ struct ClientColumnRegression {
             fail("the usage line must keep room for its figures, got \(narrow[3])")
         }
         let wide = widths(1800)
-        for index in 0..<6 where wide[index] <= narrow[index] {
+        for index in 0..<5 where wide[index] <= narrow[index] {
             fail("column \(index) must grow between a narrow window and a wide one")
         }
-        guard abs(wide[6] - ClientColumnShare.copy.minimum) < 0.01 else {
-            fail("the copy slot must stay at its minimum once the row has room, got \(wide[6])")
+        guard abs(wide[5] - ClientColumnShare.copy.minimum) < 0.01 else {
+            fail("the copy slot must stay at its minimum once the row has room, got \(wide[5])")
         }
-        guard wide[3] > wide[1], wide[3] > wide[2], wide[3] > wide[5] else {
+        guard wide[3] > wide[0], wide[3] > wide[1], wide[3] > wide[2], wide[3] > wide[4] else {
             fail("the usage column must be the widest text column on a wide row")
         }
 
