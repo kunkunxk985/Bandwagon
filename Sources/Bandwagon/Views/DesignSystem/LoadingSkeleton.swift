@@ -135,16 +135,16 @@ struct ClientsLoadingSkeleton: View {
             .padding(.bottom, 2)
 
             Panel(padding: 0) {
-                HStack(spacing: 16) {
-                    ForEach(0..<5, id: \.self) { index in
+                HStack(spacing: 12) {
+                    ForEach(0..<8, id: \.self) { index in
                         SkeletonBlock(
-                            width: index == 1 ? 56 : 40,
+                            width: index == 1 ? 56 : 36,
                             height: 10,
                             cornerRadius: 3
                         )
                     }
-                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 11)
                 .background(Theme.surface)
@@ -170,19 +170,21 @@ struct ClientsLoadingSkeleton: View {
     }
 
     private var clientRow: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             SkeletonBlock(width: 44, height: 22, cornerRadius: Theme.controlRadius)
             VStack(alignment: .leading, spacing: 5) {
-                SkeletonBlock(width: 140, height: 12)
-                SkeletonBlock(width: 100, height: 10)
+                SkeletonBlock(width: 96, height: 12)
+                SkeletonBlock(width: 72, height: 10)
             }
-            .frame(minWidth: 120, maxWidth: 200, alignment: .leading)
-            SkeletonBlock(width: 56, height: 11)
-            Spacer(minLength: 8)
-            SkeletonBlock(width: 80, height: 6, cornerRadius: 3)
-            SkeletonBlock(width: 52, height: 12)
-            SkeletonBlock(width: 40, height: 12)
+            .frame(width: 108, alignment: .leading)
+            SkeletonBlock(width: 120, height: 11)
+            SkeletonBlock(width: 64, height: 6, cornerRadius: 3)
+            SkeletonBlock(width: 48, height: 12)
+            SkeletonBlock(width: 56, height: 22)
+            SkeletonBlock(width: 36, height: 12)
+            SkeletonBlock(width: 72, height: 12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 18)
         .padding(.vertical, 11)
     }
