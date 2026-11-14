@@ -350,16 +350,17 @@ struct UICompositionRegression {
         let xuiClient = try source("Sources/Bandwagon/Services/XUIClient.swift")
         let appModel = try source("Sources/Bandwagon/Services/AppModel.swift")
         require(
-            clients.contains("serverResetSyncBar") &&
-            clients.contains("流量重置与服务器同步") &&
-            clients.contains("在设置中管理") &&
+            !clients.contains("serverResetSyncBar") &&
+            !clients.contains("流量重置与服务器同步") &&
+            !clients.contains("在设置中管理") &&
             !clients.contains("setSyncClientResetWithServer") &&
             settings.contains("$draft.syncClientResetWithServer") &&
+            settings.contains("trafficResetSyncRow") &&
             overview.contains("3X-UI 已连接") &&
             xuiClient.contains("func resetAllClientsTraffic(") &&
             xuiClient.contains("func normalizeBuiltInTrafficResetToNever(") &&
             appModel.contains("func coordinateServerResetSync()"),
-            "Reset sync is edited only in Settings; Clients shows a read-only summary; Overview shows healthy 3X-UI"
+            "Traffic reset sync is configured only in Settings; Clients shows no sync UI"
         )
 
         print("PASS unified cards, optional actions, flat settings, error navigation, quota composition, stable chart marks, shared monitoring components, refresh cadence, overrun verdicts, stale-data banners, ring tint, reduce motion, and cached formatters")
