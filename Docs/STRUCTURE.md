@@ -69,7 +69,7 @@ Bandwagon/
 | --- | --- |
 | `OverviewView.swift` | 总览：页头（主机、运行状态、在线数）、用量 hero、近 7 天流量、用量最高的客户端、服务器 |
 | `MiniTrafficCard.swift` | 总览专属：「近 7 天流量」柱状卡，图表高度随卡片伸展 |
-| `VPSView.swift` | VPS：用量 hero、系统概况规格表、流量趋势图 |
+| `VPSView.swift` | VPS：用量 hero、流量趋势图、系统概况规格表 |
 | `TrafficHistoryChart.swift` | VPS 专属：流量趋势图（Swift Charts）与汇总指标 |
 | `ClientsView.swift` | 客户端：统计条、筛选与搜索、带固定表头的客户端表格（点表头排序，再点切换方向） |
 | `SettingsView.swift` | 设置：两个凭据区块 + 自动刷新 + 菜单栏开关（即时生效）+ **软件更新**（检查 → 安装更新并重启；失败时可手动下载）+ 底部保存栏（⌘S） |

@@ -59,9 +59,7 @@ struct VPSView: View {
                     if let error = bwh?.error {
                         BandwagonFailureBanner(error: error, selectedTab: $selectedTab)
                     }
-                    heroCard
-                    systemCard
-                    historyCard
+                    loadedSections
                 } else if let error = bwh?.error {
                     let failure = ServiceFailure(service: "Bandwagon", error: error, needsSettings: model.bwhNeedsSettings)
                     StatusCard(
@@ -83,6 +81,20 @@ struct VPSView: View {
                     )
                 }
             }
+    }
+
+    /// Usage hero, then the traffic trend, then system specs. Stack spacing stays
+    /// at zero so a missing chart does not open a second gap under the hero.
+    private var loadedSections: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            heroCard
+            if let points = model.overview.bwhHistory, !points.isEmpty {
+                historyCard(points: points)
+                    .padding(.top, Theme.gap)
+            }
+            systemCard
+                .padding(.top, Theme.gap)
+        }
     }
 
     // MARK: - 用量概览
@@ -168,15 +180,9 @@ struct VPSView: View {
         return items
     }
 
-    @ViewBuilder
-    private var historyCard: some View {
-        let points = model.overview.bwhHistory ?? []
-        if points.isEmpty {
-            Color.clear
-        } else {
-            Panel(padding: 20) {
-                TrafficHistoryChart(points: points)
-            }
+    private func historyCard(points: [HistoryPoint]) -> some View {
+        Panel(padding: 20) {
+            TrafficHistoryChart(points: points)
         }
     }
 
