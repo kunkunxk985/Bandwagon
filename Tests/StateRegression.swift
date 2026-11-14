@@ -47,5 +47,17 @@ import Foundation
      exit(1)
    }
    print("PASS failed credential save does not replace active settings")
+
+   let fresh = AppSettings()
+   guard fresh.appearance == .system,
+         AppearanceMode.stored("") == .system,
+         AppearanceMode.stored("nope") == .system,
+         AppearanceMode.stored("light") == .light,
+         AppearanceMode.stored("dark") == .dark,
+         AppearanceMode.stored("system") == .system else {
+     print("FAIL appearance defaults to follow system and ignores unknown values")
+     exit(1)
+   }
+   print("PASS appearance defaults to follow system")
  }
 }

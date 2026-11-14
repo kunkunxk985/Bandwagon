@@ -64,6 +64,7 @@ struct UICompositionRegression {
             settings.contains("showApiKeyHint: false") &&
             settings.contains("showCredentialHint: false") &&
             settings.contains("Text(\"自动刷新\")") &&
+            settings.contains("Text(\"外观\")") &&
             settings.contains("Text(\"菜单栏\")") &&
             settings.contains("Text(\"流量重置与服务器同步\")") &&
             settings.contains("Text(\"软件更新\")") &&
@@ -315,6 +316,41 @@ struct UICompositionRegression {
             settingsStore.contains("if let stored = object[\"REFRESH_SECONDS\"]") &&
             settingsStore.contains("object[\"REFRESH_SECONDS\"] = settings.refreshSeconds"),
             "Polling off must survive a round trip, so the read must key off key presence"
+        )
+        let chrome = try source("Sources/Bandwagon/Views/Shell/WindowChrome.swift")
+        let appearanceModel = try source("Sources/Bandwagon/Services/AppModel.swift")
+        let sun = settings.range(of: "systemName: \"sun.max\"")?.lowerBound ?? settings.endIndex
+        let moon = settings.range(of: "systemName: \"moon\"")?.lowerBound ?? settings.endIndex
+        let monitor = settings.range(of: "systemName: \"display\"")?.lowerBound ?? settings.endIndex
+        let refreshRow = settings.range(of: "refreshCard")?.lowerBound ?? settings.endIndex
+        let appearanceRow = settings.range(of: "appearanceCard")?.lowerBound ?? settings.endIndex
+        let menuRow = settings.range(of: "menuBarCard")?.lowerBound ?? settings.startIndex
+        require(
+            refreshRow < appearanceRow && appearanceRow < menuRow &&
+            settings.contains("Text(\"外观\")") &&
+            settings.contains("Picker(\"模式\"") &&
+            settings.contains(".pickerStyle(.segmented)") &&
+            settings.contains(".tag(AppearanceMode.light)") &&
+            settings.contains(".tag(AppearanceMode.dark)") &&
+            settings.contains(".tag(AppearanceMode.system)") &&
+            sun < moon && moon < monitor &&
+            settings.contains("model.setAppearance") &&
+            !settings.contains("选择外观") &&
+            !settings.contains("跟随系统时") &&
+            settingsStore.contains("var appearance = AppearanceMode.system") &&
+            settingsStore.contains("object[\"APPEARANCE\"] = settings.appearance.rawValue") &&
+            settingsStore.contains("object[\"APPEARANCE\"] = mode.rawValue") &&
+            settingsStore.contains("static let retiredKeys = [\"REFRESH_INTERVAL\", \"THEME\"]") &&
+            !settingsStore.contains("object[\"THEME\"]") &&
+            appearanceModel.contains("func setAppearance(_ mode: AppearanceMode)") &&
+            appRoot.contains(".preferredColorScheme(model.settings.appearance.colorScheme)") &&
+            appRoot.contains("WindowAppearance(mode: model.settings.appearance)") &&
+            occurrences(of: "case .system: return nil", in: chrome) == 2 &&
+            chrome.contains("NSApp.appearance = appearance") &&
+            chrome.contains("window.appearance = appearance") &&
+            chrome.contains("AppleInterfaceThemeChangedNotification") &&
+            !chrome.contains("effectiveAppearance"),
+            "Appearance is an icon segment beside refresh and the menu bar; system stays nil so it keeps tracking the OS"
         )
 
         require(
