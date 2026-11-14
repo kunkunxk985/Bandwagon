@@ -401,7 +401,9 @@ struct UICompositionRegression {
             !overview.contains("3X-UI 已连接") &&
             !overview.contains("面板运行正常") &&
             !overview.contains("查看客户端") &&
-            overview.contains("xuiSection"),
+            overview.contains("xuiSection") &&
+            overview.contains("if let xui = model.overview.xui, let error = xui.error") &&
+            !overview.contains("else { return }"),
             "Overview must omit the healthy 3X-UI status strip and still handle XUI failures"
         )
 

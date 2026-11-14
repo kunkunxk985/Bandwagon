@@ -145,27 +145,34 @@ struct OverviewView: View {
 
     @ViewBuilder
     private var xuiSection: some View {
-        let xui = model.overview.xui
-        guard let xui, let error = xui.error else { return }
+        if let xui = model.overview.xui, let error = xui.error {
+            xuiFailure(xui: xui, error: error)
+        }
+    }
+
+    /// Shown only when 3X-UI failed. A healthy panel adds nothing here.
+    private func xuiFailure(xui: XUIOverview, error: String) -> some View {
         let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
-        if xui.clientCount != nil {
-            StatusBanner(
-                title: failure.staleTitle,
-                message: failure.message,
-                icon: failure.icon,
-                tint: Theme.warning,
-                actionTitle: failure.actionTitle,
-                action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
-            )
-        } else {
-            StatusCard(
-                title: failure.title,
-                message: failure.message,
-                icon: failure.icon,
-                tint: Theme.warning,
-                action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
-                actionTitle: failure.actionTitle
-            )
+        return Group {
+            if xui.clientCount != nil {
+                StatusBanner(
+                    title: failure.staleTitle,
+                    message: failure.message,
+                    icon: failure.icon,
+                    tint: Theme.warning,
+                    actionTitle: failure.actionTitle,
+                    action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
+                )
+            } else {
+                StatusCard(
+                    title: failure.title,
+                    message: failure.message,
+                    icon: failure.icon,
+                    tint: Theme.warning,
+                    action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) },
+                    actionTitle: failure.actionTitle
+                )
+            }
         }
     }
 
