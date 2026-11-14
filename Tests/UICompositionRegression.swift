@@ -219,7 +219,7 @@ struct UICompositionRegression {
             clients.contains("Text(client.name)") &&
             clients.contains("Text(email)") &&
             !clients.contains("prefix(1)") &&
-            clients.contains(".frame(minWidth: 28, maxWidth: .infinity)") &&
+            clients.contains(".frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)") &&
             !clients.contains("nameMax"),
             "Client rows lead with name and email, and the usage bar grows inside its column"
         )
