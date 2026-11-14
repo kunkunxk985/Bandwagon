@@ -328,6 +328,12 @@ struct UICompositionRegression {
             "Reduce Motion must be honoured wherever the app animates"
         )
         require(
+            settings.contains("frame(maxHeight: isOpen.wrappedValue ? .infinity : 0") &&
+            settings.contains(".compositingGroup()") &&
+            settings.contains(".clipShape(RoundedRectangle(cornerRadius: Theme.panelRadius"),
+            "Settings disclosure sections must keep expand/collapse inside the panel bounds"
+        )
+        require(
             miniTraffic.contains("return \"今日\"") &&
             trafficChart.contains("return \"今日\"") &&
             clients.contains("client.expiryWarning"),
