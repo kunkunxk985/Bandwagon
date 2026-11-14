@@ -283,6 +283,17 @@ final class AppModel {
 
     // MARK: - Server-Synced Client Traffic Reset
 
+    /// Applies the window appearance immediately and writes only that key.
+    /// A full save would reload the panels for a choice that does not affect them.
+    func setAppearance(_ mode: AppearanceMode) {
+        guard settings.appearance != mode else { return }
+        settings.appearance = mode
+        guard settingsRestored else { return }
+        Task.detached(priority: .utility) {
+            _ = SettingsStore.saveAppearance(mode)
+        }
+    }
+
     func setSyncClientResetWithServer(_ enabled: Bool) {
         guard settings.syncClientResetWithServer != enabled else { return }
         settings.syncClientResetWithServer = enabled

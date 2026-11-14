@@ -1,8 +1,26 @@
 import Foundation
 
+/// Light, dark, or follow the Mac. `system` is the default and is stored as
+/// itself — it must not be resolved to the appearance that happens to be
+/// active when the choice is saved.
+enum AppearanceMode: String, CaseIterable, Sendable {
+    case light
+    case dark
+    case system
+
+    /// Missing and unrecognized values follow the system appearance.
+    static func stored(_ raw: String) -> AppearanceMode {
+        guard !raw.isEmpty, let mode = AppearanceMode(rawValue: raw) else { return .system }
+        return mode
+    }
+}
+
 struct AppSettings: Equatable, Sendable {
     /// Automatic refresh interval in seconds; 0 disables polling.
     var refreshSeconds = AppSettings.defaultRefreshSeconds
+    /// Window appearance. Defaults to following the system. The retired `THEME`
+    /// key belongs to the old web build and is not this preference.
+    var appearance = AppearanceMode.system
 
     var bwhVeid = ""
     var bwhApiKey = ""
@@ -110,6 +128,7 @@ enum SettingsStore {
         if let stored = object["REFRESH_SECONDS"] {
             settings.refreshSeconds = max(0, JSONValue.int(stored))
         }
+        settings.appearance = AppearanceMode.stored(JSONValue.string(object["APPEARANCE"]))
         if let storedSync = object["SYNC_CLIENT_RESET_WITH_SERVER"] {
             settings.syncClientResetWithServer = JSONValue.bool(storedSync, default: true)
         }
@@ -163,17 +182,48 @@ enum SettingsStore {
            settings.bwhVeid == "fixture-not-persisted" {
             return false
         }
-        guard writeObject(persistenceObject(for: settings, merging: loadObject())) else { return false }
+        let wrote = syncing {
+            guard writeObject(persistenceObject(for: settings, merging: loadObject())) else { return false }
+            return true
+        }
+        guard wrote else { return false }
         _ = KeychainCredentialStore.save(settings)
         return true
     }
 
     @discardableResult
     static func savePreferences(_ settings: AppSettings) -> Bool {
-        writeObject(persistenceObject(for: settings, merging: loadObject()))
+        syncing {
+            writeObject(persistenceObject(for: settings, merging: loadObject()))
+        }
+    }
+
+    /// Writes only the appearance key. A full settings snapshot could clobber a
+    /// credential save that landed while this click was in flight.
+    @discardableResult
+    static func saveAppearance(_ mode: AppearanceMode) -> Bool {
+        syncing {
+            var object = loadObject()
+            object["APPEARANCE"] = mode.rawValue
+            return writeObject(object)
+        }
+    }
+
+    /// Serializes read-modify-write of settings.json. Recursive because
+    /// `saveAppearance` calls `loadObject` / `writeObject`, which take it too.
+    private nonisolated(unsafe) static let fileLock = NSRecursiveLock()
+
+    private static func syncing<T>(_ body: () -> T) -> T {
+        fileLock.lock()
+        defer { fileLock.unlock() }
+        return body()
     }
 
     private static func loadObject() -> [String: Any] {
+        syncing { loadObjectUnsynchronized() }
+    }
+
+    private static func loadObjectUnsynchronized() -> [String: Any] {
         if let data = try? Data(contentsOf: fileURL),
            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            !object.isEmpty {
@@ -200,6 +250,7 @@ enum SettingsStore {
         object["XUI_USERNAME"] = settings.xuiUsername
         object["XUI_PASSWORD"] = settings.xuiPassword
         object["REFRESH_SECONDS"] = settings.refreshSeconds
+        object["APPEARANCE"] = settings.appearance.rawValue
         object["SYNC_CLIENT_RESET_WITH_SERVER"] = settings.syncClientResetWithServer
         object["PENDING_SERVER_RESET_AT"] = settings.pendingServerResetAt
         object["LAST_EXECUTED_SERVER_RESET_AT"] = settings.lastExecutedServerResetAt
@@ -216,6 +267,10 @@ enum SettingsStore {
     }
 
     private static func writeObject(_ object: [String: Any]) -> Bool {
+        syncing { writeObjectUnsynchronized(object) }
+    }
+
+    private static func writeObjectUnsynchronized(_ object: [String: Any]) -> Bool {
         UserDefaults.standard.set(object, forKey: backupDefaultsKey)
         let directory = fileURL.deletingLastPathComponent()
         do {

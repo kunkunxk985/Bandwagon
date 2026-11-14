@@ -20,6 +20,10 @@ struct AppRootView: View {
                     .task { await model.start() }
             }
         }
+        .preferredColorScheme(model.settings.appearance.colorScheme)
+        .background {
+            WindowAppearance(mode: model.settings.appearance)
+        }
         .task {
             await model.restoreSettings()
             LaunchOnboarding.completeForExistingInstallIfNeeded(settings: model.settings)

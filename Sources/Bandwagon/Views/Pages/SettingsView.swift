@@ -98,6 +98,7 @@ struct SettingsView: View {
                 blockHeading("偏好")
 
                 refreshCard
+                appearanceCard
                 menuBarCard
 
                 settingsSection("高级",
@@ -295,6 +296,46 @@ struct SettingsView: View {
         }
         .padding(18)
         .panelSurface()
+    }
+
+    private var appearanceCard: some View {
+        HStack(spacing: 12) {
+            SettingsIcon(systemName: "circle.lefthalf.filled")
+
+            Text("外观")
+                .font(.system(size: 14, weight: .semibold))
+
+            Spacer(minLength: 12)
+
+            Picker("模式", selection: appearanceSelection) {
+                Image(systemName: "sun.max")
+                    .accessibilityLabel("浅色")
+                    .tag(AppearanceMode.light)
+                Image(systemName: "moon")
+                    .accessibilityLabel("深色")
+                    .tag(AppearanceMode.dark)
+                Image(systemName: "display")
+                    .accessibilityLabel("跟随系统")
+                    .tag(AppearanceMode.system)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 132)
+        }
+        .padding(18)
+        .panelSurface()
+    }
+
+    /// The segmented control writes through to the live settings so the window
+    /// updates before the file write finishes, without marking credentials dirty.
+    private var appearanceSelection: Binding<AppearanceMode> {
+        Binding(
+            get: { draft.appearance },
+            set: { newValue in
+                draft.appearance = newValue
+                model.setAppearance(newValue)
+            }
+        )
     }
 
     private var menuBarCard: some View {

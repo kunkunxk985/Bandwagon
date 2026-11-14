@@ -45,6 +45,18 @@ struct SettingsPersistenceRegression {
             settings.contains("object[\"BWH_API_KEY\"] = settings.bwhApiKey"),
             "settings load must prefer settings.json secrets and surface keychain gaps without blocking saves"
         )
+        require(
+            settings.contains("enum AppearanceMode") &&
+            settings.contains("static func stored(_ raw: String)") &&
+            settings.contains("var appearance = AppearanceMode.system") &&
+            settings.contains("AppearanceMode.stored(JSONValue.string(object[\"APPEARANCE\"]))") &&
+            settings.contains("object[\"APPEARANCE\"] = settings.appearance.rawValue") &&
+            settings.contains("static func saveAppearance(_ mode: AppearanceMode)") &&
+            settings.contains("object[\"APPEARANCE\"] = mode.rawValue") &&
+            settings.contains("static let retiredKeys = [\"REFRESH_INTERVAL\", \"THEME\"]") &&
+            !settings.contains("object[\"THEME\"]"),
+            "appearance must persist in settings.json and must not revive the retired THEME key"
+        )
 
         pass("settings persistence paths and helper upgrade policy")
     }
