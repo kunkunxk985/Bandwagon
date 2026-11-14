@@ -208,7 +208,7 @@ struct UICompositionRegression {
             !settings.contains("保存并连接") &&
             settings.contains("确认并连接") &&
             !settings.contains("保存并刷新") &&
-            settings.contains("openConfigFolderRow") &&
+            !settings.contains("openConfigFolderRow") &&
             settings.contains("trafficResetSyncRow") &&
             settings.contains("onChange(of: draft.refreshSeconds)") &&
             settings.contains("onChange(of: draft.syncClientResetWithServer)"),

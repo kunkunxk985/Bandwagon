@@ -110,7 +110,6 @@ struct SettingsView: View {
                     CardDivider()
                         .padding(.vertical, 4)
                     softwareUpdateCard
-                    openConfigFolderRow
                 }
             }
             .padding(.horizontal, Theme.pagePadding)
@@ -340,33 +339,6 @@ struct SettingsView: View {
         }
     }
 
-    private var openConfigFolderRow: some View {
-        Button {
-            NSWorkspace.shared.open(SettingsStore.configDirectoryURL)
-        } label: {
-            HStack(spacing: 12) {
-                SettingsIcon(systemName: "folder")
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("打开配置文件夹")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-                    Text("~/Library/Application Support/Bandwagon/")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "arrow.up.forward")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
     private var softwareUpdateCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
@@ -396,18 +368,6 @@ struct SettingsView: View {
                     Button(updatePrimaryTitle, action: { updateCenter.checkOrInstall() })
                         .buttonStyle(.bordered)
                 }
-            }
-
-            if !AppUpdateInstaller.isRunningFromApplications(Bundle.main.bundleURL) {
-                Text("应用内更新需要已将 Bandwagon 安装在「应用程序」文件夹。从 DMG 直接运行时可手动下载安装包。")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.warning)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text("应用内更新会下载发布包、替换「应用程序」里的 Bandwagon 并自动重新打开。VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if case .available(let version, _) = updateCenter.phase {
