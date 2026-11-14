@@ -273,32 +273,25 @@ struct ClientsView: View {
     }
 }
 
-/// Column titles, pinned to the top of the table while it scrolls. Widths match
-/// `ClientRow` column for column.
+/// Column titles, pinned to the top of the table while it scrolls. The same
+/// `ClientColumnLayout` as `ClientRow`, so a header stays over its column when
+/// the window grows.
 private struct ClientTableHeader: View {
     @Binding var sort: ClientsView.SortMode
     @Binding var ascending: Bool
 
     var body: some View {
-        HStack(spacing: ClientColumns.spacing) {
+        ClientColumnLayout {
             Text("状态")
-                .frame(width: ClientColumns.state, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             sortable(.name, alignment: .leading)
-                .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
             sortable(.recent, alignment: .leading)
-                .frame(width: ClientColumns.lastOnline, alignment: .leading)
-            Color.clear
-                .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
-            sortable(.usage, alignment: .trailing)
-                .frame(width: ClientColumns.used, alignment: .trailing)
-            Text("上行 / 下行")
-                .frame(width: ClientColumns.traffic, alignment: .trailing)
-            sortable(.quota, alignment: .trailing)
-                .frame(width: ClientColumns.quota, alignment: .trailing)
+            sortable(.usage, alignment: .leading)
+            sortable(.quota, alignment: .leading)
             Text("到期")
-                .frame(width: ClientColumns.expiry, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear
-                .frame(width: ClientColumns.copy, height: 1)
+                .frame(maxWidth: .infinity, maxHeight: 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.system(size: 11, weight: .medium))
@@ -328,6 +321,7 @@ private struct ClientTableHeader: View {
                     .opacity(active ? 1 : 0)
             }
             .foregroundStyle(active ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+            .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -338,20 +332,7 @@ private struct ClientTableHeader: View {
 }
 
 private enum ClientColumns {
-    static let spacing: CGFloat = 12
-    static let inset: CGFloat = 18
-    static let used: CGFloat = 68
-    static let traffic: CGFloat = 86
-    static let quota: CGFloat = 48
-    static let expiry: CGFloat = 92
-    static let state: CGFloat = 52
-    static let nameMin: CGFloat = 108
-    /// A long name stops here so the usage columns stay on screen. Spare window
-    /// width stays after the copy button; it is not a gap before the bar.
-    static let nameMax: CGFloat = 168
-    /// `yyyy/MM/dd HH:mm:ss` at 12.5pt, tabular figures.
-    static let lastOnline: CGFloat = 148
-    static let copy: CGFloat = 24
+    static let inset = CGFloat(ClientColumnShare.inset)
 }
 
 struct ClientRow: View {
@@ -376,19 +357,18 @@ struct ClientRow: View {
     }
 
     /// Bar colour still encodes quota risk. Clients without an individual quota
-    /// fall back to the accent colour. The number beside the bar is the cap.
+    /// fall back to the accent colour. The number beside the bar is the used total.
     private var usageTint: Color {
         guard let utilization else { return Theme.accent }
         return UsageTint.color(for: utilization.fraction)
     }
 
     var body: some View {
-        HStack(spacing: ClientColumns.spacing) {
+        ClientColumnLayout {
             // Status leads the row, dot and word together, so who is online reads
-            // down one column beside the names. At the far right it sat a whole
-            // window's width away from the name it belonged to.
+            // down one column beside the names.
             StatusPill(title: client.state.title, tint: client.state.swiftColor)
-                .frame(width: ClientColumns.state, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             // No initial avatar: a grey circle holding "杜" twice and "C" once
             // said nothing the name beside it didn't.
@@ -403,35 +383,24 @@ struct ClientRow: View {
                         .lineLimit(1)
                 }
             }
-            .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(client.lastOnlineText())
                 .font(.system(size: 12.5))
                 .foregroundStyle(client.isConnected ? AnyShapeStyle(ClientState.online.swiftColor) : AnyShapeStyle(.secondary))
                 .monospacedDigit()
                 .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .frame(width: ClientColumns.lastOnline, alignment: .leading)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            UsageBar(value: usageFraction, tint: usageTint)
-                .frame(minWidth: 64, maxWidth: 120)
-                .help("长度＝相对最大用量，颜色＝配额占用风险")
-
-            Text(ByteFormat.string(client.used))
-                .font(Theme.number(13))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(width: ClientColumns.used, alignment: .trailing)
-
-            trafficCell
-                .frame(width: ClientColumns.traffic, alignment: .trailing)
+            usageLine
 
             Text(client.quotaLabel)
                 .font(Theme.number(12.5, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(width: ClientColumns.quota, alignment: .trailing)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .help("配额上限")
 
             Text(client.expiryLabel())
@@ -439,7 +408,7 @@ struct ClientRow: View {
                 .foregroundStyle(client.expiryWarning == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(ClientState.warn.swiftColor))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
-                .frame(width: ClientColumns.expiry, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .help("到期时间")
 
             Button {
@@ -454,7 +423,7 @@ struct ClientRow: View {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(copied ? ClientState.online.swiftColor : Color.secondary)
-                    .frame(width: ClientColumns.copy, height: 24)
+                    .frame(width: CGFloat(ClientColumnShare.copy.minimum), height: 24)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -478,25 +447,87 @@ struct ClientRow: View {
         .help("查看详情与管理")
     }
 
-    /// Upload above download. Compact units so the pair sits next to the total
-    /// instead of opening a gap in the row.
-    private var trafficCell: some View {
-        VStack(alignment: .trailing, spacing: 1) {
-            trafficLine("上行", client.up)
-            trafficLine("下行", client.down)
+    /// Bar, used total, then upload and download on the same line. The bar takes
+    /// the spare width inside the usage column so the figures stay next to it.
+    private var usageLine: some View {
+        HStack(spacing: 6) {
+            UsageBar(value: usageFraction, tint: usageTint)
+                .frame(minWidth: 28, maxWidth: .infinity)
+                .help("长度＝相对最大用量，颜色＝配额占用风险")
+            Text(ByteFormat.string(client.used))
+                .font(Theme.number(13))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .layoutPriority(1)
+            directionMark("↑", bytes: client.up, access: "上传")
+            directionMark("↓", bytes: client.down, access: "下载")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func directionMark(_ symbol: String, bytes: Int?, access: String) -> some View {
+        HStack(spacing: 2) {
+            Text(symbol)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(ByteFormat.compact(bytes))
+                .font(Theme.number(12, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .layoutPriority(1)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(access) \(ByteFormat.compact(bytes))")
+    }
+}
+
+/// Shares one row across the clients columns. Header and body both use it, so
+/// they stay aligned, and a wider window widens the columns instead of leaving
+/// an empty band on the right.
+struct ClientColumnLayout: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+        let width = resolvedWidth(proposal)
+        let widths = columnWidths(available: width, count: subviews.count)
+        var height: CGFloat = 0
+        for (offset, subview) in subviews.enumerated() {
+            let columnWidth = offset < widths.count ? widths[offset] : 0
+            let measured = subview.sizeThatFits(
+                ProposedViewSize(width: columnWidth, height: proposal.height)
+            ).height
+            height = max(height, measured)
+        }
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
+        let widths = columnWidths(available: bounds.width, count: subviews.count)
+        var x = bounds.minX
+        for (offset, subview) in subviews.enumerated() {
+            let columnWidth = offset < widths.count ? widths[offset] : 0
+            subview.place(
+                at: CGPoint(x: x, y: bounds.midY),
+                anchor: .leading,
+                proposal: ProposedViewSize(width: columnWidth, height: bounds.height)
+            )
+            x += columnWidth + CGFloat(ClientColumnShare.spacing)
         }
     }
 
-    private func trafficLine(_ title: String, _ bytes: Int?) -> some View {
-        HStack(spacing: 4) {
-            Text(title)
-                .font(.system(size: 10.5))
-                .foregroundStyle(.secondary)
-            Text(ByteFormat.compact(bytes))
-                .font(Theme.number(11.5, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+    private func resolvedWidth(_ proposal: ProposedViewSize) -> CGFloat {
+        if let proposed = proposal.width, proposed.isFinite, proposed > 0 {
+            return proposed
         }
+        return CGFloat(ClientColumnShare.minimumRowWidth)
+    }
+
+    private func columnWidths(available: CGFloat, count: Int) -> [CGFloat] {
+        if count == ClientColumnShare.columns.count {
+            return ClientColumnShare.widths(available: Double(available)).map { CGFloat($0) }
+        }
+        guard count > 0 else { return [] }
+        let gaps = CGFloat(ClientColumnShare.spacing) * CGFloat(count - 1)
+        let each = max(0, available - gaps) / CGFloat(count)
+        return Array(repeating: each, count: count)
     }
 }

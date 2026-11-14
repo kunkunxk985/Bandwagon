@@ -203,8 +203,9 @@ struct UICompositionRegression {
             clients.contains("Text(client.name)") &&
             clients.contains("Text(email)") &&
             !clients.contains("prefix(1)") &&
-            clients.contains(".frame(minWidth: 64, maxWidth: 120)"),
-            "Client rows lead with name and email (no initial avatar) and shrink the usage bar before names"
+            clients.contains(".frame(minWidth: 28, maxWidth: .infinity)") &&
+            !clients.contains("nameMax"),
+            "Client rows lead with name and email, and the usage bar grows inside its column"
         )
         require(
             clients.contains(".accessibilityLabel(copied ? \"已复制 \\(client.name) 的邮箱\"") &&
@@ -406,8 +407,10 @@ struct UICompositionRegression {
             !models.contains("分钟前") &&
             !modelPresentation.contains("小时前") &&
             !clients.contains("小时前") &&
-            !clients.contains("Spacer(minLength: 0)"),
-            "Last online is an absolute timestamp, and client rows leave no blank stretch before the usage bar"
+            !clients.contains("Spacer(minLength: 0)") &&
+            clients.contains("ClientColumnLayout") &&
+            clients.contains("ClientColumnShare.widths(available:"),
+            "Last online is an absolute timestamp, and spare width is shared across the client columns"
         )
         require(
             clients.contains("case .online: hit = client.isConnected") &&
@@ -419,13 +422,20 @@ struct UICompositionRegression {
             "在线 includes every connected client, including those who are also warned"
         )
         require(
-            clients.contains("上行") &&
-            clients.contains("下行") &&
+            clients.contains("directionMark(\"↑\"") &&
+            clients.contains("directionMark(\"↓\"") &&
+            !clients.contains("上行") &&
+            !clients.contains("下行") &&
+            !clients.contains("trafficCell") &&
+            !clients.contains("VStack(alignment: .trailing") &&
             clients.contains("client.quotaLabel") &&
             clients.contains("client.expiryLabel()") &&
+            clients.contains("ByteFormat.string(client.used)") &&
             clients.contains("ByteFormat.compact") &&
-            models.contains("return \"∞\""),
-            "The usage cluster shows up, down, the quota cap, and an expiry"
+            models.contains("return \"∞\"") &&
+            occurrences(of: "ClientColumnLayout {", in: clients) == 2 &&
+            occurrences(of: "ClientColumnLayout {", in: skeleton) == 2,
+            "Upload and download sit on one line after the used total; quota and expiry stay beside that line"
         )
         require(
             !clients.contains("DateFormatter()") &&
