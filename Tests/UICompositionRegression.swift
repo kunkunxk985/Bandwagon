@@ -219,7 +219,7 @@ struct UICompositionRegression {
             clients.contains("Text(client.name)") &&
             clients.contains("Text(email)") &&
             !clients.contains("prefix(1)") &&
-            clients.contains(".frame(minWidth: 28, maxWidth: .infinity)") &&
+            clients.contains(".frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)") &&
             !clients.contains("nameMax"),
             "Client rows lead with name and email, and the usage bar grows inside its column"
         )
@@ -343,22 +343,29 @@ struct UICompositionRegression {
             settingsStore.contains("static let retiredKeys = [\"REFRESH_INTERVAL\", \"THEME\"]") &&
             !settingsStore.contains("object[\"THEME\"]") &&
             appearanceModel.contains("func setAppearance(_ mode: AppearanceMode)") &&
-            appRoot.contains(".preferredColorScheme(model.settings.appearance.colorScheme)") &&
+            appRoot.contains("SystemAppearance.shared.generation") &&
+            appRoot.contains(".preferredColorScheme(windowColorScheme)") &&
             appRoot.contains("WindowAppearance(mode: model.settings.appearance)") &&
-            appRoot.contains(".toolbarColorScheme(model.settings.appearance.colorScheme, for: .windowToolbar)") &&
+            appRoot.contains(".toolbarColorScheme(windowColorScheme, for: .windowToolbar)") &&
             !appRoot.contains("toolbarBackground(") &&
             contentView.contains("ToolbarItemAppearance(mode: model.settings.appearance)") &&
             !contentView.contains(".toolbarBackground(") &&
-            occurrences(of: "case .system: return nil", in: chrome) == 2 &&
+            settingsStore.contains("static func interfaceStyleIsDark(_ style: String?)") &&
+            chrome.contains("func colorScheme(systemGeneration: Int)") &&
+            chrome.contains("case .system: return SystemInterfaceStyle.nsAppearance") &&
+            chrome.contains("case .system:") &&
+            chrome.contains("return SystemInterfaceStyle.colorScheme") &&
+            !chrome.contains("case .system: return nil") &&
             chrome.contains("NSApp.appearance = appearance") &&
             chrome.contains("window.appearance = appearance") &&
             chrome.contains("AppleInterfaceThemeChangedNotification") &&
+            chrome.contains("noteSystemChange()") &&
             chrome.contains("func syncChrome") &&
             chrome.contains("AppleInterfaceStyle") &&
             chrome.contains("struct ToolbarItemAppearance") &&
             !chrome.contains("effectiveAppearance") &&
             !chrome.contains("toolbarBackground("),
-            "Appearance is an icon segment beside refresh and the menu bar; system stays nil so it keeps tracking the OS, and toolbar capsules follow it without a painted titlebar"
+            "Appearance is an icon segment beside refresh and the menu bar; 系统 installs the live OS appearance and re-reads it when the Mac changes, and toolbar capsules follow it without a painted titlebar"
         )
 
         require(
@@ -495,12 +502,20 @@ struct UICompositionRegression {
             clients.contains("ByteFormat.compact") &&
             clients.contains("ClientColumnShare.usageTokenGap") &&
             clients.contains("ClientColumnShare.usageQuotaPadding") &&
+            clients.contains("ClientColumnShare.usedFigureWidth") &&
+            clients.contains("ClientColumnShare.directionFigureWidth") &&
+            clients.contains("ClientColumnShare.quotaFigureWidth") &&
+            clients.contains("alignment: .trailing") &&
+            clients.contains("alignment: .leading") &&
             skeleton.contains("ClientColumnShare.usageTokenGap") &&
             skeleton.contains("ClientColumnShare.usageQuotaPadding") &&
+            skeleton.contains("ClientColumnShare.usedFigureWidth") &&
+            skeleton.contains("ClientColumnShare.directionFigureWidth") &&
+            skeleton.contains("ClientColumnShare.quotaFigureWidth") &&
             models.contains("return \"∞\"") &&
             occurrences(of: "ClientColumnLayout {", in: clients) == 2 &&
             occurrences(of: "ClientColumnLayout {", in: skeleton) == 2,
-            "Upload and download sit on one line after the used total, with a gap before the quota"
+            "Used, upload, download, and quota are fixed slots on one line so ↑, ↓, and ∞ stack"
         )
         require(
             clients.contains("enum ClientRowTypography") &&

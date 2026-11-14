@@ -28,6 +28,13 @@ struct ClientColumnRegression {
         guard ClientColumnShare.usageTokenGap == 14, ClientColumnShare.usageQuotaPadding == 6 else {
             fail("the used total, upload, download, and quota need a fixed gap, not a stretched row")
         }
+        guard ClientColumnShare.usedFigureWidth >= 68,
+              ClientColumnShare.directionFigureWidth >= 60,
+              ClientColumnShare.quotaFigureWidth >= 48,
+              abs(ClientColumnShare.usage.floor - ClientColumnShare.usageContentFloor) < 0.01,
+              ClientColumnShare.quota.floor + 0.01 >= ClientColumnShare.quotaFigureWidth else {
+            fail("used, upload, download, and quota need fixed slots wide enough for the longest figure")
+        }
         guard abs((ClientColumnShare.usage.minimum - ClientColumnShare.usage.floor) - 38) < 0.01 else {
             fail("widening the figure gaps must not change how much slack the usage bar gives up")
         }

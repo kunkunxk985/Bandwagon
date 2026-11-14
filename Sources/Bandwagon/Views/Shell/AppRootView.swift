@@ -20,11 +20,11 @@ struct AppRootView: View {
                     .task { await model.start() }
             }
         }
-        .preferredColorScheme(model.settings.appearance.colorScheme)
+        .preferredColorScheme(windowColorScheme)
         // The window toolbar is AppKit. This is the SwiftUI signal for that bar.
         // It must stay unpaired with a toolbar background: a painted bar is a hard
         // seam across the top of the sidebar.
-        .toolbarColorScheme(model.settings.appearance.colorScheme, for: .windowToolbar)
+        .toolbarColorScheme(windowColorScheme, for: .windowToolbar)
         .background {
             WindowAppearance(mode: model.settings.appearance)
         }
@@ -34,5 +34,13 @@ struct AppRootView: View {
             showOnboarding = LaunchOnboarding.shouldShowWizard(settings: model.settings)
             routingReady = true
         }
+    }
+
+    /// Light and dark force that scheme. 系统 passes the live OS scheme, and
+    /// `generation` changes when the Mac's theme changes so the view re-reads
+    /// it. `nil` is not used: after 深色, clearing the override leaves the
+    /// window dark.
+    private var windowColorScheme: ColorScheme? {
+        model.settings.appearance.colorScheme(systemGeneration: SystemAppearance.shared.generation)
     }
 }

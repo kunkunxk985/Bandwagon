@@ -1,4 +1,5 @@
 import AppKit
+import Observation
 import SwiftUI
 
 /// Thin wrapper over `NSVisualEffectView` for the sidebar's material backdrop.
@@ -43,30 +44,73 @@ struct WindowChrome: NSViewRepresentable {
 }
 
 extension AppearanceMode {
-    /// `nil` means "do not override". SwiftUI then follows the system color
-    /// scheme, including a later change in System Settings.
-    var colorScheme: ColorScheme? {
+    /// Light and dark force that scheme. System installs the Mac's current
+    /// scheme. `nil` is not returned: after `preferredColorScheme(.dark)`,
+    /// clearing the override does not restore a light Mac.
+    ///
+    /// `systemGeneration` is the live OS-theme counter. The view reads it so a
+    /// later System Settings change re-evaluates this. The value saved for 系统
+    /// stays `.system`; this does not freeze whatever was active at save time.
+    func colorScheme(systemGeneration: Int) -> ColorScheme? {
+        if ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_APPEARANCE"] == "dark" {
+            return .dark
+        }
         switch self {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return nil
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        case .system:
+            _ = systemGeneration
+            return SystemInterfaceStyle.colorScheme
         }
     }
 
-    /// `nil` clears `NSApp.appearance` so AppKit keeps tracking the OS.
-    /// Resolving the current effective appearance here would freeze it.
+    /// A concrete appearance. System resolves the current OS style on every
+    /// call. Assigning `nil` after `darkAqua` leaves the last concrete
+    /// appearance in place, so 系统 on a light Mac stays dark.
     var nsAppearance: NSAppearance? {
         switch self {
         case .light: return NSAppearance(named: .aqua)
         case .dark: return NSAppearance(named: .darkAqua)
-        case .system: return nil
+        case .system: return SystemInterfaceStyle.nsAppearance
         }
     }
 }
 
+/// Live OS appearance. `AppleInterfaceStyle` is the Mac setting. Reading the
+/// appearance last assigned to this process stays dark after 深色 even when
+/// the Mac is light, so follow-system must not use that.
+enum SystemInterfaceStyle {
+    static var colorScheme: ColorScheme {
+        interfaceIsDark ? .dark : .light
+    }
+
+    static var nsAppearance: NSAppearance? {
+        NSAppearance(named: interfaceIsDark ? .darkAqua : .aqua)
+    }
+
+    private static var interfaceIsDark: Bool {
+        AppearanceMode.interfaceStyleIsDark(UserDefaults.standard.string(forKey: "AppleInterfaceStyle"))
+    }
+}
+
+/// Bumped when the Mac theme changes so a follow-system window re-reads
+/// `SystemInterfaceStyle`. The saved choice stays `.system`.
+@MainActor
+@Observable
+final class SystemAppearance {
+    static let shared = SystemAppearance()
+    private(set) var generation = 0
+
+    func noteSystemChange() {
+        generation &+= 1
+    }
+}
+
 /// Pushes the saved appearance onto the process and every window. A system
-/// choice installs no appearance, and a system-theme notification installs it
-/// again so a concrete value cannot get stuck on the window.
+/// choice installs the current OS appearance, and a system-theme notification
+/// installs it again so a later change is not frozen to the value at save time.
 ///
 /// The sidebar toggle and the refresh capsule are AppKit toolbar items. They
 /// keep drawing light glass after `NSApp` and the window have the right
@@ -106,9 +150,15 @@ struct WindowAppearance: NSViewRepresentable {
         if modeChanged || refreshWindows {
             applied = mode
             generation &+= 1
-            let appearance = mode.nsAppearance
-            NSApp.appearance = appearance
-            assignWindows(appearance)
+            install(mode)
+            // SwiftUI applies preferredColorScheme in the same turn. Re-assert
+            // the concrete appearance afterwards so a light Mac is not left on
+            // the darkAqua that 深色 installed.
+            let ticket = generation
+            Task { @MainActor in
+                guard WindowAppearance.generation == ticket else { return }
+                WindowAppearance.reinstall(mode)
+            }
         }
         guard deferIfNoWindow else { return }
         let ticket = generation
@@ -117,6 +167,22 @@ struct WindowAppearance: NSViewRepresentable {
             guard ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_APPEARANCE"] == nil else { return }
             WindowAppearance.assignWindows(mode.nsAppearance)
         }
+    }
+
+    private static func install(_ mode: AppearanceMode) {
+        let appearance = mode.nsAppearance
+        NSApp.appearance = appearance
+        assignWindows(appearance)
+    }
+
+    /// One turn later, after SwiftUI has applied the color scheme. Holding
+    /// `isApplying` keeps an inline theme notification from recursing.
+    private static func reinstall(_ mode: AppearanceMode) {
+        guard ProcessInfo.processInfo.environment["BANDWAGON_SNAPSHOT_APPEARANCE"] == nil else { return }
+        guard !isApplying else { return }
+        isApplying = true
+        install(mode)
+        isApplying = false
     }
 
     private static func assignWindows(_ appearance: NSAppearance?) {
@@ -163,13 +229,11 @@ struct WindowAppearance: NSViewRepresentable {
         )
     }
 
-    /// `nil` from `nsAppearance` means follow the system, but a capsule with no
-    /// appearance of its own stays on the light glass. Read the OS choice on
-    /// every sync so a stored value cannot freeze it.
+    /// Capsules use the same concrete appearance as the window. System resolves
+    /// the live OS style, so a capsule does not keep the light glass after 深色
+    /// or stay dark after the Mac is light again.
     private static func capsuleAppearance(for mode: AppearanceMode) -> NSAppearance? {
-        if let pinned = mode.nsAppearance { return pinned }
-        let dark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
-        return NSAppearance(named: dark ? .darkAqua : .aqua)
+        mode.nsAppearance
     }
 
     private static func pinItemChain(
@@ -311,9 +375,14 @@ private final class AppearanceBridge: NSObject {
         )
     }
 
-    /// Posted off the main thread. Hop before touching AppKit.
+    /// Posted off the main thread. Hop before touching AppKit. Bump the
+    /// generation first so SwiftUI re-reads the OS scheme; the saved mode is
+    /// still `.system`.
     @objc nonisolated private func systemThemeChanged(_ notification: Notification) {
         Task { @MainActor in
+            if AppearanceBridge.shared.mode == .system {
+                SystemAppearance.shared.noteSystemChange()
+            }
             WindowAppearance.apply(
                 AppearanceBridge.shared.mode,
                 deferIfNoWindow: false,

@@ -58,6 +58,13 @@ import Foundation
      print("FAIL appearance defaults to follow system and ignores unknown values")
      exit(1)
    }
+   guard AppearanceMode.interfaceStyleIsDark("Dark"),
+         !AppearanceMode.interfaceStyleIsDark(nil),
+         !AppearanceMode.interfaceStyleIsDark(""),
+         !AppearanceMode.interfaceStyleIsDark("Light") else {
+     print("FAIL follow-system must treat only the OS Dark style as dark")
+     exit(1)
+   }
    print("PASS appearance defaults to follow system")
  }
 }

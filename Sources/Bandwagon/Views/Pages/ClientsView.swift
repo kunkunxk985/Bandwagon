@@ -405,6 +405,7 @@ struct ClientRow: View {
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
+                .frame(width: CGFloat(ClientColumnShare.quotaFigureWidth), alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .help("配额上限")
 
@@ -444,24 +445,23 @@ struct ClientRow: View {
         .help("查看详情与管理")
     }
 
-    /// Bar, used total, then upload and download on the same line. The bar takes
-    /// the spare width. The figures keep a fixed gap, and a little trailing room
-    /// separates the download figure from the quota, without stacking or adding a column.
+    /// Bar, then fixed slots for the used total, upload, and download. The bar
+    /// takes the spare width. Each figure has one width, so ↑ and ↓ stack
+    /// across rows, on one 13pt line.
     private var usageLine: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: CGFloat(ClientColumnShare.usageBarGap)) {
             UsageBar(value: usageFraction, tint: usageTint)
-                .frame(minWidth: 28, maxWidth: .infinity)
+                .frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)
                 .help("长度＝相对最大用量，颜色＝配额占用风险")
             HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
                 Text(ByteFormat.string(client.used))
                     .font(Theme.number(ClientRowTypography.size, weight: .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .layoutPriority(1)
+                    .frame(width: CGFloat(ClientColumnShare.usedFigureWidth), alignment: .trailing)
                 directionMark("↑", bytes: client.up, access: "上传")
                 directionMark("↓", bytes: client.down, access: "下载")
             }
-            .layoutPriority(1)
             .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -478,7 +478,7 @@ struct ClientRow: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-        .layoutPriority(1)
+        .frame(width: CGFloat(ClientColumnShare.directionFigureWidth), alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(access) \(ByteFormat.compact(bytes))")
     }

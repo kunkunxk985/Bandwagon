@@ -8,8 +8,8 @@ import Foundation
 /// `minimum` is the comfortable width. Spare room above that is shared by
 /// `weight`, so a fullscreen window spreads every column instead of leaving an
 /// empty band on the right. Below that, only `minimum - floor` is given up —
-/// the last-online timestamp and the copy slot do not shrink — until the row is
-/// narrower than the floors.
+/// the last-online timestamp, the quota slot, and the copy slot do not shrink —
+/// until the row is narrower than the floors.
 enum ClientColumnShare {
     struct Column: Equatable {
         var floor: Double
@@ -25,15 +25,31 @@ enum ClientColumnShare {
     static let usageTokenGap: Double = 14
     /// Extra room after the download figure, on top of `spacing`, before the quota.
     static let usageQuotaPadding: Double = 6
+    /// Gap between the bar and the used total. The bar is the only flexible part.
+    static let usageBarGap: Double = 6
+    /// Narrowest the bar may be before the usage column itself is below its floor.
+    static let usageBarMin: Double = 28
+    /// Fixed slots. `61.4 GB` and `525 MB`, `12.9G` and `525M`, `∞` and `100G`
+    /// would otherwise start ↑, ↓, and ∞ at a different x on every row.
+    /// Widths fit a 13pt figure through `9999 GB` / `↑ 9999G`.
+    static let usedFigureWidth: Double = 72
+    static let directionFigureWidth: Double = 68
+    static let quotaFigureWidth: Double = 52
+    /// Bar minimum plus the fixed figure slots. The 38pt above this is slack the
+    /// bar gives up; the slots themselves do not change width with the string.
+    static let usageContentFloor: Double =
+        usageBarMin + usageBarGap + usedFigureWidth + directionFigureWidth * 2
+        + usageTokenGap * 2 + usageQuotaPadding
 
     static let status = Column(floor: 52, minimum: 56, weight: 0.7)
     static let name = Column(floor: 72, minimum: 108, weight: 1.8)
     /// `yyyy/MM/dd HH:mm:ss` at 13pt medium. No slack: the timestamp stays whole.
     static let lastOnline = Column(floor: 160, minimum: 160, weight: 1.3)
-    /// Floor fits the 13pt total and the two direction figures with a gap
-    /// between each, plus a little room before the quota. The bar is the slack.
-    static let usage = Column(floor: 236, minimum: 274, weight: 2.8)
-    static let quota = Column(floor: 48, minimum: 52, weight: 0.85)
+    /// Floor fits the bar's minimum and the fixed used / upload / download slots.
+    static let usage = Column(floor: usageContentFloor, minimum: usageContentFloor + 38, weight: 2.8)
+    /// The quota glyph stays in a fixed slot. Spare width may still widen the
+    /// column; the ∞ stays on the leading edge.
+    static let quota = Column(floor: quotaFigureWidth, minimum: quotaFigureWidth, weight: 0.85)
     /// The copy control stays a fixed slot. It does not absorb spare width.
     static let copy = Column(floor: 24, minimum: 24, weight: 0)
 

@@ -179,17 +179,17 @@ struct ClientsLoadingSkeleton: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: 132, height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: 6) {
+            HStack(spacing: CGFloat(ClientColumnShare.usageBarGap)) {
                 SkeletonBlock(height: 6, cornerRadius: 3)
-                    .frame(minWidth: 28, maxWidth: .infinity)
+                    .frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)
                 HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
-                    SkeletonBlock(width: 48, height: 12)
-                    SkeletonBlock(width: 40, height: 12)
-                    SkeletonBlock(width: 40, height: 12)
+                    SkeletonBlock(width: CGFloat(ClientColumnShare.usedFigureWidth), height: 12)
+                    SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
+                    SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
                 }
                 .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
             }
-            SkeletonBlock(width: 36, height: 12)
+            SkeletonBlock(width: CGFloat(ClientColumnShare.quotaFigureWidth), height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear.frame(width: 24, height: 1)
         }
