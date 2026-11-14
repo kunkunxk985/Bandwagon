@@ -42,88 +42,102 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    PageHeader(title: "设置", subtitle: "日常维护连接与偏好。凭据写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）。")
-                        .padding(.bottom, 6)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                PageHeader(title: "设置", subtitle: "日常维护连接与偏好。凭据写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）。")
+                    .padding(.bottom, 6)
 
-                    if let error = model.error {
-                        inlineError(error)
-                    }
+                if let error = model.error {
+                    inlineError(error)
+                }
 
-                    if let warning = model.credentialAccessWarning {
-                        inlineError(warning)
-                    }
+                if let warning = model.credentialAccessWarning {
+                    inlineError(warning)
+                }
 
-                    if isDirty {
-                        unsavedChangesBanner
-                    }
+                if saveFailed {
+                    settingsSaveFailedBanner
+                } else if saved {
+                    settingsSavedBanner
+                } else if isDirty {
+                    unsavedChangesBanner
+                }
 
-                    blockHeading("连接")
+                blockHeading("连接")
 
-                    settingsSection("Bandwagon",
+                settingsSection("Bandwagon",
                         icon: "server.rack",
                         isOpen: $bwhOpen,
                         configured: draft.bwhReady
-                    ) {
-                        ConnectionFields.bandwagon(
-                            draft: $draft,
-                            showApiKeyHint: true,
-                            inlineSave: performSave,
-                            saving: saving,
-                            saveButtonTitle: "确认并连接",
-                            inlineSaveEnabled: bandwagonInlineSaveEnabled
-                        )
-                    }
-
-                    settingsSection("3X-UI",
-                        icon: "person.2.fill",
-                        isOpen: $xuiOpen,
-                        configured: draft.xuiReady
-                    ) {
-                        ConnectionFields.xui(
-                            draft: $draft,
-                            showCredentialHint: true,
-                            inlineSave: performSave,
-                            saving: saving,
-                            saveButtonTitle: "确认并连接",
-                            inlineSaveEnabled: xuiInlineSaveEnabled
-                        )
-                    }
-
-                    blockHeading("偏好")
-
-                    refreshCard
-                    menuBarCard
-
-                    settingsSection("高级",
-                        icon: "slider.horizontal.3",
-                        isOpen: $advancedOpen,
-                        configured: true,
-                        hideStatusPill: true
-                    ) {
-                        trafficResetSyncRow
-                        CardDivider()
-                            .padding(.vertical, 4)
-                        softwareUpdateCard
-                        openConfigFolderRow
-                    }
+                ) {
+                    ConnectionFields.bandwagon(
+                        draft: $draft,
+                        showApiKeyHint: true,
+                        inlineSave: performSave,
+                        saving: saving,
+                        saveButtonTitle: "确认并连接",
+                        inlineSaveEnabled: bandwagonInlineSaveEnabled
+                    )
                 }
-                .padding(.horizontal, Theme.pagePadding)
-                .padding(.top, 4)
-                .padding(.bottom, isDirty ? 88 : Theme.pagePadding)
-                .frame(maxWidth: 720)
-                .frame(maxWidth: .infinity, alignment: .center)
-            }
 
-            saveBar
+                settingsSection("3X-UI",
+                    icon: "person.2.fill",
+                    isOpen: $xuiOpen,
+                    configured: draft.xuiReady
+                ) {
+                    ConnectionFields.xui(
+                        draft: $draft,
+                        showCredentialHint: true,
+                        inlineSave: performSave,
+                        saving: saving,
+                        saveButtonTitle: "确认并连接",
+                        inlineSaveEnabled: xuiInlineSaveEnabled
+                    )
+                }
+
+                blockHeading("偏好")
+
+                refreshCard
+                menuBarCard
+
+                settingsSection("高级",
+                    icon: "slider.horizontal.3",
+                    isOpen: $advancedOpen,
+                    configured: true,
+                    hideStatusPill: true
+                ) {
+                    trafficResetSyncRow
+                    CardDivider()
+                        .padding(.vertical, 4)
+                    softwareUpdateCard
+                }
+            }
+            .padding(.horizontal, Theme.pagePadding)
+            .padding(.top, 4)
+            .padding(.bottom, Theme.pagePadding)
+            .frame(maxWidth: 720)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .navigationTitle("设置")
+        .background {
+            Button("保存设置", action: performSave)
+                .keyboardShortcut("s", modifiers: .command)
+                .opacity(0)
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+        }
         .onAppear { draft = model.settings }
         .onChange(of: model.settings) { _, latest in
             guard !isDirty else { return }
             draft = latest
+        }
+        .onChange(of: draft.refreshSeconds) { _, newValue in
+            guard newValue != model.settings.refreshSeconds else { return }
+            performSave()
+        }
+        .onChange(of: draft.syncClientResetWithServer) { _, newValue in
+            guard newValue != model.settings.syncClientResetWithServer else { return }
+            performSave()
         }
     }
 
@@ -156,64 +170,30 @@ struct SettingsView: View {
         .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
     }
 
-    private var saveBar: some View {
-        HStack(spacing: 12) {
-            if saveFailed {
-                Label("设置未能写入 settings.json，请检查 ~/Library/Application Support/Bandwagon/ 权限后重试", systemImage: "exclamationmark.triangle.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.warning)
-                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-            } else if saved {
-                Label("已保存", systemImage: "checkmark.circle.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.success)
-                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-            } else if isDirty {
-                Label("有未保存的更改", systemImage: "pencil.circle.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.accent)
-                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-            }
-
-            Spacer()
-
-            savePrimaryButton
+    private var settingsSaveFailedBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Theme.warning)
+            Text("设置未能写入 settings.json，请检查 ~/Library/Application Support/Bandwagon/ 权限后重试")
+                .font(.system(size: 13, weight: .medium))
+            Spacer(minLength: 8)
         }
-        .padding(.horizontal, Theme.pagePadding)
-        .padding(.vertical, 12)
-        .background(Theme.surface)
-        .overlay(alignment: .top) { CardDivider() }
-        .overlay(alignment: .top) {
-            if isDirty {
-                Rectangle()
-                    .fill(Theme.accent.opacity(0.35))
-                    .frame(height: 2)
-            }
-        }
-        .overlay {
-            if isDirty {
-                RoundedRectangle(cornerRadius: 0)
-                    .strokeBorder(Theme.accent.opacity(0.22), lineWidth: 1)
-            }
-        }
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: isDirty)
+        .padding(14)
+        .background(Theme.warning.opacity(0.09), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
+        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
     }
 
-    private var savePrimaryButton: some View {
-        Button(action: performSave) {
-            HStack(spacing: 8) {
-                if saving {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Text(saving ? "连接中…" : "保存并连接")
-            }
+    private var settingsSavedBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(Theme.success)
+            Text("已保存")
+                .font(.system(size: 13, weight: .medium))
+            Spacer(minLength: 8)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(Theme.accent)
-        .controlSize(.large)
-        .disabled(saving)
-        .keyboardShortcut("s", modifiers: .command)
+        .padding(14)
+        .background(Theme.success.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
+        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
     }
 
     private func performSave() {
@@ -359,33 +339,6 @@ struct SettingsView: View {
         }
     }
 
-    private var openConfigFolderRow: some View {
-        Button {
-            NSWorkspace.shared.open(SettingsStore.configDirectoryURL)
-        } label: {
-            HStack(spacing: 12) {
-                SettingsIcon(systemName: "folder")
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("打开配置文件夹")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-                    Text("~/Library/Application Support/Bandwagon/")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "arrow.up.forward")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
     private var softwareUpdateCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
@@ -415,18 +368,6 @@ struct SettingsView: View {
                     Button(updatePrimaryTitle, action: { updateCenter.checkOrInstall() })
                         .buttonStyle(.bordered)
                 }
-            }
-
-            if !AppUpdateInstaller.isRunningFromApplications(Bundle.main.bundleURL) {
-                Text("应用内更新需要已将 Bandwagon 安装在「应用程序」文件夹。从 DMG 直接运行时可手动下载安装包。")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.warning)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text("应用内更新会下载发布包、替换「应用程序」里的 Bandwagon 并自动重新打开。VEID、面板地址与凭据保存在 ~/Library/Application Support/Bandwagon/，勿删除该文件夹。")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if case .available(let version, _) = updateCenter.phase {
