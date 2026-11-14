@@ -141,7 +141,6 @@ struct ClientsLoadingSkeleton: View {
                     SkeletonBlock(width: 56, height: 10, cornerRadius: 3)
                     SkeletonBlock(width: 28, height: 10, cornerRadius: 3)
                     SkeletonBlock(width: 28, height: 10, cornerRadius: 3)
-                    SkeletonBlock(width: 36, height: 10, cornerRadius: 3)
                     Color.clear.frame(width: 24, height: 1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -178,7 +177,7 @@ struct ClientsLoadingSkeleton: View {
                 SkeletonBlock(width: 72, height: 10)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            SkeletonBlock(width: 120, height: 11)
+            SkeletonBlock(width: 132, height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 6) {
                 SkeletonBlock(height: 6, cornerRadius: 3)
@@ -191,8 +190,6 @@ struct ClientsLoadingSkeleton: View {
                 .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
             }
             SkeletonBlock(width: 36, height: 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            SkeletonBlock(width: 72, height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear.frame(width: 24, height: 1)
         }

@@ -123,7 +123,7 @@ struct Client: Codable, Identifiable, Hashable {
         return DateFormats.string("yyyy/MM/dd HH:mm:ss", date, timeZone: timeZone)
     }
 
-    /// Concrete expiry for the clients column. No expiry is a dash, not a sentence.
+    /// Short expiry text. No expiry is a dash, not a sentence.
     /// A "starts on first use" duration stays one short phrase.
     func expiryLabel(timeZone: TimeZone = .current) -> String {
         if let expiryDate {
@@ -135,7 +135,7 @@ struct Client: Codable, Identifiable, Hashable {
         return "—"
     }
 
-    /// Quota cap for the clients column: `∞` when the panel stores unlimited, otherwise `100G`.
+    /// Quota cap for the clients row: `∞` when the panel stores unlimited, otherwise `100G`.
     var quotaLabel: String { ByteFormat.quota(total) }
 
     private static func unixDate(_ stamp: Int?) -> Date? {

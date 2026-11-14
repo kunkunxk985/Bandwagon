@@ -444,10 +444,11 @@ struct UICompositionRegression {
             settings.contains(".clipShape(RoundedRectangle(cornerRadius: Theme.panelRadius"),
             "Settings disclosure sections must keep expand/collapse inside the panel bounds"
         )
+        let detail = try source("Sources/Bandwagon/Views/Pages/ClientDetailSheet.swift")
         require(
             miniTraffic.contains("return \"今日\"") &&
             trafficChart.contains("return \"今日\"") &&
-            clients.contains("client.expiryWarning"),
+            detail.contains("client.expiryWarning"),
             "Partial-day bars and expiry-driven warnings must be named, not left to guesswork"
         )
         let models = try source("Sources/Bandwagon/Models/APIModels.swift")
@@ -480,7 +481,8 @@ struct UICompositionRegression {
             !clients.contains("trafficCell") &&
             !clients.contains("VStack(alignment: .trailing") &&
             clients.contains("client.quotaLabel") &&
-            clients.contains("client.expiryLabel()") &&
+            !clients.contains("expiryLabel") &&
+            !clients.contains("到期") &&
             clients.contains("ByteFormat.string(client.used)") &&
             clients.contains("ByteFormat.compact") &&
             clients.contains("ClientColumnShare.usageTokenGap") &&
@@ -490,7 +492,19 @@ struct UICompositionRegression {
             models.contains("return \"∞\"") &&
             occurrences(of: "ClientColumnLayout {", in: clients) == 2 &&
             occurrences(of: "ClientColumnLayout {", in: skeleton) == 2,
-            "Upload and download sit on one line after the used total, with a gap before the quota; expiry stays beside that line"
+            "Upload and download sit on one line after the used total, with a gap before the quota"
+        )
+        require(
+            clients.contains("enum ClientRowTypography") &&
+            clients.contains("static let size: CGFloat = 13") &&
+            clients.contains("size: ClientRowTypography.size") &&
+            clients.contains(".font(.system(size: ClientRowTypography.size, weight: .medium))") &&
+            clients.contains("Theme.number(ClientRowTypography.size, weight: .medium)") &&
+            !clients.contains("Theme.number(12") &&
+            !clients.contains("Theme.number(13)") &&
+            !clients.contains(".font(.system(size: 11, weight: .semibold))") &&
+            !clients.contains(".font(.system(size: 12, weight: .medium))"),
+            "Status, name, last online, usage figures, and quota share one 13pt row size"
         )
         require(
             !clients.contains("DateFormatter()") &&
