@@ -98,7 +98,8 @@ struct SecurityRegression {
             !settingsView.contains("$draft.xuiTwoFactor") &&
             !connectionFields.contains("$draft.xuiApiToken") &&
             !connectionFields.contains("$draft.xuiTwoFactor") &&
-            connectionFields.contains("不在此填写 API Token") &&
+            !connectionFields.contains("不在此填写 API Token") &&
+            !connectionFields.contains("使用面板 Web 登录") &&
             settings.contains("var xuiReady: Bool { !xuiBaseUrl.isEmpty && !xuiUsername.isEmpty && !xuiPassword.isEmpty }") &&
             settingsView.contains("draft.xuiApiToken = \"\""),
             "one-time 2FA codes must not be reloaded from disk or reused after a refresh attempt; 3X-UI settings UI is panel login only"
