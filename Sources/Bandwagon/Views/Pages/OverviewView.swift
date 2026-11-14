@@ -146,29 +146,18 @@ struct OverviewView: View {
     @ViewBuilder
     private var xuiSection: some View {
         let xui = model.overview.xui
-        if xui?.clientCount != nil {
-            if let error = xui?.error {
-                let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
-                StatusBanner(
-                    title: failure.staleTitle,
-                    message: failure.message,
-                    icon: failure.icon,
-                    tint: Theme.warning,
-                    actionTitle: failure.actionTitle,
-                    action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
-                )
-            } else if let clients = xui?.clientCount {
-                StatusBanner(
-                    title: "3X-UI 已连接 · \(clients) 个客户端",
-                    message: "面板运行正常",
-                    icon: "checkmark.circle.fill",
-                    tint: Theme.success,
-                    actionTitle: "查看客户端",
-                    action: { selectedTab = .clients }
-                )
-            }
-        } else if let error = xui?.error {
-            let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
+        guard let xui, let error = xui.error else { return }
+        let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
+        if xui.clientCount != nil {
+            StatusBanner(
+                title: failure.staleTitle,
+                message: failure.message,
+                icon: failure.icon,
+                tint: Theme.warning,
+                actionTitle: failure.actionTitle,
+                action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
+            )
+        } else {
             StatusCard(
                 title: failure.title,
                 message: failure.message,

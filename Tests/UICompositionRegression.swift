@@ -356,11 +356,17 @@ struct UICompositionRegression {
             !clients.contains("setSyncClientResetWithServer") &&
             settings.contains("$draft.syncClientResetWithServer") &&
             settings.contains("trafficResetSyncRow") &&
-            overview.contains("3X-UI 已连接") &&
             xuiClient.contains("func resetAllClientsTraffic(") &&
             xuiClient.contains("func normalizeBuiltInTrafficResetToNever(") &&
             appModel.contains("func coordinateServerResetSync()"),
             "Traffic reset sync is configured only in Settings; Clients shows no sync UI"
+        )
+        require(
+            !overview.contains("3X-UI 已连接") &&
+            !overview.contains("面板运行正常") &&
+            !overview.contains("查看客户端") &&
+            overview.contains("xuiSection"),
+            "Overview must omit the healthy 3X-UI status strip and still handle XUI failures"
         )
 
         print("PASS unified cards, optional actions, flat settings, error navigation, quota composition, stable chart marks, shared monitoring components, refresh cadence, overrun verdicts, stale-data banners, ring tint, reduce motion, and cached formatters")
