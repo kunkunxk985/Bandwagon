@@ -44,7 +44,7 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                PageHeader(title: "设置", subtitle: "日常维护连接与偏好。凭据写入 ~/Library/Application Support/Bandwagon/settings.json（目录 700、文件 600）。")
+                PageHeader(title: "设置")
                     .padding(.bottom, 6)
 
                 if let error = model.error {
@@ -72,7 +72,7 @@ struct SettingsView: View {
                 ) {
                     ConnectionFields.bandwagon(
                         draft: $draft,
-                        showApiKeyHint: true,
+                        showApiKeyHint: false,
                         inlineSave: performSave,
                         saving: saving,
                         saveButtonTitle: "确认并连接",
@@ -87,7 +87,7 @@ struct SettingsView: View {
                 ) {
                     ConnectionFields.xui(
                         draft: $draft,
-                        showCredentialHint: true,
+                        showCredentialHint: false,
                         inlineSave: performSave,
                         saving: saving,
                         saveButtonTitle: "确认并连接",
@@ -280,13 +280,8 @@ struct SettingsView: View {
         HStack(spacing: 12) {
             SettingsIcon(systemName: "arrow.triangle.2.circlepath")
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("自动刷新")
-                    .font(.system(size: 14, weight: .semibold))
-                Text(refreshHint)
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
+            Text("自动刷新")
+                .font(.system(size: 14, weight: .semibold))
 
             Spacer(minLength: 12)
 
@@ -306,13 +301,8 @@ struct SettingsView: View {
         HStack(spacing: 12) {
             SettingsIcon(systemName: "menubar.rectangle")
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("菜单栏")
-                    .font(.system(size: 14, weight: .semibold))
-                Text("在系统菜单栏显示套餐用量与预测")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
+            Text("菜单栏")
+                .font(.system(size: 14, weight: .semibold))
 
             Spacer(minLength: 12)
 
@@ -328,14 +318,8 @@ struct SettingsView: View {
         HStack(spacing: 12) {
             SettingsIcon(systemName: "clock.arrow.2.circlepath")
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("流量重置与服务器同步")
-                    .font(.system(size: 14, weight: .semibold))
-                Text("在搬瓦工流量周期重置时，自动清零所有 3X-UI 客户端用量，并将面板内置重置设为「从不」。")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Text("流量重置与服务器同步")
+                .font(.system(size: 14, weight: .semibold))
 
             Spacer(minLength: 12)
 
@@ -347,18 +331,17 @@ struct SettingsView: View {
 
     private var softwareUpdateCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(spacing: 12) {
                 SettingsIcon(systemName: "arrow.down.circle")
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("软件更新")
                         .font(.system(size: 14, weight: .semibold))
-                    Text("当前版本 \(ReleaseUpdateClient.installedVersion)")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                    Text(updateStatusText)
-                        .font(.system(size: 12))
-                        .foregroundStyle(updateStatusColor)
+                    if let updateStatusText {
+                        Text(updateStatusText)
+                            .font(.system(size: 12))
+                            .foregroundStyle(updateStatusColor)
+                    }
                 }
 
                 Spacer(minLength: 12)
@@ -425,20 +408,13 @@ struct SettingsView: View {
         }
     }
 
-    private var updateStatusText: String {
+    /// Result copy that is not already on the button. Idle stays title + 检查更新.
+    private var updateStatusText: String? {
         switch updateCenter.phase {
-        case .idle:
-            return "尚未检查 GitHub 上的最新发布。"
-        case .checking:
-            return "正在检查更新…"
+        case .idle, .checking, .downloading, .installing, .available:
+            return nil
         case .upToDate:
             return "已是最新版本。"
-        case .available:
-            return "发现新版本，可一键安装。"
-        case .downloading:
-            return "正在下载…"
-        case .installing:
-            return "正在安装…"
         case .failed(let message):
             return message
         }
@@ -484,12 +460,6 @@ struct SettingsView: View {
         case 1800: return "30 分钟"
         default: return "\(max(1, seconds / 60)) 分钟"
         }
-    }
-
-    private var refreshHint: String {
-        draft.refreshSeconds == 0
-            ? "只在手动刷新时重新读取数据"
-            : "每 \(refreshLabel(draft.refreshSeconds))自动重新读取"
     }
 
     private func inlineError(_ message: String) -> some View {

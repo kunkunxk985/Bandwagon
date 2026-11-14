@@ -49,8 +49,29 @@ struct UICompositionRegression {
             settings.contains("ConnectionFields.xui") &&
             !settings.contains("$draft.xuiApiToken") &&
             !settings.contains("$draft.xuiTwoFactor") &&
-            connectionFields.contains("不在此填写 API Token"),
+            !connectionFields.contains("不在此填写 API Token"),
             "Settings must group connection, preferences, and advanced sections with shared connection fields"
+        )
+        require(
+            settings.contains("PageHeader(title: \"设置\")") &&
+            !settings.contains("日常维护连接与偏好") &&
+            !settings.contains("当前版本") &&
+            !settings.contains("尚未检查") &&
+            !settings.contains("refreshHint") &&
+            !settings.contains("在系统菜单栏显示套餐用量与预测") &&
+            !settings.contains("在搬瓦工流量周期重置时") &&
+            !connectionFields.contains("使用面板 Web 登录") &&
+            settings.contains("showApiKeyHint: false") &&
+            settings.contains("showCredentialHint: false") &&
+            settings.contains("Text(\"自动刷新\")") &&
+            settings.contains("Text(\"菜单栏\")") &&
+            settings.contains("Text(\"流量重置与服务器同步\")") &&
+            settings.contains("Text(\"软件更新\")") &&
+            settings.contains("检查更新") &&
+            settings.contains("StatusPill(") &&
+            connectionFields.contains("labeledField(\"面板地址\"") &&
+            connectionFields.contains("labeledField(\"VEID\""),
+            "Settings cards keep titles, field labels, pills, and actions, without gray helper captions"
         )
         require(
             !overview.contains("action: {},") && !clients.contains("action: {},"),
@@ -90,6 +111,21 @@ struct UICompositionRegression {
         require(
             !contentView.contains("Bandwagon v3.0"),
             "Sidebar must not spend space on decorative version microcopy"
+        )
+        let primaryNav = contentView.range(of: "ForEach(Tab.primary)")
+        let sidebarSpacer = contentView.range(of: "Spacer()")
+        let pinnedSettings = contentView.range(of: "sidebarItem(.settings)")
+        require(
+            contentView.contains("static var primary: [Tab]") &&
+            contentView.contains("allCases.filter { $0 != .settings }") &&
+            primaryNav != nil && sidebarSpacer != nil && pinnedSettings != nil &&
+            primaryNav!.upperBound < sidebarSpacer!.lowerBound &&
+            sidebarSpacer!.upperBound < pinnedSettings!.lowerBound &&
+            contentView.contains(".font(.system(size: 14, weight: tab == item ? .semibold : .regular))") &&
+            contentView.contains(".padding(.vertical, 10)") &&
+            contentView.contains("VStack(spacing: 4)") &&
+            contentView.contains(".padding(.bottom, 26)"),
+            "Settings must stay pinned under a spacer, with slightly larger labels and more air under the wordmark"
         )
 
         let trafficChart = try source("Sources/Bandwagon/Views/Pages/TrafficHistoryChart.swift")

@@ -52,11 +52,6 @@ enum ConnectionFields {
                 labeledSecret("密码", text: draft.xuiPassword)
             }
 
-            Text("使用面板 Web 登录的用户名与密码；不在此填写 API Token 或双重验证码。")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
             if showCredentialHint,
                !draft.wrappedValue.xuiBaseUrl.isEmpty,
                draft.wrappedValue.xuiUsername.isEmpty || draft.wrappedValue.xuiPassword.isEmpty {
