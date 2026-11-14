@@ -108,6 +108,25 @@ struct UICompositionRegression {
             vps.contains("UsageHero("),
             "Overview and VPS must share a full-width quota composition without dead space"
         )
+        let loaded = vps[vps.range(of: "private var loadedSections")?.lowerBound ?? vps.endIndex...]
+        let loadedBody = loaded[..<(loaded.range(of: "private var heroCard")?.lowerBound ?? loaded.endIndex)]
+        require(
+            (loadedBody.range(of: "heroCard")?.lowerBound ?? loadedBody.endIndex) <
+            (loadedBody.range(of: "historyCard")?.lowerBound ?? loadedBody.startIndex) &&
+            (loadedBody.range(of: "historyCard")?.upperBound ?? loadedBody.startIndex) <
+            (loadedBody.range(of: "systemCard")?.lowerBound ?? loadedBody.startIndex),
+            "VPS must show the usage hero, then the traffic trend, then system specs"
+        )
+        let skeleton = try source("Sources/Bandwagon/Views/DesignSystem/LoadingSkeleton.swift")
+        let vpsSkeleton = skeleton[skeleton.range(of: "struct VPSLoadingSkeleton")?.lowerBound ?? skeleton.endIndex...]
+        let skeletonBody = vpsSkeleton[..<(vpsSkeleton.range(of: "private var systemSkeleton")?.lowerBound ?? vpsSkeleton.endIndex)]
+        require(
+            (skeletonBody.range(of: "UsageHeroSkeleton()")?.lowerBound ?? skeletonBody.endIndex) <
+            (skeletonBody.range(of: "SkeletonBlock(height: 200")?.lowerBound ?? skeletonBody.startIndex) &&
+            (skeletonBody.range(of: "SkeletonBlock(height: 200")?.upperBound ?? skeletonBody.startIndex) <
+            (skeletonBody.range(of: "systemSkeleton")?.lowerBound ?? skeletonBody.startIndex),
+            "VPS loading skeleton must follow the page: usage hero, traffic trend, then system specs"
+        )
         require(
             !contentView.contains("Bandwagon v3.0"),
             "Sidebar must not spend space on decorative version microcopy"

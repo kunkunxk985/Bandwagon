@@ -195,13 +195,13 @@ struct VPSLoadingSkeleton: View {
             Panel(padding: 24) {
                 UsageHeroSkeleton()
             }
-            systemSkeleton
             Panel(padding: 20) {
                 VStack(alignment: .leading, spacing: 14) {
                     SkeletonBlock(width: 64, height: 13, cornerRadius: 4)
                     SkeletonBlock(height: 200, cornerRadius: Theme.controlRadius)
                 }
             }
+            systemSkeleton
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("正在加载 VPS 信息")
