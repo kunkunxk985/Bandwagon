@@ -147,7 +147,6 @@ struct OverviewView: View {
     private var xuiSection: some View {
         let xui = model.overview.xui
         if xui?.clientCount != nil {
-            // The page header already carries the counts; only the failure is news.
             if let error = xui?.error {
                 let failure = ServiceFailure(service: "3X-UI", error: error, needsSettings: model.xuiNeedsSettings)
                 StatusBanner(
@@ -157,6 +156,15 @@ struct OverviewView: View {
                     tint: Theme.warning,
                     actionTitle: failure.actionTitle,
                     action: { failure.resolve(goToSettings: { selectedTab = .settings }, retry: { await model.load() }) }
+                )
+            } else if let clients = xui?.clientCount {
+                StatusBanner(
+                    title: "3X-UI 已连接 · \(clients) 个客户端",
+                    message: "面板运行正常",
+                    icon: "checkmark.circle.fill",
+                    tint: Theme.success,
+                    actionTitle: "查看客户端",
+                    action: { selectedTab = .clients }
                 )
             }
         } else if let error = xui?.error {
