@@ -345,12 +345,20 @@ struct UICompositionRegression {
             appearanceModel.contains("func setAppearance(_ mode: AppearanceMode)") &&
             appRoot.contains(".preferredColorScheme(model.settings.appearance.colorScheme)") &&
             appRoot.contains("WindowAppearance(mode: model.settings.appearance)") &&
+            appRoot.contains(".toolbarColorScheme(model.settings.appearance.colorScheme, for: .windowToolbar)") &&
+            !appRoot.contains("toolbarBackground(") &&
+            contentView.contains("ToolbarItemAppearance(mode: model.settings.appearance)") &&
+            !contentView.contains(".toolbarBackground(") &&
             occurrences(of: "case .system: return nil", in: chrome) == 2 &&
             chrome.contains("NSApp.appearance = appearance") &&
             chrome.contains("window.appearance = appearance") &&
             chrome.contains("AppleInterfaceThemeChangedNotification") &&
-            !chrome.contains("effectiveAppearance"),
-            "Appearance is an icon segment beside refresh and the menu bar; system stays nil so it keeps tracking the OS"
+            chrome.contains("func syncChrome") &&
+            chrome.contains("AppleInterfaceStyle") &&
+            chrome.contains("struct ToolbarItemAppearance") &&
+            !chrome.contains("effectiveAppearance") &&
+            !chrome.contains("toolbarBackground("),
+            "Appearance is an icon segment beside refresh and the menu bar; system stays nil so it keeps tracking the OS, and toolbar capsules follow it without a painted titlebar"
         )
 
         require(

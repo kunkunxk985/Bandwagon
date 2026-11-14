@@ -56,6 +56,8 @@ struct ContentView: View {
             // window buttons sit on the sidebar's surface. Painting the canvas colour
             // here produced an opaque strip across the top with a hard seam where the
             // sidebar started, and left the buttons on flat colour instead of material.
+            // The capsules themselves are pinned in RefreshToolbar; they are AppKit and
+            // do not follow preferredColorScheme.
             .toolbar(removing: .title)
             .toolbar {
                 RefreshToolbar(model: model)
@@ -248,6 +250,15 @@ private struct RefreshToolbar: ToolbarContent {
                 .help("刷新 (⌘R)")
             }
             .padding(.horizontal, 14)
+            // Inside the item, so the walk reaches the glass capsule AppKit wraps
+            // around this control. Zero size and no hit testing: it must not change
+            // the capsule or steal the refresh click.
+            .overlay {
+                ToolbarItemAppearance(mode: model.settings.appearance)
+                    .frame(width: 0, height: 0)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
         }
     }
 }

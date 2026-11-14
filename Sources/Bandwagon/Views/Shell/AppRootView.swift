@@ -21,6 +21,10 @@ struct AppRootView: View {
             }
         }
         .preferredColorScheme(model.settings.appearance.colorScheme)
+        // The window toolbar is AppKit. This is the SwiftUI signal for that bar.
+        // It must stay unpaired with a toolbar background: a painted bar is a hard
+        // seam across the top of the sidebar.
+        .toolbarColorScheme(model.settings.appearance.colorScheme, for: .windowToolbar)
         .background {
             WindowAppearance(mode: model.settings.appearance)
         }
