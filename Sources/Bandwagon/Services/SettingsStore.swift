@@ -13,6 +13,13 @@ enum AppearanceMode: String, CaseIterable, Sendable {
         guard !raw.isEmpty, let mode = AppearanceMode(rawValue: raw) else { return .system }
         return mode
     }
+
+    /// Whether the Mac's `AppleInterfaceStyle` value is dark. Missing, empty,
+    /// and `Light` are light. This is the system setting, not an appearance
+    /// this process last applied, and choosing 系统 does not save the result.
+    static func interfaceStyleIsDark(_ style: String?) -> Bool {
+        style == "Dark"
+    }
 }
 
 struct AppSettings: Equatable, Sendable {
