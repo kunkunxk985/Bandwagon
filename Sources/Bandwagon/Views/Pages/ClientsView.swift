@@ -156,9 +156,15 @@ struct ClientsView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(enabled ? Theme.accent : .secondary)
 
-            Text("流量重置与服务器同步")
-                .font(.system(size: 12.5, weight: .semibold))
-                .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("流量重置与服务器同步")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Text(enabled ? "已开启 · 于搬瓦工周期重置时自动清零客户端用量" : "未开启")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
 
             if enabled, let resetDateTimeText {
                 Text("下次清零 \(resetDateTimeText)")
@@ -183,14 +189,10 @@ struct ClientsView: View {
                     .controlSize(.small)
             }
 
-            Toggle("流量重置与服务器同步", isOn: Binding(
-                get: { model.settings.syncClientResetWithServer },
-                set: { model.setSyncClientResetWithServer($0) }
-            ))
-            .labelsHidden()
-            .toggleStyle(.switch)
-            .controlSize(.small)
-            .disabled(model.resetSyncWorking)
+            Button("在设置中管理") { selectedTab = .settings }
+                .buttonStyle(.borderless)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.accent)
         }
     }
 
