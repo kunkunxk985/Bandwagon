@@ -108,8 +108,10 @@ struct UICompositionRegression {
             vps.contains("UsageHero("),
             "Overview and VPS must share a full-width quota composition without dead space"
         )
-        let loaded = vps[vps.range(of: "private var loadedSections")?.lowerBound ?? vps.endIndex...]
-        let loadedBody = loaded[..<(loaded.range(of: "private var heroCard")?.lowerBound ?? loaded.endIndex)]
+        let loadedStart = vps.range(of: "private var loadedSections")?.lowerBound ?? vps.endIndex
+        let loaded = vps[loadedStart...]
+        let loadedEnd = loaded.range(of: "private var heroCard")?.lowerBound ?? loaded.endIndex
+        let loadedBody = loaded[..<loadedEnd]
         require(
             (loadedBody.range(of: "heroCard")?.lowerBound ?? loadedBody.endIndex) <
             (loadedBody.range(of: "historyCard")?.lowerBound ?? loadedBody.startIndex) &&
@@ -118,8 +120,10 @@ struct UICompositionRegression {
             "VPS must show the usage hero, then the traffic trend, then system specs"
         )
         let skeleton = try source("Sources/Bandwagon/Views/DesignSystem/LoadingSkeleton.swift")
-        let vpsSkeleton = skeleton[skeleton.range(of: "struct VPSLoadingSkeleton")?.lowerBound ?? skeleton.endIndex...]
-        let skeletonBody = vpsSkeleton[..<(vpsSkeleton.range(of: "private var systemSkeleton")?.lowerBound ?? vpsSkeleton.endIndex)]
+        let skeletonStart = skeleton.range(of: "struct VPSLoadingSkeleton")?.lowerBound ?? skeleton.endIndex
+        let vpsSkeleton = skeleton[skeletonStart...]
+        let skeletonEnd = vpsSkeleton.range(of: "private var systemSkeleton")?.lowerBound ?? vpsSkeleton.endIndex
+        let skeletonBody = vpsSkeleton[..<skeletonEnd]
         require(
             (skeletonBody.range(of: "UsageHeroSkeleton()")?.lowerBound ?? skeletonBody.endIndex) <
             (skeletonBody.range(of: "SkeletonBlock(height: 200")?.lowerBound ?? skeletonBody.startIndex) &&
