@@ -66,6 +66,11 @@ python3 Tests/http_fixture.py "$OUT/http"
 "$OUT/ui-composition-regression"
 
 "$SWIFTC" "${ARGS[@]}" -parse-as-library \
+  Sources/Bandwagon/Views/Pages/ClientColumnShare.swift \
+  Tests/ClientColumnRegression.swift -o "$OUT/client-column-regression"
+"$OUT/client-column-regression"
+
+"$SWIFTC" "${ARGS[@]}" -parse-as-library \
   Sources/Bandwagon/Services/ReleaseUpdateClient.swift \
   Sources/Bandwagon/Services/AppUpdateInstaller.swift \
   Tests/ReleaseUpdateRegression.swift -o "$OUT/release-update-regression"

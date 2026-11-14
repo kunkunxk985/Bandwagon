@@ -135,17 +135,17 @@ struct ClientsLoadingSkeleton: View {
             .padding(.bottom, 2)
 
             Panel(padding: 0) {
-                HStack(spacing: 12) {
-                    ForEach(0..<8, id: \.self) { index in
-                        SkeletonBlock(
-                            width: index == 1 ? 56 : 36,
-                            height: 10,
-                            cornerRadius: 3
-                        )
-                    }
+                ClientColumnLayout {
+                    SkeletonBlock(width: 28, height: 10, cornerRadius: 3)
+                    SkeletonBlock(width: 48, height: 10, cornerRadius: 3)
+                    SkeletonBlock(width: 56, height: 10, cornerRadius: 3)
+                    SkeletonBlock(width: 28, height: 10, cornerRadius: 3)
+                    SkeletonBlock(width: 28, height: 10, cornerRadius: 3)
+                    SkeletonBlock(width: 36, height: 10, cornerRadius: 3)
+                    Color.clear.frame(width: 24, height: 1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 18)
+                .padding(.horizontal, CGFloat(ClientColumnShare.inset))
                 .padding(.vertical, 11)
                 .background(Theme.surface)
                 .overlay(alignment: .bottom) { CardDivider() }
@@ -170,22 +170,31 @@ struct ClientsLoadingSkeleton: View {
     }
 
     private var clientRow: some View {
-        HStack(spacing: 12) {
+        ClientColumnLayout {
             SkeletonBlock(width: 44, height: 22, cornerRadius: Theme.controlRadius)
+                .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .leading, spacing: 5) {
                 SkeletonBlock(width: 96, height: 12)
                 SkeletonBlock(width: 72, height: 10)
             }
-            .frame(width: 108, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: 120, height: 11)
-            SkeletonBlock(width: 64, height: 6, cornerRadius: 3)
-            SkeletonBlock(width: 48, height: 12)
-            SkeletonBlock(width: 56, height: 22)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 8) {
+                SkeletonBlock(height: 6, cornerRadius: 3)
+                    .frame(minWidth: 28, maxWidth: .infinity)
+                SkeletonBlock(width: 48, height: 12)
+                SkeletonBlock(width: 40, height: 12)
+                SkeletonBlock(width: 40, height: 12)
+            }
             SkeletonBlock(width: 36, height: 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: 72, height: 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Color.clear.frame(width: 24, height: 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 18)
+        .padding(.horizontal, CGFloat(ClientColumnShare.inset))
         .padding(.vertical, 11)
     }
 }
