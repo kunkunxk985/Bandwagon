@@ -26,6 +26,12 @@ struct ClientColumnRegression {
         guard ClientColumnShare.usage.weight == ClientColumnShare.columns.map(\.weight).max() else {
             fail("the usage line must take the largest share of spare width")
         }
+        guard ClientColumnShare.usageTokenGap == 14, ClientColumnShare.usageQuotaPadding == 6 else {
+            fail("the used total, upload, download, and quota need a fixed gap, not a stretched row")
+        }
+        guard abs((ClientColumnShare.usage.minimum - ClientColumnShare.usage.floor) - 38) < 0.01 else {
+            fail("widening the figure gaps must not change how much slack the usage bar gives up")
+        }
 
         let samples = [640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200]
         var previous = widths(samples[0])

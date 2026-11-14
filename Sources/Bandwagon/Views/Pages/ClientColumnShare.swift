@@ -19,13 +19,20 @@ enum ClientColumnShare {
 
     static let spacing: Double = 12
     static let inset: Double = 18
+    /// Gap between the used total, the upload figure, and the download figure.
+    /// Wide enough that `61.4 GB ↑ 12.9G ↓ 48.5G` does not read as one string,
+    /// and fixed so a wider window does not stretch the figures apart.
+    static let usageTokenGap: Double = 14
+    /// Extra room after the download figure, on top of `spacing`, before the quota.
+    static let usageQuotaPadding: Double = 6
 
     static let status = Column(floor: 52, minimum: 56, weight: 0.7)
     static let name = Column(floor: 72, minimum: 108, weight: 1.8)
     /// `yyyy/MM/dd HH:mm:ss` at 12.5pt. No slack: the timestamp stays whole.
     static let lastOnline = Column(floor: 148, minimum: 148, weight: 1.3)
-    /// Floor fits the total and the two direction figures; the bar is the slack.
-    static let usage = Column(floor: 198, minimum: 236, weight: 2.8)
+    /// Floor fits the total and the two direction figures with a gap between
+    /// each, plus a little room before the quota. The bar is the slack.
+    static let usage = Column(floor: 220, minimum: 258, weight: 2.8)
     static let quota = Column(floor: 44, minimum: 48, weight: 0.85)
     static let expiry = Column(floor: 84, minimum: 92, weight: 1.15)
     /// The copy control stays a fixed slot. It does not absorb spare width.

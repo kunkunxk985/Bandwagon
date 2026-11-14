@@ -180,12 +180,15 @@ struct ClientsLoadingSkeleton: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: 120, height: 11)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 SkeletonBlock(height: 6, cornerRadius: 3)
                     .frame(minWidth: 28, maxWidth: .infinity)
-                SkeletonBlock(width: 48, height: 12)
-                SkeletonBlock(width: 40, height: 12)
-                SkeletonBlock(width: 40, height: 12)
+                HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
+                    SkeletonBlock(width: 48, height: 12)
+                    SkeletonBlock(width: 40, height: 12)
+                    SkeletonBlock(width: 40, height: 12)
+                }
+                .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
             }
             SkeletonBlock(width: 36, height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
