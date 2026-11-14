@@ -27,6 +27,11 @@ struct ContentView: View {
             case .settings: "gearshape"
             }
         }
+
+        /// Destinations under the wordmark. Settings is pinned to the bottom of the sidebar.
+        static var primary: [Tab] {
+            allCases.filter { $0 != .settings }
+        }
     }
 
     var body: some View {
@@ -117,14 +122,11 @@ struct ContentView: View {
             }
             .padding(.horizontal, 18)
             .padding(.top, 16)
-            .padding(.bottom, 18)
+            .padding(.bottom, 26)
 
-            VStack(spacing: 1) {
-                ForEach(Tab.allCases) { item in
-                    SidebarButton(item: item, tab: $tab, isHovered: sidebarHover == item)
-                        .onHover { hovering in
-                            if hovering { sidebarHover = item } else if sidebarHover == item { sidebarHover = nil }
-                        }
+            VStack(spacing: 4) {
+                ForEach(Tab.primary) { item in
+                    sidebarItem(item)
                 }
             }
             .padding(.horizontal, 10)
@@ -146,14 +148,25 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Theme.fill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .padding(.horizontal, 10)
-                .padding(.bottom, 14)
+                .padding(.bottom, 8)
             }
+
+            sidebarItem(.settings)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 14)
         }
         .background {
             VisualEffectView(material: .sidebar)
                 .ignoresSafeArea()
         }
         .navigationSplitViewColumnWidth(min: 196, ideal: 214, max: 232)
+    }
+
+    private func sidebarItem(_ item: Tab) -> some View {
+        SidebarButton(item: item, tab: $tab, isHovered: sidebarHover == item)
+            .onHover { hovering in
+                if hovering { sidebarHover = item } else if sidebarHover == item { sidebarHover = nil }
+            }
     }
 
     private var pageBackground: some View {
@@ -176,16 +189,16 @@ private struct SidebarButton: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: item.icon)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(tab == item ? Theme.accent : Color.secondary)
-                    .frame(width: 18)
+                    .frame(width: 20)
                 Text(item.title)
-                    .font(.system(size: 13, weight: tab == item ? .semibold : .regular))
+                    .font(.system(size: 14, weight: tab == item ? .semibold : .regular))
                     .foregroundStyle(.primary)
                 Spacer()
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.vertical, 10)
             .background(
                 tab == item
                 ? Theme.accent.opacity(0.12)

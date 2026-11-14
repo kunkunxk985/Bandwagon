@@ -91,6 +91,21 @@ struct UICompositionRegression {
             !contentView.contains("Bandwagon v3.0"),
             "Sidebar must not spend space on decorative version microcopy"
         )
+        let primaryNav = contentView.range(of: "ForEach(Tab.primary)")
+        let sidebarSpacer = contentView.range(of: "Spacer()")
+        let pinnedSettings = contentView.range(of: "sidebarItem(.settings)")
+        require(
+            contentView.contains("static var primary: [Tab]") &&
+            contentView.contains("allCases.filter { $0 != .settings }") &&
+            primaryNav != nil && sidebarSpacer != nil && pinnedSettings != nil &&
+            primaryNav!.upperBound < sidebarSpacer!.lowerBound &&
+            sidebarSpacer!.upperBound < pinnedSettings!.lowerBound &&
+            contentView.contains(".font(.system(size: 14, weight: tab == item ? .semibold : .regular))") &&
+            contentView.contains(".padding(.vertical, 10)") &&
+            contentView.contains("VStack(spacing: 4)") &&
+            contentView.contains(".padding(.bottom, 26)"),
+            "Settings must stay pinned under a spacer, with slightly larger labels and more air under the wordmark"
+        )
 
         let trafficChart = try source("Sources/Bandwagon/Views/Pages/TrafficHistoryChart.swift")
         require(
