@@ -85,14 +85,63 @@ struct Client: Codable, Identifiable, Hashable {
     }
 
     var state: ClientState {
-        let now = Date().timeIntervalSince1970 * 1000
-        let expiry = Double(expiryTime ?? 0)
-        if enable == false { return .off }
-        if expiry > 0, expiry < now { return .off }
-        if let percent, percent >= UsageThreshold.warnPercent { return .warn }
-        if expiry > 0, expiry - now < 5 * 86400_000 { return .warn }
-        if online == true { return .online }
+        if isDeactivated { return .off }
+        if isWarned { return .warn }
+        if isConnected { return .online }
         return .idle
+    }
+
+    /// Connected right now. The 在线 chip and the header count both use this, so a
+    /// client who is over quota or near expiry stays in 在线 while the pill still
+    /// reads 预警. `state` is one word for the pill; the filters overlap.
+    var isConnected: Bool { online == true }
+
+    /// Switched off, or a dated expiry that has already passed.
+    var isDeactivated: Bool {
+        if enable == false { return true }
+        let expiry = Double(expiryTime ?? 0)
+        return expiry > 0 && expiry < nowMillis
+    }
+
+    /// Quota at the shared warn threshold, or a dated expiry inside five days.
+    /// Still true when the client is connected. A deactivated client is not warned.
+    var isWarned: Bool {
+        if isDeactivated { return false }
+        if let percent, percent >= UsageThreshold.warnPercent { return true }
+        let expiry = Double(expiryTime ?? 0)
+        return expiry > 0 && expiry - nowMillis < 5 * 86400_000
+    }
+
+    private var nowMillis: Double { Date().timeIntervalSince1970 * 1000 }
+
+    /// Clients column. "现在" while connected. Otherwise the panel's last-online
+    /// instant (`lastOnline`, not the subscription fetch) as
+    /// `yyyy/MM/dd HH:mm:ss` in `timeZone`. "—" when the panel has never seen it.
+    func lastOnlineText(timeZone: TimeZone = .current) -> String {
+        if isConnected { return "现在" }
+        guard let date = Self.unixDate(lastOnline) else { return "—" }
+        return DateFormats.string("yyyy/MM/dd HH:mm:ss", date, timeZone: timeZone)
+    }
+
+    /// Concrete expiry for the clients column. No expiry is a dash, not a sentence.
+    /// A "starts on first use" duration stays one short phrase.
+    func expiryLabel(timeZone: TimeZone = .current) -> String {
+        if let expiryDate {
+            return DateFormats.string("yyyy/MM/dd", expiryDate, timeZone: timeZone)
+        }
+        if let days = delayedStartDays {
+            return "首用后 \(days) 天"
+        }
+        return "—"
+    }
+
+    /// Quota cap for the clients column: `∞` when the panel stores unlimited, otherwise `100G`.
+    var quotaLabel: String { ByteFormat.quota(total) }
+
+    private static func unixDate(_ stamp: Int?) -> Date? {
+        guard var stamp, stamp > 0 else { return nil }
+        if stamp < 100_000_000_000 { stamp *= 1000 }
+        return Date(timeIntervalSince1970: Double(stamp) / 1000)
     }
 
     /// Set only when the warning comes from the expiry date rather than from quota
@@ -172,19 +221,21 @@ enum DateFormats {
     // Guarded by `lock`; `nonisolated(unsafe)` is the Swift 6 way to say so.
     nonisolated(unsafe) private static var cache: [String: DateFormatter] = [:]
 
-    static func formatter(_ format: String) -> DateFormatter {
+    static func formatter(_ format: String, timeZone: TimeZone = .current) -> DateFormatter {
+        let key = "\(format)|\(timeZone.identifier)"
         lock.lock()
         defer { lock.unlock() }
-        if let cached = cache[format] { return cached }
+        if let cached = cache[key] { return cached }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "zh_CN")
+        formatter.timeZone = timeZone
         formatter.dateFormat = format
-        cache[format] = formatter
+        cache[key] = formatter
         return formatter
     }
 
-    static func string(_ format: String, _ date: Date) -> String {
-        formatter(format).string(from: date)
+    static func string(_ format: String, _ date: Date, timeZone: TimeZone = .current) -> String {
+        formatter(format, timeZone: timeZone).string(from: date)
     }
 }
 
@@ -205,6 +256,34 @@ enum ByteFormat {
     static func percent(_ value: Double?) -> String {
         guard let value else { return "—" }
         return String(format: "%.0f%%", value)
+    }
+
+    /// Short magnitude for a clients-row amount (`12.5G`, `800M`). Nil is unknown.
+    static func compact(_ bytes: Int?) -> String {
+        guard let bytes else { return "—" }
+        if bytes <= 0 { return "0" }
+        let gb = Double(bytes) / 1_073_741_824
+        if gb >= 1 { return magnitude(gb, "G") }
+        let mb = Double(bytes) / 1_048_576
+        if mb >= 1 { return magnitude(mb, "M") }
+        let kb = Double(bytes) / 1024
+        if kb >= 1 { return magnitude(kb, "K") }
+        return "\(bytes)B"
+    }
+
+    /// Panel quota cap. `0` is unlimited, same as an absent cap.
+    static func quota(_ bytes: Int?) -> String {
+        guard let bytes, bytes > 0 else { return "∞" }
+        return compact(bytes)
+    }
+
+    private static func magnitude(_ value: Double, _ unit: String) -> String {
+        if value >= 100 { return String(format: "%.0f\(unit)", value) }
+        let tenths = (value * 10).rounded() / 10
+        if abs(tenths - tenths.rounded()) < 0.001 {
+            return String(format: "%.0f\(unit)", tenths)
+        }
+        return String(format: "%.1f\(unit)", tenths)
     }
 
     static func daysLeft(resetAt: Int?) -> String {

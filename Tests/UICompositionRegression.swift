@@ -398,6 +398,35 @@ struct UICompositionRegression {
             clients.contains("client.expiryWarning"),
             "Partial-day bars and expiry-driven warnings must be named, not left to guesswork"
         )
+        let models = try source("Sources/Bandwagon/Models/APIModels.swift")
+        require(
+            models.contains("yyyy/MM/dd HH:mm:ss") &&
+            models.contains("return \"现在\"") &&
+            !models.contains("小时前") &&
+            !models.contains("分钟前") &&
+            !modelPresentation.contains("小时前") &&
+            !clients.contains("小时前") &&
+            !clients.contains("Spacer(minLength: 0)"),
+            "Last online is an absolute timestamp, and client rows leave no blank stretch before the usage bar"
+        )
+        require(
+            clients.contains("case .online: hit = client.isConnected") &&
+            clients.contains("case .warn: hit = client.isWarned") &&
+            clients.contains("case .off: hit = client.isDeactivated") &&
+            clients.contains("clients.filter(\\.isConnected)") &&
+            clients.contains("filter(\\.isWarned)") &&
+            !clients.contains("state == .online"),
+            "在线 includes every connected client, including those who are also warned"
+        )
+        require(
+            clients.contains("上行") &&
+            clients.contains("下行") &&
+            clients.contains("client.quotaLabel") &&
+            clients.contains("client.expiryLabel()") &&
+            clients.contains("ByteFormat.compact") &&
+            models.contains("return \"∞\""),
+            "The usage cluster shows up, down, the quota cap, and an expiry"
+        )
         require(
             !clients.contains("DateFormatter()") &&
             !miniTraffic.contains("DateFormatter()") &&

@@ -54,7 +54,7 @@ struct ClientsView: View {
     // MARK: - 汇总与筛选
 
     private func header(_ clients: [Client]) -> some View {
-        let warnCount = clients.filter { $0.state == .warn }.count
+        let warnCount = clients.filter(\.isWarned).count
         return VStack(alignment: .leading, spacing: Theme.gap) {
             Panel(padding: 18) {
                 HStack(spacing: 20) {
@@ -63,7 +63,7 @@ struct ClientsView: View {
                     SummaryTile(
                         dotColor: ClientState.online.swiftColor,
                         title: "在线",
-                        value: "\(clients.filter { $0.online == true }.count)"
+                        value: "\(clients.filter(\.isConnected).count)"
                     )
                     StatDivider(height: 40)
                     SummaryTile(
@@ -228,9 +228,11 @@ struct ClientsView: View {
             let hit: Bool
             switch filter {
             case .all: hit = true
-            case .online: hit = client.state == .online
-            case .warn: hit = client.state == .warn
-            case .off: hit = client.state == .off
+            // 在线 follows the connection, not the exclusive pill. A warned client
+            // who is still online belongs here and in 预警.
+            case .online: hit = client.isConnected
+            case .warn: hit = client.isWarned
+            case .off: hit = client.isDeactivated
             }
             guard hit else { return false }
             if query.isEmpty { return true }
@@ -261,7 +263,12 @@ struct ClientsView: View {
             func key(_ client: Client) -> Int { client.online == true ? Int.max : (client.lastOnline ?? 0) }
             return order(key(lhs), key(rhs))
         case .quota:
-            return order(lhs.percent ?? -1, rhs.percent ?? -1)
+            // The column shows the cap. Unlimited (0) sorts as the largest.
+            func cap(_ client: Client) -> Int {
+                let total = client.total ?? 0
+                return total > 0 ? total : Int.max
+            }
+            return order(cap(lhs), cap(rhs))
         }
     }
 }
@@ -280,16 +287,20 @@ private struct ClientTableHeader: View {
                 .frame(minWidth: ClientColumns.nameMin, maxWidth: ClientColumns.nameMax, alignment: .leading)
             sortable(.recent, alignment: .leading)
                 .frame(width: ClientColumns.lastOnline, alignment: .leading)
-            Spacer(minLength: 0)
             Color.clear
                 .frame(minWidth: 64, maxWidth: 120, maxHeight: 1)
             sortable(.usage, alignment: .trailing)
                 .frame(width: ClientColumns.used, alignment: .trailing)
+            Text("上行 / 下行")
+                .frame(width: ClientColumns.traffic, alignment: .trailing)
             sortable(.quota, alignment: .trailing)
                 .frame(width: ClientColumns.quota, alignment: .trailing)
+            Text("到期")
+                .frame(width: ClientColumns.expiry, alignment: .trailing)
             Color.clear
                 .frame(width: ClientColumns.copy, height: 1)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .font(.system(size: 11, weight: .medium))
         .foregroundStyle(.secondary)
         .padding(.horizontal, ClientColumns.inset)
@@ -327,17 +338,19 @@ private struct ClientTableHeader: View {
 }
 
 private enum ClientColumns {
-    static let spacing: CGFloat = 16
+    static let spacing: CGFloat = 12
     static let inset: CGFloat = 18
-    static let used: CGFloat = 72
-    static let quota: CGFloat = 96
-    static let state: CGFloat = 56
-    static let nameMin: CGFloat = 120
-    /// Capped so the identity columns (status, name, last online) stay together
-    /// on the left and the numbers on the right, instead of the name column
-    /// absorbing every spare point of a wide window.
-    static let nameMax: CGFloat = 260
-    static let lastOnline: CGFloat = 84
+    static let used: CGFloat = 68
+    static let traffic: CGFloat = 86
+    static let quota: CGFloat = 48
+    static let expiry: CGFloat = 92
+    static let state: CGFloat = 52
+    static let nameMin: CGFloat = 108
+    /// A long name stops here so the usage columns stay on screen. Spare window
+    /// width stays after the copy button; it is not a gap before the bar.
+    static let nameMax: CGFloat = 168
+    /// `yyyy/MM/dd HH:mm:ss` at 12.5pt, tabular figures.
+    static let lastOnline: CGFloat = 148
     static let copy: CGFloat = 24
 }
 
@@ -362,8 +375,8 @@ struct ClientRow: View {
         return min(1, max(0, Double(client.used ?? 0) / Double(maxUsed)))
     }
 
-    /// Bar colour still encodes quota risk, matching the percentage label beside
-    /// it. Clients without an individual quota fall back to the accent colour.
+    /// Bar colour still encodes quota risk. Clients without an individual quota
+    /// fall back to the accent colour. The number beside the bar is the cap.
     private var usageTint: Color {
         guard let utilization else { return Theme.accent }
         return UsageTint.color(for: utilization.fraction)
@@ -394,12 +407,11 @@ struct ClientRow: View {
 
             Text(client.lastOnlineText())
                 .font(.system(size: 12.5))
-                .foregroundStyle(client.online == true ? AnyShapeStyle(ClientState.online.swiftColor) : AnyShapeStyle(.secondary))
+                .foregroundStyle(client.isConnected ? AnyShapeStyle(ClientState.online.swiftColor) : AnyShapeStyle(.secondary))
                 .monospacedDigit()
                 .lineLimit(1)
+                .minimumScaleFactor(0.85)
                 .frame(width: ClientColumns.lastOnline, alignment: .leading)
-
-            Spacer(minLength: 0)
 
             UsageBar(value: usageFraction, tint: usageTint)
                 .frame(minWidth: 64, maxWidth: 120)
@@ -407,10 +419,28 @@ struct ClientRow: View {
 
             Text(ByteFormat.string(client.used))
                 .font(Theme.number(13))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .frame(width: ClientColumns.used, alignment: .trailing)
 
-            quotaCell
+            trafficCell
+                .frame(width: ClientColumns.traffic, alignment: .trailing)
+
+            Text(client.quotaLabel)
+                .font(Theme.number(12.5, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .frame(width: ClientColumns.quota, alignment: .trailing)
+                .help("配额上限")
+
+            Text(client.expiryLabel())
+                .font(Theme.number(12, weight: .medium))
+                .foregroundStyle(client.expiryWarning == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(ClientState.warn.swiftColor))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(width: ClientColumns.expiry, alignment: .trailing)
+                .help("到期时间")
 
             Button {
                 let text = client.email ?? client.name
@@ -434,6 +464,7 @@ struct ClientRow: View {
             .accessibilityLabel(copied ? "已复制 \(client.name) 的邮箱" : "复制 \(client.name) 的邮箱")
             .opacity(hovered || copied ? 1 : 0)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, ClientColumns.inset)
         .padding(.vertical, 11)
         .background(hovered ? Theme.fill.opacity(0.6) : Color.clear)
@@ -447,26 +478,25 @@ struct ClientRow: View {
         .help("查看详情与管理")
     }
 
-    /// Quota share, or the expiry that raised a warning. Without the expiry text a
-    /// row could show "预警" beside a low, green bar and leave the reader guessing.
-    @ViewBuilder
-    private var quotaCell: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            if let utilization {
-                Text("\(Int(utilization.percent.rounded()))%")
-                    .font(Theme.number(12.5, weight: .medium))
-                    .foregroundStyle(utilization.fraction >= UsageThreshold.warn ? usageTint : Color.secondary)
-            } else {
-                Text("—")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.tertiary)
-            }
-            if let expiryWarning = client.expiryWarning {
-                Text(expiryWarning)
-                    .font(.system(size: 10.5, weight: .medium))
-                    .foregroundStyle(ClientState.warn.swiftColor)
-                    .lineLimit(1)
-            }
+    /// Upload above download. Compact units so the pair sits next to the total
+    /// instead of opening a gap in the row.
+    private var trafficCell: some View {
+        VStack(alignment: .trailing, spacing: 1) {
+            trafficLine("上行", client.up)
+            trafficLine("下行", client.down)
+        }
+    }
+
+    private func trafficLine(_ title: String, _ bytes: Int?) -> some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 10.5))
+                .foregroundStyle(.secondary)
+            Text(ByteFormat.compact(bytes))
+                .font(Theme.number(11.5, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 }
