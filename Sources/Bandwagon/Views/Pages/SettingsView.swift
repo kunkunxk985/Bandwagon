@@ -18,6 +18,29 @@ struct SettingsView: View {
 
     private var isDirty: Bool { draft != model.settings }
 
+    private var bandwagonSectionDirty: Bool {
+        draft.bwhVeid != model.settings.bwhVeid
+            || draft.bwhApiKey != model.settings.bwhApiKey
+            || draft.bwhApiBase != model.settings.bwhApiBase
+    }
+
+    private var xuiSectionDirty: Bool {
+        draft.xuiBaseUrl != model.settings.xuiBaseUrl
+            || draft.xuiUsername != model.settings.xuiUsername
+            || draft.xuiPassword != model.settings.xuiPassword
+    }
+
+    private var bandwagonInlineSaveEnabled: Bool {
+        bandwagonSectionDirty
+            || (!model.settings.bwhReady && (!draft.bwhVeid.isEmpty || !draft.bwhApiKey.isEmpty))
+    }
+
+    private var xuiInlineSaveEnabled: Bool {
+        xuiSectionDirty
+            || (!model.settings.xuiReady
+                && (!draft.xuiBaseUrl.isEmpty || !draft.xuiUsername.isEmpty || !draft.xuiPassword.isEmpty))
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
@@ -47,7 +70,10 @@ struct SettingsView: View {
                         ConnectionFields.bandwagon(
                             draft: $draft,
                             showApiKeyHint: true,
-                            inlineSave: nil
+                            inlineSave: performSave,
+                            saving: saving,
+                            saveButtonTitle: "确认并连接",
+                            inlineSaveEnabled: bandwagonInlineSaveEnabled
                         )
                     }
 
@@ -59,7 +85,10 @@ struct SettingsView: View {
                         ConnectionFields.xui(
                             draft: $draft,
                             showCredentialHint: true,
-                            inlineSave: nil
+                            inlineSave: performSave,
+                            saving: saving,
+                            saveButtonTitle: "确认并连接",
+                            inlineSaveEnabled: xuiInlineSaveEnabled
                         )
                     }
 
