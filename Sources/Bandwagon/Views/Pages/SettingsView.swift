@@ -255,7 +255,7 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
 
-            if isOpen.wrappedValue {
+            VStack(alignment: .leading, spacing: 0) {
                 CardDivider()
                     .padding(.top, 16)
 
@@ -263,11 +263,17 @@ struct SettingsView: View {
                     content()
                 }
                 .padding(.top, 16)
-                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
+            .frame(maxHeight: isOpen.wrappedValue ? .infinity : 0, alignment: .top)
+            .clipped()
+            .opacity(isOpen.wrappedValue ? 1 : 0)
+            .allowsHitTesting(isOpen.wrappedValue)
+            .accessibilityHidden(!isOpen.wrappedValue)
         }
         .padding(18)
         .panelSurface()
+        .compositingGroup()
+        .clipShape(RoundedRectangle(cornerRadius: Theme.panelRadius, style: .continuous))
     }
 
     private var refreshCard: some View {
