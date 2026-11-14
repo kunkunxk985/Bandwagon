@@ -447,10 +447,14 @@ struct UICompositionRegression {
             clients.contains("client.expiryLabel()") &&
             clients.contains("ByteFormat.string(client.used)") &&
             clients.contains("ByteFormat.compact") &&
+            clients.contains("ClientColumnShare.usageTokenGap") &&
+            clients.contains("ClientColumnShare.usageQuotaPadding") &&
+            skeleton.contains("ClientColumnShare.usageTokenGap") &&
+            skeleton.contains("ClientColumnShare.usageQuotaPadding") &&
             models.contains("return \"∞\"") &&
             occurrences(of: "ClientColumnLayout {", in: clients) == 2 &&
             occurrences(of: "ClientColumnLayout {", in: skeleton) == 2,
-            "Upload and download sit on one line after the used total; quota and expiry stay beside that line"
+            "Upload and download sit on one line after the used total, with a gap before the quota; expiry stays beside that line"
         )
         require(
             !clients.contains("DateFormatter()") &&

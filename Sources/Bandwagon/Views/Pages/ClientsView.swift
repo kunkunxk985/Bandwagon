@@ -448,19 +448,24 @@ struct ClientRow: View {
     }
 
     /// Bar, used total, then upload and download on the same line. The bar takes
-    /// the spare width inside the usage column so the figures stay next to it.
+    /// the spare width. The figures keep a fixed gap, and a little trailing room
+    /// separates the download figure from the quota, without stacking or adding a column.
     private var usageLine: some View {
         HStack(spacing: 6) {
             UsageBar(value: usageFraction, tint: usageTint)
                 .frame(minWidth: 28, maxWidth: .infinity)
                 .help("长度＝相对最大用量，颜色＝配额占用风险")
-            Text(ByteFormat.string(client.used))
-                .font(Theme.number(13))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .layoutPriority(1)
-            directionMark("↑", bytes: client.up, access: "上传")
-            directionMark("↓", bytes: client.down, access: "下载")
+            HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
+                Text(ByteFormat.string(client.used))
+                    .font(Theme.number(13))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .layoutPriority(1)
+                directionMark("↑", bytes: client.up, access: "上传")
+                directionMark("↓", bytes: client.down, access: "下载")
+            }
+            .layoutPriority(1)
+            .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
