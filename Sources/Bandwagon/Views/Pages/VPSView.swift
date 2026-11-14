@@ -11,7 +11,7 @@ struct VPSView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                PageHeader(title: "VPS", subtitle: headerSubtitle) {
+                PageHeader(title: "服务器") {
                     if let bwh, bwh.usedBytes != nil {
                         StatusPill(title: bwh.healthLabel, tint: bwh.healthTint)
                     }
@@ -24,7 +24,7 @@ struct VPSView: View {
                     .modifier(CenterWhenShort(enabled: bwh?.usedBytes == nil && !showsLoadingSkeleton, reserving: Theme.pageHeaderHeight))
             }
         }
-        .navigationTitle("VPS")
+        .navigationTitle("服务器")
     }
 
     private var showsLoadingSkeleton: Bool {
@@ -32,14 +32,6 @@ struct VPSView: View {
         model.bwhLoading &&
         bwh?.usedBytes == nil &&
         bwh?.error == nil
-    }
-
-    private var headerSubtitle: String? {
-        guard bwh?.usedBytes != nil else { return nil }
-        return [heroHost, heroIP, bwh?.location].compactMap { value in
-            guard let value, !value.isEmpty else { return nil }
-            return value
-        }.joined(separator: " · ")
     }
 
     private var pageContent: some View {
@@ -123,7 +115,7 @@ struct VPSView: View {
     // MARK: - 系统概况
 
     /// Spec sheet: label-over-value cells in two columns, rows split by hairlines.
-    /// The page header already names the host and its health.
+    /// Health stays beside the page title; host, IP, and location live in these cells.
     private var systemCard: some View {
         let rows = stride(from: 0, to: specItems.count, by: 2).map { start in
             Array(specItems[start..<min(start + 2, specItems.count)])
@@ -193,11 +185,6 @@ struct VPSView: View {
     private var remaining: Int? {
         guard let used = bwh?.usedBytes, let quota = bwh?.quotaBytes else { return nil }
         return max(0, quota - used)
-    }
-
-    private var heroHost: String {
-        if let hostname = bwh?.hostname, !hostname.isEmpty { return hostname }
-        return "已连接"
     }
 
     private var heroIP: String? {

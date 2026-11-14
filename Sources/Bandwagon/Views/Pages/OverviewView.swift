@@ -13,7 +13,7 @@ struct OverviewView: View {
         // wider than the panels whenever the system shows legacy scroll bars.
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                PageHeader(title: "总览", subtitle: hostSubtitle) {
+                PageHeader(title: "总览") {
                     headerFacts
                 }
                 .pageHeaderInsets()
@@ -47,11 +47,6 @@ struct OverviewView: View {
     }
 
     // MARK: - 页头
-
-    private var hostSubtitle: String? {
-        guard let bwh = model.overview.bwh, bwh.usedBytes != nil else { return nil }
-        return [hostTitle, hostIP].compactMap { $0 }.joined(separator: " · ")
-    }
 
     /// Server health and client counts, read as one line of facts beside the title.
     /// Counts stay visible even when the last fetch failed; the banner below is what
@@ -235,7 +230,7 @@ struct OverviewView: View {
             Panel(padding: 20) {
                 VStack(alignment: .leading, spacing: 16) {
                     PanelHeader(title: "服务器") {
-                        PanelLink(title: "VPS 详情") { selectedTab = .vps }
+                        PanelLink(title: "服务器详情") { selectedTab = .vps }
                     }
 
                     HStack(alignment: .top, spacing: 20) {
@@ -284,17 +279,6 @@ struct OverviewView: View {
 
     private var topClients: [Client]? {
         model.overview.xui?.clients?.prefix(8).map { $0 }
-    }
-
-    private var hostTitle: String {
-        if let name = model.overview.bwh?.hostname, !name.isEmpty { return name }
-        if model.overview.bwh?.configured == true { return "已连接" }
-        return "未配置"
-    }
-
-    private var hostIP: String? {
-        guard let ip = model.overview.bwh?.ip, !ip.isEmpty else { return nil }
-        return ip
     }
 }
 
