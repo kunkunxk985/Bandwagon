@@ -137,12 +137,6 @@ struct ClientsView: View {
         }
     }
 
-    /// Scale reference for the row bars. Taken from the full client list rather
-    /// than the filtered one, so changing a filter never rescales the bars.
-    private var busiestUsage: Int {
-        model.overview.xui?.clients?.map { $0.used ?? 0 }.max() ?? 0
-    }
-
     // MARK: - 列表
 
     @ViewBuilder
@@ -184,7 +178,7 @@ struct ClientsView: View {
                                     CardDivider()
                                         .padding(.leading, ClientColumns.inset)
                                 }
-                                ClientRow(client: client, maxUsed: busiestUsage)
+                                ClientRow(client: client)
                             }
                         } header: {
                             ClientTableHeader(sort: $sort, ascending: $ascending)
@@ -344,30 +338,8 @@ private enum ClientRowTypography {
 struct ClientRow: View {
     @Environment(AppModel.self) private var model
     let client: Client
-    let maxUsed: Int
     @State private var copied = false
     @State private var hovered = false
-
-    private var utilization: (fraction: Double, percent: Double)? {
-        guard let percent = client.percent, percent > 0 else { return nil }
-        return (min(1, max(0, percent / 100)), percent)
-    }
-
-    /// Bar length encodes how much this client actually moved relative to the
-    /// busiest client, so it always agrees with the default "按用量" ordering.
-    /// Previously the bar encoded quota share, which contradicted the sort: two
-    /// clients at 117 GB drew 23% and 58% bars.
-    private var usageFraction: Double {
-        guard maxUsed > 0 else { return 0 }
-        return min(1, max(0, Double(client.used ?? 0) / Double(maxUsed)))
-    }
-
-    /// Bar colour still encodes quota risk. Clients without an individual quota
-    /// fall back to the accent colour. The number beside the bar is the used total.
-    private var usageTint: Color {
-        guard let utilization else { return Theme.accent }
-        return UsageTint.color(for: utilization.fraction)
-    }
 
     var body: some View {
         ClientColumnLayout {
@@ -445,25 +417,19 @@ struct ClientRow: View {
         .help("查看详情与管理")
     }
 
-    /// Bar, then fixed slots for the used total, upload, and download. The bar
-    /// takes the spare width. Each figure has one width, so ↑ and ↓ stack
-    /// across rows, on one 13pt line.
+    /// Fixed slots for the used total, upload, and download. Each figure has one
+    /// width, so ↑ and ↓ stack across rows, on one 13pt line.
     private var usageLine: some View {
-        HStack(spacing: CGFloat(ClientColumnShare.usageBarGap)) {
-            UsageBar(value: usageFraction, tint: usageTint)
-                .frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)
-                .help("长度＝相对最大用量，颜色＝配额占用风险")
-            HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
-                Text(ByteFormat.string(client.used))
-                    .font(Theme.number(ClientRowTypography.size, weight: .medium))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .frame(width: CGFloat(ClientColumnShare.usedFigureWidth), alignment: .trailing)
-                directionMark("↑", bytes: client.up, access: "上传")
-                directionMark("↓", bytes: client.down, access: "下载")
-            }
-            .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
+        HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
+            Text(ByteFormat.string(client.used))
+                .font(Theme.number(ClientRowTypography.size, weight: .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(width: CGFloat(ClientColumnShare.usedFigureWidth), alignment: .trailing)
+            directionMark("↑", bytes: client.up, access: "上传")
+            directionMark("↓", bytes: client.down, access: "下载")
         }
+        .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 

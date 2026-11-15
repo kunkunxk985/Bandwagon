@@ -191,10 +191,10 @@ struct UICompositionRegression {
             "Shared monitoring components must exist for tiles, utilization bars, pills, and chips"
         )
         require(
-            clients.contains("UsageBar(") &&
+            !clients.contains("UsageBar(") &&
             clients.contains("StatusPill(") &&
             clients.contains("SummaryTile("),
-            "Clients page must use the shared utilization bar, state pill, and summary tiles"
+            "Clients table shows usage figures only; overview keeps utilization bars"
         )
         require(
             components.contains("fraction >= UsageThreshold.critical") &&
@@ -204,11 +204,11 @@ struct UICompositionRegression {
             "Utilisation colour must read the shared thresholds instead of its own literals"
         )
         require(
-            clients.contains("ClientRow(client: client, maxUsed: busiestUsage)") &&
-            clients.contains("UsageBar(value: usageFraction") &&
-            clients.contains("private var busiestUsage: Int") &&
-            !clients.contains("UsageBar(value: utilization.fraction"),
-            "Client bars must scale to the busiest client so they agree with the usage ordering"
+            clients.contains("ClientRow(client: client)") &&
+            !clients.contains("busiestUsage") &&
+            !clients.contains("usageFraction") &&
+            overview.contains("UsageBar(value: fraction"),
+            "Client rows list usage without a bar; overview top clients keep relative bars"
         )
         require(
             !clients.contains(".ultraThinMaterial") &&
@@ -219,9 +219,9 @@ struct UICompositionRegression {
             clients.contains("Text(client.name)") &&
             clients.contains("Text(email)") &&
             !clients.contains("prefix(1)") &&
-            clients.contains(".frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)") &&
+            !clients.contains("ClientColumnShare.usageBarMin") &&
             !clients.contains("nameMax"),
-            "Client rows lead with name and email, and the usage bar grows inside its column"
+            "Client rows lead with name and email; usage stays in fixed figure slots"
         )
         require(
             clients.contains(".accessibilityLabel(copied ? \"已复制 \\(client.name) 的邮箱\"") &&

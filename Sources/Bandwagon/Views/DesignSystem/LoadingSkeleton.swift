@@ -179,16 +179,13 @@ struct ClientsLoadingSkeleton: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: 132, height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: CGFloat(ClientColumnShare.usageBarGap)) {
-                SkeletonBlock(height: 6, cornerRadius: 3)
-                    .frame(minWidth: CGFloat(ClientColumnShare.usageBarMin), maxWidth: .infinity)
-                HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
-                    SkeletonBlock(width: CGFloat(ClientColumnShare.usedFigureWidth), height: 12)
-                    SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
-                    SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
-                }
-                .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
+            HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
+                SkeletonBlock(width: CGFloat(ClientColumnShare.usedFigureWidth), height: 12)
+                SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
+                SkeletonBlock(width: CGFloat(ClientColumnShare.directionFigureWidth), height: 12)
             }
+            .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
+            .frame(maxWidth: .infinity, alignment: .leading)
             SkeletonBlock(width: CGFloat(ClientColumnShare.quotaFigureWidth), height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear.frame(width: 24, height: 1)
