@@ -38,7 +38,8 @@ struct ClientColumnRegression {
             fail("widening the figure gaps must not change how much slack the usage column gives up")
         }
 
-        let samples = [640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200]
+        let samples = ([640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200] as [Double])
+            .sorted()
         var previous = widths(samples[0])
         for available in samples.dropFirst() {
             let next = widths(available)
