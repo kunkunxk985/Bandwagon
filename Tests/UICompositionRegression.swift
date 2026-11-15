@@ -489,8 +489,8 @@ struct UICompositionRegression {
             "在线 includes every connected client, including those who are also warned"
         )
         require(
-            clients.contains("directionMark(\"↑\"") &&
-            clients.contains("directionMark(\"↓\"") &&
+            !clients.contains("directionMark(\"↑\"") &&
+            !clients.contains("directionMark(\"↓\"") &&
             !clients.contains("上行") &&
             !clients.contains("下行") &&
             !clients.contains("trafficCell") &&
@@ -499,23 +499,18 @@ struct UICompositionRegression {
             !clients.contains("expiryLabel") &&
             !clients.contains("到期") &&
             clients.contains("ByteFormat.string(client.used)") &&
-            clients.contains("ByteFormat.compact") &&
-            clients.contains("ClientColumnShare.usageTokenGap") &&
+            !clients.contains("ByteFormat.compact(bytes)") &&
             clients.contains("ClientColumnShare.usageQuotaPadding") &&
             clients.contains("ClientColumnShare.usedFigureWidth") &&
-            clients.contains("ClientColumnShare.directionFigureWidth") &&
             clients.contains("ClientColumnShare.quotaFigureWidth") &&
-            clients.contains("alignment: .trailing") &&
             clients.contains("alignment: .leading") &&
-            skeleton.contains("ClientColumnShare.usageTokenGap") &&
             skeleton.contains("ClientColumnShare.usageQuotaPadding") &&
             skeleton.contains("ClientColumnShare.usedFigureWidth") &&
-            skeleton.contains("ClientColumnShare.directionFigureWidth") &&
             skeleton.contains("ClientColumnShare.quotaFigureWidth") &&
             models.contains("return \"∞\"") &&
             occurrences(of: "ClientColumnLayout {", in: clients) == 2 &&
             occurrences(of: "ClientColumnLayout {", in: skeleton) == 2,
-            "Used, upload, download, and quota are fixed slots on one line so ↑, ↓, and ∞ stack"
+            "The usage column shows total used traffic; quota stays in its own column"
         )
         require(
             clients.contains("enum ClientRowTypography") &&
