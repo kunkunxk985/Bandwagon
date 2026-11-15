@@ -2,8 +2,8 @@ import Foundation
 
 /// How the clients table divides one row.
 ///
-/// Columns, in order: status, name, last online, usage line (bar + total +
-/// upload + download), quota, copy.
+/// Columns, in order: status, name, last online, usage line (total + upload +
+/// download), quota, copy.
 ///
 /// `minimum` is the comfortable width. Spare room above that is shared by
 /// `weight`, so a fullscreen window spreads every column instead of leaving an
@@ -25,27 +25,23 @@ enum ClientColumnShare {
     static let usageTokenGap: Double = 14
     /// Extra room after the download figure, on top of `spacing`, before the quota.
     static let usageQuotaPadding: Double = 6
-    /// Gap between the bar and the used total. The bar is the only flexible part.
-    static let usageBarGap: Double = 6
-    /// Narrowest the bar may be before the usage column itself is below its floor.
-    static let usageBarMin: Double = 28
     /// Fixed slots. `61.4 GB` and `525 MB`, `12.9G` and `525M`, `∞` and `100G`
     /// would otherwise start ↑, ↓, and ∞ at a different x on every row.
     /// Widths fit a 13pt figure through `9999 GB` / `↑ 9999G`.
     static let usedFigureWidth: Double = 72
     static let directionFigureWidth: Double = 68
     static let quotaFigureWidth: Double = 52
-    /// Bar minimum plus the fixed figure slots. The 38pt above this is slack the
-    /// bar gives up; the slots themselves do not change width with the string.
+    /// Width of the fixed used / upload / download slots. The slack above this in
+    /// the usage column minimum is spare room; the slots do not change width.
     static let usageContentFloor: Double =
-        usageBarMin + usageBarGap + usedFigureWidth + directionFigureWidth * 2
+        usedFigureWidth + directionFigureWidth * 2
         + usageTokenGap * 2 + usageQuotaPadding
 
     static let status = Column(floor: 52, minimum: 56, weight: 0.7)
     static let name = Column(floor: 72, minimum: 108, weight: 1.8)
     /// `yyyy/MM/dd HH:mm:ss` at 13pt medium. No slack: the timestamp stays whole.
     static let lastOnline = Column(floor: 160, minimum: 160, weight: 1.3)
-    /// Floor fits the bar's minimum and the fixed used / upload / download slots.
+    /// Floor fits the fixed used / upload / download slots.
     static let usage = Column(floor: usageContentFloor, minimum: usageContentFloor + 38, weight: 2.8)
     /// The quota glyph stays in a fixed slot. Spare width may still widen the
     /// column; the ∞ stays on the leading edge.

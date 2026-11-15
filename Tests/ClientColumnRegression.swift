@@ -36,7 +36,7 @@ struct ClientColumnRegression {
             fail("used, upload, download, and quota need fixed slots wide enough for the longest figure")
         }
         guard abs((ClientColumnShare.usage.minimum - ClientColumnShare.usage.floor) - 38) < 0.01 else {
-            fail("widening the figure gaps must not change how much slack the usage bar gives up")
+            fail("widening the figure gaps must not change how much slack the usage column gives up")
         }
 
         let samples = [640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200]
