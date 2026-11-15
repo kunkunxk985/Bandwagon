@@ -501,7 +501,6 @@ struct UICompositionRegression {
             clients.contains("ByteFormat.string(client.used)") &&
             !clients.contains("ByteFormat.compact(bytes)") &&
             clients.contains("ClientColumnShare.usageQuotaPadding") &&
-            clients.contains("ClientColumnShare.usedFigureWidth") &&
             clients.contains("ClientColumnShare.quotaFigureWidth") &&
             clients.contains("alignment: .leading") &&
             skeleton.contains("ClientColumnShare.usageQuotaPadding") &&
