@@ -49,7 +49,7 @@ struct ClientColumnRegression {
             previous = next
         }
 
-        let narrow = widths(716)
+        let narrow = widths(ClientColumnShare.minimumRowWidth)
         guard abs(narrow[2] - ClientColumnShare.lastOnline.minimum) < 0.01 else {
             fail("a narrow window must keep the full last-online timestamp, got \(narrow[2])")
         }
