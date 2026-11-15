@@ -25,21 +25,21 @@ struct ClientColumnRegression {
         guard ClientColumnShare.usage.weight == ClientColumnShare.columns.map(\.weight).max() else {
             fail("the usage line must take the largest share of spare width")
         }
-        guard ClientColumnShare.usageTokenGap == 14, ClientColumnShare.usageQuotaPadding == 6 else {
-            fail("the used total, upload, download, and quota need a fixed gap, not a stretched row")
+        guard ClientColumnShare.usageQuotaPadding == 6 else {
+            fail("the used total and quota need a fixed gap, not a stretched row")
         }
         guard ClientColumnShare.usedFigureWidth >= 68,
-              ClientColumnShare.directionFigureWidth >= 60,
               ClientColumnShare.quotaFigureWidth >= 48,
               abs(ClientColumnShare.usage.floor - ClientColumnShare.usageContentFloor) < 0.01,
               ClientColumnShare.quota.floor + 0.01 >= ClientColumnShare.quotaFigureWidth else {
-            fail("used, upload, download, and quota need fixed slots wide enough for the longest figure")
+            fail("used total and quota need fixed slots wide enough for the longest figure")
         }
         guard abs((ClientColumnShare.usage.minimum - ClientColumnShare.usage.floor) - 38) < 0.01 else {
             fail("widening the figure gaps must not change how much slack the usage column gives up")
         }
 
-        let samples = [640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200]
+        let samples = ([640.0, 716, ClientColumnShare.minimumRowWidth, 900, 1240, 1600, 2200] as [Double])
+            .sorted()
         var previous = widths(samples[0])
         for available in samples.dropFirst() {
             let next = widths(available)
@@ -49,7 +49,7 @@ struct ClientColumnRegression {
             previous = next
         }
 
-        let narrow = widths(716)
+        let narrow = widths(ClientColumnShare.minimumRowWidth)
         guard abs(narrow[2] - ClientColumnShare.lastOnline.minimum) < 0.01 else {
             fail("a narrow window must keep the full last-online timestamp, got \(narrow[2])")
         }

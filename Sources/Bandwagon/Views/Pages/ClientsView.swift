@@ -417,36 +417,14 @@ struct ClientRow: View {
         .help("查看详情与管理")
     }
 
-    /// Fixed slots for the used total, upload, and download. Each figure has one
-    /// width, so ↑ and ↓ stack across rows, on one 13pt line.
     private var usageLine: some View {
-        HStack(spacing: CGFloat(ClientColumnShare.usageTokenGap)) {
-            Text(ByteFormat.string(client.used))
-                .font(Theme.number(ClientRowTypography.size, weight: .medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .frame(width: CGFloat(ClientColumnShare.usedFigureWidth), alignment: .trailing)
-            directionMark("↑", bytes: client.up, access: "上传")
-            directionMark("↓", bytes: client.down, access: "下载")
-        }
-        .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func directionMark(_ symbol: String, bytes: Int?, access: String) -> some View {
-        HStack(spacing: 2) {
-            Text(symbol)
-                .font(.system(size: ClientRowTypography.size, weight: .medium))
-                .foregroundStyle(.secondary)
-            Text(ByteFormat.compact(bytes))
-                .font(Theme.number(ClientRowTypography.size, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(width: CGFloat(ClientColumnShare.directionFigureWidth), alignment: .leading)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(access) \(ByteFormat.compact(bytes))")
+        Text(ByteFormat.string(client.used))
+            .font(Theme.number(ClientRowTypography.size, weight: .medium))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.trailing, CGFloat(ClientColumnShare.usageQuotaPadding))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel("已用 \(ByteFormat.string(client.used))")
     }
 }
 
